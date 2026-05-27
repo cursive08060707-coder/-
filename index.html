@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="referrer" content="no-referrer">
 <title>涨停板归类</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color:#333;display:flex;height:100vh;overflow:hidden}
-#sb{width:200px;min-width:200px;background:#fff;border-right:1px solid #e8e8e8;display:flex;flex-direction:column}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color:#333;display:flex;position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden}
+#sb{width:160px;min-width:160px;background:#fff;border-right:1px solid #e8e8e8;display:flex;flex-direction:column}
 .logo{padding:12px 14px;font-size:14px;font-weight:700;color:#d4380d;border-bottom:1px solid #f0f0f0}
 #sbox{padding:6px 10px;border-bottom:1px solid #f0f0f0}
 #sbox input{width:100%;background:#f5f5f5;border:1px solid #e8e8e8;border-radius:4px;padding:5px 8px;font-size:12px;outline:none}
@@ -15,7 +15,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 .di:hover{background:#fff5f5;color:#555}
 .di.on{background:#fff0f0;color:#d4380d;border-left-color:#d4380d;font-weight:600}
 .di .m{color:#d4380d;font-size:10px;margin-left:4px}
-#ct{flex:1;overflow-y:auto;padding:20px 24px}
+#ct{flex:1;min-height:0;overflow-y:auto;padding:20px 24px}
 .bh{font-size:18px;font-weight:700;color:#333;margin-bottom:14px}
 .bh a{font-size:12px;color:#999;font-weight:400;text-decoration:none;margin-left:8px}
 .bl{margin-bottom:16px}
@@ -47,6 +47,22 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 #sp .sp-h .sp-x{cursor:pointer;font-size:18px;line-height:1;opacity:.8;margin-left:12px}
 #sp .sp-h .sp-x:hover{opacity:1}
 #sp .sp-b{padding:12px 14px;max-height:500px;overflow-y:auto}
+/* K线弹窗 */
+#sp-k{display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #d4380d;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.18);width:1000px;max-width:calc(100vw - 40px);padding:0;font-size:13px}
+#sp-k.show{display:block}
+#sp-k .sp-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#d4380d;color:#fff;border-radius:8px 8px 0 0;font-weight:700;font-size:14px;cursor:move;user-select:none}
+#sp-k .sp-h .sp-x{cursor:pointer;font-size:18px;line-height:1;opacity:.8;margin-left:12px}
+#sp-k .sp-h .sp-x:hover{opacity:1}
+#sp-k .sp-b{padding:14px}
+.chart-label{font-size:11px;color:#999;margin:0 0 6px;text-align:left}
+.chart-label b{color:#555}
+.chart-label a{color:#d4380d;text-decoration:none;font-size:11px;margin-left:6px}
+.chart-label a:hover{text-decoration:underline}
+.chart-min-wrap{max-height:180px;overflow:hidden;border-radius:4px;border:1px solid #f0f0f0;margin-bottom:4px}
+.chart-min-wrap img{width:100%;display:block}
+.tv-wrap{height:400px;width:100%;border:1px solid #f0f0f0;border-radius:4px}
+.sp-k-btn{display:inline-block;padding:3px 10px;background:#d4380d;color:#fff;border-radius:4px;font-size:11px;cursor:pointer;margin-left:10px;font-weight:400}
+.sp-k-btn:hover{background:#b82e0b}
 .sp-rg{color:#555;font-size:12px;margin-bottom:6px;padding:4px 8px;background:#f5f5f5;border-radius:4px}
 .sp-rg b{color:#d4380d;margin-right:6px}
 #sp .sp-r{color:#999;font-size:11px;margin-bottom:6px}
@@ -113,7 +129,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <!-- 股票信息弹窗 -->
 <div id="sp">
-  <div class="sp-h"><span id="sp-n"></span><span class="sp-x" onclick="closeSp()">&times;</span></div>
+  <div class="sp-h"><span id="sp-n"></span><span class="sp-k-btn" id="sp-goto-chart" onclick="openKline()">📈 K线</span><span class="sp-x" onclick="closeSp()">&times;</span></div>
   <div class="sp-b">
     <div class="sp-chart" id="sp-chart"></div>
     <div class="sp-rg" id="sp-rg"></div>
@@ -139,6 +155,12 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
   </div>
 </div>
 
+<!-- K线弹窗 -->
+<div id="sp-k">
+  <div class="sp-h"><span id="sp-k-n"></span><span class="sp-x" onclick="closeKline()">&times;</span></div>
+  <div class="sp-b" id="sp-k-body"></div>
+</div>
+
 <!-- 编辑器弹窗 -->
 <div id="ed">
   <div id="ed-p">
@@ -162,14 +184,16 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
-<script src="pako.min.js"></script>
-<script src="stock_names.js?v=20260528"></script>
-<script src="stock_detail_map.js?v=20260528b"></script>
-<script src="zt_data.js?v=20260528b"></script>
-<script src="hengdan_map.js?v=20260527"></script>
+<script src="stock_names.js?v=20260526"></script>
+<script src="stock_detail_map.js?v=20260526"></script>
+<script src="zt_data.js?v=20260524-2230"></script>
+<script src="hengdan_map.js?v=20260526"></script>
 <script>
+console.log('✅ 涨停板归类 v2026-05-15-0356 loaded | searchRegion=no show() | init=show(0)');
+
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
+const _SN = new Set(Object.keys(SN));  // 从stock_names.js初始化
 const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
 const wk=['日','一','二','三','四','五','六'];
 stEl.textContent=P.length+'天';
@@ -323,30 +347,29 @@ function searchRegion(){
   if(!rst){rb.textContent='';return;}
   const sd=window.SD||SD||{};
   let matches=[];
-  // 搜索范围：当前选中日期，或所有日期
-  const dates=ai>=0?[P[ai]]:P;
-  for(const p of dates){
-    const stocks=extractStocksFromT(p.t);
-    for(const s of stocks){
-      if(!sd[s])continue;
-      let found=false;
-      if(sd[s].r&&sd[s].r.includes(rst))found=true;
-      if(sd[s].e&&Array.isArray(sd[s].e)){for(const item of sd[s].e){const cn=Array.isArray(item)?item[0]:item;if(typeof cn==='string'&&cn.includes(rst)){found=true;break;}}}
-      if(found&&!matches.includes(s))matches.push(s);
-    }
+  // 只搜当前选中日期
+  if(ai<0){rb.textContent='请先选择日期';return;}
+  const p=P[ai];
+  const stocks=extractStocksFromT(p.t);
+  for(const s of stocks){
+    if(!sd[s])continue;
+    let found=false;
+    if(sd[s].r&&sd[s].r.includes(rst))found=true;
+    if(sd[s].e&&Array.isArray(sd[s].e)){for(const item of sd[s].e){const cn=Array.isArray(item)?item[0]:item;if(typeof cn==='string'&&cn.includes(rst)){found=true;break;}}}
+    if(found&&!matches.includes(s))matches.push(s);
   }
   let cnt=0;
   document.querySelectorAll('.sk,.mb').forEach(el=>{
     const n=el.getAttribute('data-n');
     if(matches.includes(n)){el.classList.add('hl2');cnt++;}
   });
-  rb.textContent=matches.length?`找到 ${cnt} 只`:'';
+  rb.textContent=matches.length?`找到 ${cnt} 只`:'无结果';
 }
 let rt;ri.addEventListener('input',()=>{clearTimeout(rt);rt=setTimeout(searchRegion,150);});
 
 let t;si.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(search,150);});
 document.addEventListener('keydown',e=>{
-  if(e.target===si){if(e.key==='Escape'){si.value='';search();if(ri){ri.value='';searchRegion();}si.blur();}else if(e.key==='.'||e.key==='>'){e.preventDefault();ri.focus();}else if(e.key==='Enter'){e.preventDefault();scrollHl(1);}return;}
+  if(e.target===si||e.target===ri){if(e.key==='Escape'){si.value='';search();if(ri){ri.value='';searchRegion();}si.blur();}else if(e.key==='.'||e.key==='>'){e.preventDefault();ri.focus();}else if(e.key==='Enter'){e.preventDefault();scrollHl(1);}return;}
   const a=st?fd:P.map((_,i)=>i),cv=st?fd.indexOf(ai):ai;
   if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();if(cv>0)show(a[cv-1]);}
   else if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();if(cv<a.length-1)show(a[cv+1]);}
@@ -354,10 +377,11 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='n'||e.key==='Enter'){scrollHl(1);}
   else if(e.key==='N'||e.key==='p'){scrollHl(-1);}
 });
-render();
+render();show(0);
 </script>
 <script>
 // === 股票弹窗逻辑 ===
+let spCode='',spName='';
 function showSp(name,e){
   if(typeof SD==='undefined')return;
   // 全角/半角转换（zt_data.js 可能是半角，SD 键是全角）
@@ -370,6 +394,7 @@ function showSp(name,e){
   // 先查转换后的名（全角），再查原名
   const d=SD[name_conv]||SD[name];if(!d)return;
   e.stopPropagation();
+  spCode=d.c||'';spName=name;
   document.getElementById('sp-n').textContent=name+'（'+d.c+'）';
   const rg=document.getElementById('sp-rg');
   if(d.r){const parts=d.r.split(' / ');rg.innerHTML='<b>'+esc(parts[0]||'')+'</b>'+esc(parts[1]?' / '+parts[1]:'');rg.style.display='block';}else{rg.style.display='none';}
@@ -386,7 +411,7 @@ function showSp(name,e){
     const key=date+'_'+d.c;
     const fname=HD[key];
     if(fname){
-      const imgPath=encodeURI('../../恒单/'+date+'/'+fname);
+      const imgPath=encodeURI('恒单/'+date+'/'+fname);
       var img=document.createElement('img');img.src=imgPath;img.loading='lazy';
       img.onerror=function(){chartEl.innerHTML='<h4>📈 买一量曲线</h4><div class="sp-nochart">图片加载失败</div>';};
       chartEl.innerHTML='<h4>📈 买一量曲线</h4>';chartEl.appendChild(img);
@@ -405,10 +430,67 @@ function showSp(name,e){
   
   document.getElementById('sp').classList.add('show');
   const r=e.target.getBoundingClientRect();let top=r.bottom+6,left=r.left;
-  if(top+500>innerHeight)top=r.top-500;if(left+380>innerWidth)left=innerWidth-390;if(left<10)left=10;
+  if(top+500>innerHeight)top=r.top-500;if(top<10)top=10;if(left+380>innerWidth)left=innerWidth-390;if(left<10)left=10;
   document.getElementById('sp').style.top=top+'px';document.getElementById('sp').style.left=left+'px';
   fetchHolder(d.c);
 }
+
+// === K线弹窗 ===
+function loadTVLib(cb){
+  if(window.TradingView){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://s3.tradingview.com/tv.js';s.onload=cb;
+  document.head.appendChild(s);
+}
+function openKline(){
+  if(!spCode)return;
+  closeSp();
+  const m=spCode.startsWith('6')||spCode.startsWith('68')?'sh':'sz';
+  const date=(ai>=0&&P[ai])?P[ai].d:'';
+  const sym=(spCode.startsWith('6')||spCode.startsWith('68')?'SSE:':'SZSE:')+spCode;
+  document.getElementById('sp-k-n').textContent=spName+'（'+spCode+'）'+(date?' · '+date:'');
+  const body=document.getElementById('sp-k-body');
+  let html='<div class="chart-label"><b>当日分时</b><a href="https://quote.eastmoney.com/'+m+spCode+'.html" target="_blank">东财→</a></div>';
+  html+='<div class="chart-min-wrap"><img src="https://image.sinajs.cn/newchart/min/n/'+m+spCode+'.gif" onerror="this.parentElement.outerHTML=\'<div style=color:#ccc;font-size:11px;padding:16px;border:1px solid #f0f0f0;border-radius:4px>分时图加载失败</div>\'"></div>';
+  html+='<div class="chart-label"><b>日K</b></div>';
+  html+='<div class="tv-wrap" id="tv-kbox"></div>';
+  body.innerHTML=html;
+  // 居中显示
+  const spk=document.getElementById('sp-k');
+  spk.classList.add('show');
+  spk.style.left=Math.max(20,(innerWidth-1000)/2)+'px';
+  spk.style.top=Math.max(20,(innerHeight-580)/2)+'px';
+  // 加载TV
+  loadTVLib(()=>{
+    const box=document.getElementById('tv-kbox');
+    if(!box)return;
+    const w=document.createElement('div');w.id='tv-kchart';w.style.height='100%';w.style.width='100%';
+    box.appendChild(w);
+    try{new TradingView.widget({container_id:'tv-kchart',autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});}catch(er){}
+  });
+}
+function closeKline(){
+  document.getElementById('sp-k').classList.remove('show');
+  document.getElementById('sp-k-body').innerHTML='';
+}
+// K线弹窗拖拽
+(function(){
+  const spk=document.getElementById('sp-k');
+  let dragging=false,ox,oy;
+  spk.querySelector('.sp-h').addEventListener('mousedown',function(e){
+    if(e.target.closest('.sp-x'))return;
+    dragging=true;ox=e.clientX-spk.offsetLeft;oy=e.clientY-spk.offsetTop;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    let x=e.clientX-ox,y=e.clientY-oy;
+    x=Math.max(0,Math.min(x,innerWidth-spk.offsetWidth));
+    y=Math.max(0,Math.min(y,innerHeight-spk.offsetHeight));
+    spk.style.left=x+'px';spk.style.top=y+'px';
+  });
+  document.addEventListener('mouseup',function(){dragging=false;});
+})();
 
 function fetchHolder(code){
   if(!code)return;
@@ -474,8 +556,9 @@ function spEditSave(){
 }
 
 function closeSp(){spEditName=null;document.getElementById('sp-edit-section').style.display='none';document.getElementById('sp').classList.remove('show');}
-document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb'))closeSp();});
-document.getElementById('ct').addEventListener('click',function(e){const sk=e.target.closest('.sk,.mb');if(sk&&sk.dataset.n)showSp(sk.dataset.n,e);});
+document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('#sp-k')&&!e.target.closest('.sk')&&!e.target.closest('.mb')){closeSp();closeKline();}});
+document.getElementById('sp-k').addEventListener('click',function(e){if(!e.target.closest('.tv-wrap')&&!e.target.closest('.sp-h'))closeKline();});
+document.getElementById('ct').addEventListener('click',function(e){const sk=e.target.closest('.sk,.mb');if(sk&&sk.dataset.n){closeKline();showSp(sk.dataset.n,e);}});
 
 // === 编辑器逻辑 ===
 let edStock=null;
