@@ -522,17 +522,15 @@ def gen_classify(posts):
         for d, l, t in _re.findall(pattern, existing_content):
             if not any(x['d'] == d for x in all_data):
                 all_data.append({'d': d, 'l': l, 't': t})
-        # 按日期降序排序
-        all_data.sort(key=lambda x: x['d'], reverse=True)
-    # 新建模式
-    else:
-        # 新建模式
-        new_content = 'const P=[\n'
-        for i, item in enumerate(all_data):
-            new_content += entry_to_js(item)
-            new_content += ',' if i < len(all_data) - 1 else ''
-            new_content += '\n'
-        new_content += '];'
+    # 按日期降序排序
+    all_data.sort(key=lambda x: x['d'], reverse=True)
+    # 重新生成
+    new_content = 'const P=[\n'
+    for i, item in enumerate(all_data):
+        new_content += entry_to_js(item)
+        new_content += ',' if i < len(all_data) - 1 else ''
+        new_content += '\n'
+    new_content += '];'
 
     with open(os.path.join(SHOW_DIR, 'zt_data.js'), 'w', encoding='utf-8') as f:
         f.write(new_content)
