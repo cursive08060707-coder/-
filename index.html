@@ -188,7 +188,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 <script src="stock_names.js"></script>
 <script src="hengdan_map.js"></script>
 <script src="zt_data.js"></script>
-<script src="stock_detail_map.js"></script>
+
 <script>
 console.log('✅ 涨停板归类 v2026-05-28-gz loaded | searchRegion=no show() | init=show(0)');
 
@@ -627,6 +627,15 @@ function savePerm(){
 })();
 </script>
 
+<script>
+// 延迟加载 stock_detail_map.js，不阻塞页面渲染
+(function(){
+  var s=document.createElement('script');
+  s.src='stock_detail_map.js';
+  s.onerror=function(){console.warn('stock_detail_map.js 加载失败，弹窗数据不可用');};
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
 <!-- trigger rebuild -->
