@@ -187,6 +187,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <script src="stock_names.js"></script>
 <script src="hengdan_map.js"></script>
+<script src="fenshi_map.js?v=20260603"></script>
 <script src="zt_data.js"></script>
 
 <script>
@@ -451,8 +452,11 @@ function openKline(){
   const sym=(spCode.startsWith('6')||spCode.startsWith('68')?'SSE:':'SZSE:')+spCode;
   document.getElementById('sp-k-n').textContent=spName+'（'+spCode+'）'+(date?' · '+date:'');
   const body=document.getElementById('sp-k-body');
+  let minImgSrc='';
+  if(date&&typeof FM!=='undefined'){const fk=date+'_'+spCode;if(FM[fk])minImgSrc=encodeURI(FM[fk]);}
+  if(!minImgSrc)minImgSrc='https://image.sinajs.cn/newchart/min/n/'+m+spCode+'.gif';
   let html='<div class="chart-label"><b>当日分时</b><a href="https://quote.eastmoney.com/'+m+spCode+'.html" target="_blank">东财→</a></div>';
-  html+='<div class="chart-min-wrap"><img src="https://image.sinajs.cn/newchart/min/n/'+m+spCode+'.gif" onerror="this.parentElement.outerHTML=\'<div style=color:#ccc;font-size:11px;padding:16px;border:1px solid #f0f0f0;border-radius:4px>分时图加载失败</div>\'"></div>';
+  html+='<div class="chart-min-wrap"><img src="'+minImgSrc+'" onerror="this.parentElement.outerHTML=\'<div style=color:#ccc;font-size:11px;padding:16px;border:1px solid #f0f0f0;border-radius:4px>分时图加载失败</div>\'"></div>';
   html+='<div class="chart-label"><b>日K</b></div>';
   html+='<div class="tv-wrap" id="tv-kbox"></div>';
   body.innerHTML=html;
