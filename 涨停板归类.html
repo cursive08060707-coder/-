@@ -48,12 +48,12 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 #sp .sp-h .sp-x:hover{opacity:1}
 #sp .sp-b{padding:12px 14px;max-height:500px;overflow-y:auto}
 /* K线弹窗 */
-#sp-k{display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #d4380d;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.18);width:1000px;max-width:calc(100vw - 40px);padding:0;font-size:13px}
+#sp-k{display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #d4380d;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.18);width:1000px;max-width:calc(100vw - 40px);max-height:calc(100vh - 40px);padding:0;font-size:13px;overflow:hidden;display:flex;flex-direction:column}
 #sp-k.show{display:block}
 #sp-k .sp-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#d4380d;color:#fff;border-radius:8px 8px 0 0;font-weight:700;font-size:14px;cursor:move;user-select:none}
 #sp-k .sp-h .sp-x{cursor:pointer;font-size:18px;line-height:1;opacity:.8;margin-left:12px}
 #sp-k .sp-h .sp-x:hover{opacity:1}
-#sp-k .sp-b{padding:14px}
+#sp-k .sp-b{padding:14px;overflow-y:auto;flex:1}
 .chart-label{font-size:11px;color:#999;margin:0 0 6px;text-align:left}
 .chart-label b{color:#555}
 .chart-label a{color:#d4380d;text-decoration:none;font-size:11px;margin-left:6px}
@@ -463,7 +463,7 @@ function openKline(){
   const spk=document.getElementById('sp-k');
   spk.classList.add('show');
   spk.style.left=Math.max(20,(innerWidth-1000)/2)+'px';
-  spk.style.top=Math.max(20,(innerHeight-580)/2)+'px';
+  spk.style.top='20px';
   // 加载TV
   loadTVLib(()=>{
     const box=document.getElementById('tv-kbox');
