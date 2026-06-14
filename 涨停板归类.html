@@ -132,6 +132,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
   <div class="sp-h"><span id="sp-n"></span><span class="sp-k-btn" id="sp-goto-chart" onclick="openKline()">📈 K线</span><span class="sp-x" onclick="closeSp()">&times;</span></div>
   <div class="sp-b">
     <div class="sp-chart" id="sp-chart"></div>
+    <div class="sp-chart" id="sp-fenshi"></div>
     <div class="sp-rg" id="sp-rg"></div>
     <div class="sp-r" id="sp-r"></div>
     <div class="sp-t" id="sp-t"></div>
@@ -421,6 +422,22 @@ function showSp(name,e){
     }
   }else{
     chartEl.innerHTML='';
+  }
+  // 分时图（与买一量曲线并列展示，K线大弹窗仍可由顶部按钮打开）
+  const fenshiEl=document.getElementById('sp-fenshi');
+  if(ai>=0&&d.c){
+    const date=P[ai].d;
+    let minSrc='';
+    if(typeof FM!=='undefined'){const fk=date+'_'+d.c;if(FM[fk])minSrc=encodeURI(FM[fk]);}
+    if(!minSrc){
+      const m=d.c.startsWith('6')||d.c.startsWith('68')?'sh':'sz';
+      minSrc='https://image.sinajs.cn/newchart/min/n/'+m+d.c+'.gif';
+    }
+    var fimg=document.createElement('img');fimg.src=minSrc;fimg.loading='lazy';
+    fimg.onerror=function(){fenshiEl.innerHTML='<h4>📊 分时图</h4><div class="sp-nochart">分时图加载失败</div>';};
+    fenshiEl.innerHTML='<h4>📊 分时图</h4>';fenshiEl.appendChild(fimg);
+  }else{
+    fenshiEl.innerHTML='';
   }
   // 编辑切换链接
   const spBody=document.querySelector('#sp .sp-b');
