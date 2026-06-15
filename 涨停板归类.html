@@ -423,19 +423,19 @@ function showSp(name,e){
   }else{
     chartEl.innerHTML='';
   }
-  // 分时图（与买一量曲线并列展示，K线大弹窗仍可由顶部按钮打开）
+  // 分时图（仅使用本地保存的GIF，通过fenshi_map.js映射）
   const fenshiEl=document.getElementById('sp-fenshi');
-  if(ai>=0&&d.c){
+  if(ai>=0&&d.c&&typeof FM!=='undefined'){
     const date=P[ai].d;
-    let minSrc='';
-    if(typeof FM!=='undefined'){const fk=date+'_'+d.c;if(FM[fk])minSrc=encodeURI(FM[fk]);}
-    if(!minSrc){
-      const m=d.c.startsWith('6')||d.c.startsWith('68')?'sh':'sz';
-      minSrc='https://image.sinajs.cn/newchart/min/n/'+m+d.c+'.gif';
+    const fk=date+'_'+d.c;
+    const minSrc=FM[fk];
+    if(minSrc){
+      var fimg=document.createElement('img');fimg.src=encodeURI(minSrc);fimg.loading='lazy';
+      fimg.onerror=function(){fenshiEl.innerHTML='<h4>📊 分时图</h4><div class="sp-nochart">分时图加载失败</div>';};
+      fenshiEl.innerHTML='<h4>📊 分时图</h4>';fenshiEl.appendChild(fimg);
+    }else{
+      fenshiEl.innerHTML='<h4>📊 分时图</h4><div class="sp-nochart">该日期无分时图数据</div>';
     }
-    var fimg=document.createElement('img');fimg.src=minSrc;fimg.loading='lazy';
-    fimg.onerror=function(){fenshiEl.innerHTML='<h4>📊 分时图</h4><div class="sp-nochart">分时图加载失败</div>';};
-    fenshiEl.innerHTML='<h4>📊 分时图</h4>';fenshiEl.appendChild(fimg);
   }else{
     fenshiEl.innerHTML='';
   }
