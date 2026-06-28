@@ -118,6 +118,15 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 #ed-f{padding:14px 18px;border-top:1px solid #e8e8e8;text-align:right}
 .ed-toggle{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:50%;background:#d4380d;color:#fff;border:none;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:100;display:flex;align-items:center;justify-content:center}
 .ed-toggle:hover{background:#bf2c0a}
+
+/* mobile: stock popup as scrollable sheet; fixes Feishu/iOS WebView clipping lower charts */
+@media (max-width:600px){
+  #sp{left:8px!important;right:8px!important;top:8px!important;bottom:8px!important;width:auto!important;max-width:none!important;min-width:0!important;display:none;flex-direction:column}
+  #sp.show{display:flex!important}
+  #sp .sp-h{flex:0 0 auto}
+  #sp .sp-b{flex:1;min-height:0;max-height:none!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:28px}
+  .sp-chart img{display:block;width:100%;height:auto}
+}
 </style>
 </head>
 <body>
@@ -185,11 +194,11 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
-<script src="stock_names.js?v=20260629-0012"></script>
-<script src="stock_detail_map.js?v=20260629-0012"></script>
-<script src="zt_data.js?v=20260629-0012"></script>
-<script src="hengdan_map.js?v=20260629-0012"></script>
-<script src="fenshi_map.js?v=20260629-0012"></script>
+<script src="stock_names.js?v=20260629-0032"></script>
+<script src="stock_detail_map.js?v=20260629-0032"></script>
+<script src="zt_data.js?v=20260629-0032"></script>
+<script src="hengdan_map.js?v=20260629-0032"></script>
+<script src="fenshi_map.js?v=20260629-0032"></script>
 <script>
 console.log('✅ 涨停板归类 v2026-05-15-0356 loaded | searchRegion=no show() | init=show(0)');
 
@@ -414,7 +423,7 @@ function showSp(name,e){
     const fname=HD[key];
     if(fname){
       const imgPath=encodeURI('恒单/'+date+'/'+fname);
-      var img=document.createElement('img');img.src=imgPath;img.loading='lazy';
+      var img=document.createElement('img');img.src=imgPath;img.loading='eager';img.decoding='async';img.style.display='block';
       img.onerror=function(){chartEl.innerHTML='<h4>📈 买一量曲线</h4><div class="sp-nochart">图片加载失败</div>';};
       chartEl.innerHTML='<h4>📈 买一量曲线</h4>';chartEl.appendChild(img);
     }else{
@@ -430,7 +439,7 @@ function showSp(name,e){
     const fk=date+'_'+d.c;
     const minSrc=FM[fk];
     if(minSrc){
-      var fimg=document.createElement('img');fimg.src=encodeURI(minSrc);fimg.loading='lazy';
+      var fimg=document.createElement('img');fimg.src=encodeURI(minSrc);fimg.loading='eager';fimg.decoding='async';fimg.style.display='block';
       fimg.onerror=function(){fenshiEl.innerHTML='<h4>📊 分时图</h4><div class="sp-nochart">分时图加载失败</div>';};
       fenshiEl.innerHTML='<h4>📊 分时图</h4>';fenshiEl.appendChild(fimg);
     }else{
