@@ -46,7 +46,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 #sp .sp-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#d4380d;color:#fff;border-radius:8px 8px 0 0;font-weight:700;font-size:14px}
 #sp .sp-h .sp-x{cursor:pointer;font-size:18px;line-height:1;opacity:.8;margin-left:12px}
 #sp .sp-h .sp-x:hover{opacity:1}
-#sp .sp-b{padding:12px 14px;max-height:500px;overflow-y:auto}
+#sp .sp-b{padding:12px 14px;max-height:min(500px,calc(100vh - 70px));overflow-y:auto}
 /* K线弹窗 */
 #sp-k{position:fixed;z-index:9999;background:#fff;border:1px solid #d4380d;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.18);width:1000px;max-width:calc(100vw - 40px);max-height:calc(100vh - 40px);padding:0;font-size:13px;overflow:hidden;display:none;flex-direction:column}
 #sp-k.show{display:flex}
@@ -185,11 +185,11 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
-<script src="stock_names.js?v=20260628-1045"></script>
-<script src="stock_detail_map.js?v=20260628-1045"></script>
-<script src="zt_data.js?v=20260628-1045"></script>
-<script src="hengdan_map.js?v=20260628-1045"></script>
-<script src="fenshi_map.js?v=20260628-1045"></script>
+<script src="stock_names.js?v=20260628-1238"></script>
+<script src="stock_detail_map.js?v=20260628-1238"></script>
+<script src="zt_data.js?v=20260628-1238"></script>
+<script src="hengdan_map.js?v=20260628-1238"></script>
+<script src="fenshi_map.js?v=20260628-1238"></script>
 <script>
 console.log('✅ 涨停板归类 v2026-05-15-0356 loaded | searchRegion=no show() | init=show(0)');
 
@@ -446,10 +446,18 @@ function showSp(name,e){
     if(!editLink){editLink=document.createElement('div');editLink.className='sp-edit-toggle';editLink.textContent='✏️ 编辑概念';editLink.onclick=function(){spEditStart(name);};spBody.appendChild(editLink);}
   }
   
-  document.getElementById('sp').classList.add('show');
-  const r=e.target.getBoundingClientRect();let top=r.bottom+6,left=r.left;
-  if(top+500>innerHeight)top=r.top-500;if(top<10)top=10;if(left+380>innerWidth)left=innerWidth-390;if(left<10)left=10;
-  document.getElementById('sp').style.top=top+'px';document.getElementById('sp').style.left=left+'px';
+  const spEl=document.getElementById('sp');
+  spEl.classList.add('show');
+  const r=e.target.getBoundingClientRect();
+  let left=r.left;
+  if(left+380>innerWidth)left=innerWidth-390;if(left<10)left=10;
+  spEl.style.left=left+'px';
+  // 按实际弹窗高度定位，避免底部分时图被挤到屏幕外
+  const ph=Math.min(spEl.offsetHeight||546,innerHeight-20);
+  let top=r.bottom+6;
+  if(top+ph>innerHeight-10)top=Math.min(r.top-ph-6,innerHeight-ph-10);
+  if(top<10)top=Math.max(10,innerHeight-ph-10);
+  spEl.style.top=top+'px';
   fetchHolder(d.c);
 }
 
