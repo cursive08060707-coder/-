@@ -185,7 +185,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
       <label>概念解读（每行：概念名|解读）</label><textarea id="ed-explain" style="min-height:120px"></textarea>
     </div>
     <div id="ed-f">
-      <span style="float:left;font-size:11px;color:#999;margin-top:8px">「永久保存」下载替换 stock_detail_map.js?v=20260728-0150</span>
+      <span style="float:left;font-size:11px;color:#999;margin-top:8px">「永久保存」下载替换 stock_detail_map.js?v=20260728-0155</span>
       <button class="ed-btn ed-btn-secondary" onclick="closeEd()">取消</button>
       <button class="ed-btn ed-btn-primary" onclick="saveEd()">临时保存</button>
       <button class="ed-btn ed-btn-save" onclick="savePerm()">永久保存</button>
@@ -195,17 +195,17 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 <button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
-<script src="stock_names.js?v=20260728-0150"></script>
-<script src="stock_detail_map.js?v=20260728-0150"></script>
-<script src="zt_data.js?v=20260728-0150"></script>
-<script src="hengdan_map.js?v=20260728-0150"></script>
-<script src="fenshi_map.js?v=20260728-0150"></script>
+<script src="stock_names.js?v=20260728-0155"></script>
+<script src="stock_detail_map.js?v=20260728-0155"></script>
+<script src="zt_data.js?v=20260728-0155"></script>
+<script src="hengdan_map.js?v=20260728-0155"></script>
+<script src="fenshi_map.js?v=20260728-0155"></script>
 <script>
 console.log('✅ 涨停板归类 v2026-05-15-0356 loaded | searchRegion=no show() | init=show(0)');
 
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
-const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260728-0150初始化
+const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260728-0155初始化
 const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
 const wk=['日','一','二','三','四','五','六'];
 stEl.textContent=P.length+'天';
@@ -293,14 +293,14 @@ function show(i){
         for(let x of ps){x=x.trim();for(let s of['\uff1a',':','\u3001']){if(x.includes(s))x=x.split(s)[0].trim();}let px=x.includes('（')?x.split('（')[0].trim():x;if(px.length>=2&&isSN(px))sb.push({disp:x,name:px});}
       }else{
         // 连板格式处理
-        // 格式1（zt_data.js?v=20260728-0150）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
+        // 格式1（zt_data.js?v=20260728-0155）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
         // 格式2（原文）："股票名、描述"（每行一个股票）
         let ps=[];
         // 先用顿号分隔（原文格式）
         if(line.includes('\u3001')){
           ps=line.split(/\u3001+/);
         }else{
-          // 再用中文逗号分隔（zt_data.js?v=20260728-0150格式）
+          // 再用中文逗号分隔（zt_data.js?v=20260728-0155格式）
           ps=line.split(/[,\uff0c]+/);
         }
         for(let p of ps){
@@ -397,7 +397,7 @@ render();show(0);
 let spCode='',spName='';
 function showSp(name,e){
   if(typeof SD==='undefined')return;
-  // 全角/半角转换（zt_data.js?v=20260728-0150 可能是半角，SD 键是全角）
+  // 全角/半角转换（zt_data.js?v=20260728-0155 可能是半角，SD 键是全角）
   let name_conv='';
   for(let c of name){
     if(c>='A'&&c<='Z')name_conv+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
@@ -434,7 +434,7 @@ function showSp(name,e){
   }else{
     chartEl.innerHTML='';
   }
-  // 分时图（仅使用本地保存的GIF，通过fenshi_map.js?v=20260728-0150映射）
+  // 分时图（仅使用本地保存的GIF，通过fenshi_map.js?v=20260728-0155映射）
   const fenshiEl=document.getElementById('sp-fenshi');
   if(ai>=0&&d.c&&typeof FM!=='undefined'){
     const date=P[ai].d;
@@ -651,10 +651,10 @@ function savePerm(){
   var blob=new Blob([content],{type:'application/javascript'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='stock_detail_map.js?v=20260728-0150';
+  a.download='stock_detail_map.js?v=20260728-0155';
   a.click();
   URL.revokeObjectURL(a.href);
-  alert('已下载！覆盖：坚果云/taoguba-延边刺客/stock_detail_map.js?v=20260728-0150');
+  alert('已下载！覆盖：坚果云/taoguba-延边刺客/stock_detail_map.js?v=20260728-0155');
 }
 
 // localStorage 恢复
