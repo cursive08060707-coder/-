@@ -173,22 +173,21 @@ background-repeat:no-repeat;background-position:10px center}
 /* ─── notes modal ─── */
 #notes-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;justify-content:center;align-items:center}
 #notes-modal.show{display:flex}
-#notes-modal .nm-box{background:#faf8f5;border-radius:12px;width:620px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 8px 20px rgba(0,0,0,0.3)}
+#notes-modal .nm-box{background:#faf8f5;border-radius:12px;width:640px;max-width:94vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 8px 20px rgba(0,0,0,0.3)}
 #notes-modal .nm-h{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:transparent;border-bottom:1px solid rgba(0,0,0,0.06);flex:0 0 auto}
 #notes-modal .nm-title{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:16px;font-weight:700;color:#2c2c2c;letter-spacing:0.02em}
 #notes-modal .nm-title small{font-family:-apple-system,sans-serif;font-size:11px;font-weight:400;color:#999;margin-left:8px}
 #notes-modal .nm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
 #notes-modal .nm-x:hover{opacity:.8}
-#notes-modal .nm-b{padding:20px 24px;overflow-y:auto;flex:1}
-#notes-modal .nm-b textarea{width:100%;min-height:320px;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.85;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
-#notes-modal .nm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
-#notes-modal .nm-b textarea::placeholder{color:#ccc;font-style:italic}
-#notes-modal .nm-tabs{display:flex;gap:0;margin-bottom:0;border-bottom:1px solid #e5e0d8}
-#notes-modal .nm-tab{padding:6px 16px;font-size:11px;font-family:-apple-system,sans-serif;color:#999;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .2s}
-#notes-modal .nm-tab.on{color:#2c2c2c;border-bottom-color:#2c2c2c;font-weight:600}
-#notes-modal .nm-preview{display:none;padding:16px 18px;min-height:320px;max-height:50vh;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.85;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px}
-#notes-modal .nm-preview.show{display:block}
-#notes-modal .nm-preview.hide{display:none}
+#notes-modal .nm-b{padding:16px 22px;overflow:hidden;flex:1;display:flex;flex-direction:column}
+#notes-modal .nm-edit-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
+#notes-modal .nm-edit-wrap.hide{display:none}
+#notes-modal .nm-b textarea{display:none}
+#notes-modal .nm-pane-label{display:none}
+#notes-modal .nm-preview-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
+#notes-modal .nm-preview-wrap.hide{display:none}
+#notes-modal .nm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:300px;outline:none;contenteditable:true}
+#notes-modal .nm-preview:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
 #notes-modal .nm-preview h1{font-size:18px;font-weight:700;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.08);color:#2c2c2c}
 #notes-modal .nm-preview h2{font-size:16px;font-weight:700;margin:10px 0 6px;color:#2c2c2c}
 #notes-modal .nm-preview h3{font-size:14px;font-weight:600;margin:8px 0 4px;color:#444}
@@ -200,8 +199,6 @@ background-repeat:no-repeat;background-position:10px center}
 #notes-modal .nm-preview code{font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:3px}
 #notes-modal .nm-preview blockquote{border-left:3px solid #b8a88a;margin:6px 0;padding:4px 12px;color:#666;background:rgba(184,168,138,0.05)}
 #notes-modal .nm-preview hr{border:none;border-top:1px solid rgba(0,0,0,0.08);margin:10px 0}
-#notes-modal .nm-edit-wrap{position:relative}
-#notes-modal .nm-edit-wrap.hide{display:none}
 #notes-modal .nm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
 #notes-modal .nm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
 #notes-modal .nm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
@@ -216,21 +213,21 @@ background-repeat:no-repeat;background-position:10px center}
 #sum-modal .sm-title small{font-family:-apple-system,sans-serif;font-size:11px;font-weight:400;color:#999;margin-left:8px}
 #sum-modal .sm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
 #sum-modal .sm-x:hover{opacity:.8}
-#sum-modal .sm-b{padding:16px 20px;overflow:hidden;flex:1;display:flex;flex-direction:column}
-#sum-modal .sm-split{display:flex;gap:12px;flex:1;min-height:0}
+#sum-modal .sm-b{padding:16px 22px;overflow:hidden;flex:1;display:flex;flex-direction:column}
 #sum-modal .sm-edit-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
 #sum-modal .sm-edit-wrap.hide{display:none}
-#sum-modal .sm-b textarea{width:100%;flex:1;border:1px solid #e5e0d8;border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.85;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:none;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;min-height:400px}
-#sum-modal .sm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#sum-modal .sm-b textarea{display:none}
+#sum-modal .sm-pane-label{display:none}
+#sum-modal .sm-preview-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
+#sum-modal .sm-preview-wrap.hide{display:none}
+#sum-modal .sm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:400px;outline:none;contenteditable:true}
+#sum-modal .sm-preview:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
 #sum-modal .sm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
 #sum-modal .sm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
 #sum-modal .sm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
 #sum-modal .sm-save:hover{background:#1a1a1a;transform:translateY(-1px)}
 #sum-modal .sm-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
-#sum-modal .sm-pane-label{font-family:-apple-system,sans-serif;font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;font-weight:600}
-#sum-modal .sm-preview-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
-#sum-modal .sm-preview-wrap.hide{display:none}
-#sum-modal .sm-preview{flex:1;padding:14px 16px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:13px;line-height:1.85;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:400px}
+
 #sum-modal .sm-preview h1{font-size:18px;font-weight:700;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.08);color:#2c2c2c}
 #sum-modal .sm-preview h2{font-size:16px;font-weight:700;margin:10px 0 6px;color:#2c2c2c}
 #sum-modal .sm-preview h3{font-size:14px;font-weight:600;margin:8px 0 4px;color:#444}
@@ -242,8 +239,7 @@ background-repeat:no-repeat;background-position:10px center}
 #sum-modal .sm-preview code{font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:3px}
 #sum-modal .sm-preview blockquote{border-left:3px solid #b8a88a;margin:6px 0;padding:4px 12px;color:#666;background:rgba(184,168,138,0.05)}
 #sum-modal .sm-preview hr{border:none;border-top:1px solid rgba(0,0,0,0.08);margin:10px 0}
-#sum-modal .sm-edit-wrap{position:relative}
-#sum-modal .sm-edit-wrap.hide{display:none}
+
 </style>
 </head>
 <body>
@@ -772,16 +768,10 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
   <div class="nm-box">
     <div class="nm-h"><span class="nm-title" id="nm-title"></span><button class="nm-x" onclick="closeNotes()">&times;</button></div>
     <div class="nm-b">
-      <div class="nm-split">
-        <div class="nm-edit-wrap">
-          <div class="nm-pane-label">编辑</div>
-          <textarea id="nm-text" placeholder="支持 Markdown 语法..."></textarea>
-        </div>
-        <div class="nm-preview-wrap">
-          <div class="nm-pane-label">预览</div>
-          <div class="nm-preview" id="nm-preview"></div>
-        </div>
+      <div class="nm-preview-wrap">
+        <div class="nm-preview" id="nm-preview" contenteditable="true" spellcheck="false"></div>
       </div>
+      <textarea id="nm-text" style="display:none"></textarea>
     </div>
     <div class="nm-footer">
       <span class="nm-status" id="nm-status"></span>
@@ -795,16 +785,10 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
   <div class="sm-box">
     <div class="sm-h"><span class="sm-title">📊 笔记总结<small>全日期通用</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
     <div class="sm-b">
-      <div class="sm-split">
-        <div class="sm-edit-wrap">
-          <div class="sm-pane-label">编辑</div>
-          <textarea id="sum-text" placeholder="支持 Markdown 语法..."></textarea>
-        </div>
-        <div class="sm-preview-wrap">
-          <div class="sm-pane-label">预览</div>
-          <div class="sm-preview" id="sm-preview"></div>
-        </div>
+      <div class="sm-preview-wrap">
+        <div class="sm-preview" id="sm-preview" contenteditable="true" spellcheck="false"></div>
       </div>
+      <textarea id="sum-text" style="display:none"></textarea>
     </div>
     <div class="sm-footer">
       <span class="sm-status" id="sum-status"></span>
@@ -842,10 +826,12 @@ function closeNotes(){document.getElementById('notes-modal').classList.remove('s
 document.getElementById('notes-modal').addEventListener('click',function(e){if(e.target===this)closeNotes();});
 
 document.addEventListener('keydown',function(e){
-  if(e.target===document.getElementById('nm-text')){if(e.key==='Escape')closeNotes();}
+  if(e.target===document.getElementById('nm-text')||e.target===document.getElementById('nm-preview')){if(e.key==='Escape')closeNotes();return;}
 });
 
 function saveNotes(){
+  // sync from contenteditable before save
+  document.getElementById('nm-text').value=html2md(document.getElementById('nm-preview').innerHTML);
   var text=document.getElementById('nm-text').value;
   _notesData[_notesCurDate]=text;
   var btn=document.getElementById('nm-save');
@@ -901,14 +887,13 @@ function escMd(s){
 }
 
 // === 笔记实时预览 ===
-document.getElementById('nm-text').addEventListener('input',function(){
-  document.getElementById('nm-preview').innerHTML=md2html(this.value);
+document.getElementById('nm-preview').addEventListener('input',function(){
+  document.getElementById('nm-text').value=html2md(this.innerHTML);
 });
-
-// === 总结实时预览 ===
-document.getElementById('sum-text').addEventListener('input',function(){
-  document.getElementById('sm-preview').innerHTML=md2html(this.value);
-});
+function html2md(html){
+  var tmp=document.createElement('div');tmp.innerHTML=html;
+  return tmp.innerText||tmp.textContent||'';
+}
 
 // === 总结逻辑 ===
 function showSummary(){
@@ -922,6 +907,8 @@ function showSummary(){
 }
 function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
 function saveSummary(){
+  // sync from contenteditable before save
+  document.getElementById('sum-text').value=html2md(document.getElementById('sm-preview').innerHTML);
   var text=document.getElementById('sum-text').value;
   _notesData['_summary']=text;
   var btn=document.getElementById('sum-save');
