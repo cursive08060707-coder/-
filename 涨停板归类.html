@@ -22,7 +22,7 @@
 --radius:6px; --radius-lg:10px; --radius-xl:14px;
 --tr:0.18s cubic-bezier(0.4,0,0.2,1);
 }
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;color-scheme:light dark}
 body{font-family:var(--font-body);background:var(--bg);color:var(--fg);display:flex;position:fixed;inset:0;overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 /* ─── sidebar ─── */
@@ -73,11 +73,11 @@ background-repeat:no-repeat;background-position:10px center}
 .sk,.mb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:5px 11px;font-size:12px;cursor:pointer;transition:all var(--tr);position:relative;display:inline-flex;align-items:center;gap:4px;line-height:1.4}
 .sk:hover,.mb:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.06),0 0 0 1px var(--accent-border);transform:translateY(-1px)}
 .sk:active,.mb:active{transform:translateY(0)}
-.sk .lk,.mb .lk{font-size:9px;color:var(--muted2);font-weight:400;margin-left:2px;font-family:var(--font-mono)}
+.sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
 /* 按钮高亮：名称搜索 hl2=黑底白字，文字高亮 .hl 在 hl2 按钮内=白底黑字 */
 .sk.hl2,.mb.hl2{background:#000!important;color:#fff!important;border-color:#000!important}
-.sk.hl2 .lk,.mb.hl2 .lk{color:#999!important}
+.sk.hl2 .lk,.mb.hl2 .lk{color:#ccc!important}
 .hl2 .hl{background:#fff!important;color:#000!important}
 .hl2 .hl.hl-cur{background:#fff!important;color:#000!important;outline:2px solid #fff}
 
@@ -258,7 +258,7 @@ background-repeat:no-repeat;background-position:10px center}
 .logo-icon{background:linear-gradient(135deg,#636366,#3a3a3c)}
 /* 暗黑模式：hl2=白底黑字，hl在hl2内=黑底白字 */
 .sk.hl2,.mb.hl2{background:#fff!important;color:#000!important;border-color:#fff!important}
-.sk.hl2 .lk,.mb.hl2 .lk{color:#666!important}
+.sk.hl2 .lk,.mb.hl2 .lk{color:#444!important}
 .hl2 .hl{background:#000!important;color:#fff!important}
 .hl{background:#fff!important;color:#000!important}
 /* 笔记弹窗 */
