@@ -197,12 +197,13 @@ background-repeat:no-repeat;background-position:10px center}
 #sum-modal .sm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
 #sum-modal .sm-x:hover{opacity:.8}
 #sum-modal .sm-b{padding:20px 28px;overflow-y:auto;flex:1}
-#sum-modal .sm-sec{margin-bottom:24px}
-#sum-modal .sm-sec-h{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;font-weight:700;color:#2c2c2c;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.06)}
-#sum-modal .sm-day{margin-bottom:10px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:6px;border-left:3px solid #b8a88a}
-#sum-modal .sm-day-date{font-family:-apple-system,sans-serif;font-size:11px;color:#999;margin-bottom:4px}
-#sum-modal .sm-day-text{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:13px;line-height:1.75;color:#444;white-space:pre-wrap}
-#sum-modal .sm-empty{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:13px;color:#bbb;font-style:italic;text-align:center;padding:30px}
+#sum-modal .sm-b textarea{width:100%;min-height:400px;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.85;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+#sum-modal .sm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#sum-modal .sm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
+#sum-modal .sm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
+#sum-modal .sm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
+#sum-modal .sm-save:hover{background:#1a1a1a;transform:translateY(-1px)}
+#sum-modal .sm-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
 </style>
 </head>
 <body>
@@ -721,8 +722,12 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
 <!-- 总结弹窗 -->
 <div id="sum-modal">
   <div class="sm-box">
-    <div class="sm-h"><span class="sm-title">📊 笔记总结<small>跨日期汇总</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
-    <div class="sm-b" id="sum-body"></div>
+    <div class="sm-h"><span class="sm-title">📊 笔记总结<small>全日期通用</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
+    <div class="sm-b"><textarea id="sum-text" placeholder="写下你的总结..."></textarea></div>
+    <div class="sm-footer">
+      <span class="sm-status" id="sum-status"></span>
+      <button class="sm-save" id="sum-save" onclick="saveSummary()">保 存</button>
+    </div>
   </div>
 </div>
 <script>
@@ -778,44 +783,28 @@ loadNotes();
 
 // === 总结逻辑 ===
 function showSummary(){
-  var body=document.getElementById('sum-body');
-  var dates=Object.keys(_notesData).filter(function(d){return _notesData[d]&&_notesData[d].trim();}).sort().reverse();
-  if(!dates.length){body.innerHTML='<div class="sm-empty">还没有笔记</div>';document.getElementById('sum-modal').classList.add('show');return;}
-  // 5个板块
-  var sections=[
-    {title:'1. 有没有节点',keyword:'1. 有没有节点'},
-    {title:'2. 有没有题材',keyword:'2. 有没有题材'},
-    {title:'3. 有没有指引',keyword:'3. 有没有指引'},
-    {title:'4. 有没有恒单',keyword:'4. 有没有恒单'},
-    {title:'5. 明日计划',keyword:'5. 明日计划'}
-  ];
-  var html='';
-  sections.forEach(function(sec){
-    html+='<div class="sm-sec"><div class="sm-sec-h">'+sec.title+'</div>';
-    var hasContent=false;
-    dates.forEach(function(d){
-      var text=_notesData[d];
-      var idx=text.indexOf(sec.keyword);
-      if(idx<0)return;
-      // 找到该板块内容：从keyword到下一个板块或末尾
-      var nextIdx=text.length;
-      for(var i=0;i<sections.length;i++){
-        if(sections[i].keyword===sec.keyword)continue;
-        var ni=text.indexOf(sections[i].keyword,idx+sec.keyword.length);
-        if(ni>0&&ni<nextIdx)nextIdx=ni;
-      }
-      var snippet=text.substring(idx,nextIdx).trim();
-      if(snippet.length<=sec.keyword.length+2)return; // 只有标题没内容
-      hasContent=true;
-      html+='<div class="sm-day"><div class="sm-day-date">'+d+'</div><div class="sm-day-text">'+esc(snippet)+'</div></div>';
-    });
-    if(!hasContent)html+='<div class="sm-day"><div class="sm-day-text" style="color:#bbb;font-style:italic">暂无</div></div>';
-    html+='</div>';
-  });
-  body.innerHTML=html;
+  var existing=_notesData['_summary']||'';
+  var tpl='1. 有没有节点\n   高标角度：\n   指数角度：\n\n2. 有没有题材\n   有没有一家独大的题材：\n   哪些题材没有预期：\n\n3. 有没有指引\n   尾盘微盘涨速：\n\n4. 有没有恒单\n\n5. 明日计划\n';
+  document.getElementById('sum-text').value=existing||tpl;
+  document.getElementById('sum-status').textContent='';
   document.getElementById('sum-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('sum-text').focus(),100);
 }
 function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
+function saveSummary(){
+  var text=document.getElementById('sum-text').value;
+  _notesData['_summary']=text;
+  var btn=document.getElementById('sum-save');
+  var st=document.getElementById('sum-status');
+  btn.disabled=true;btn.textContent='保存中...';
+  fetch(NOTES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_notesData)})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){st.textContent='已保存 ✓';btn.textContent='保 存';btn.disabled=false;setTimeout(()=>{closeSummary();},600);}
+      else{st.textContent='保存失败: '+d.error;btn.textContent='保 存';btn.disabled=false;}
+    })
+    .catch(e=>{st.textContent='保存失败: 笔记服务未连接';btn.textContent='保 存';btn.disabled=false;});
+}
 document.getElementById('sum-modal').addEventListener('click',function(e){if(e.target===this)closeSummary();});
 </script>
 </body>
