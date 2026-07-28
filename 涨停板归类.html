@@ -139,7 +139,6 @@ background-repeat:no-repeat;background-position:10px center}
 #ct{padding:20px 20px 40px}
 }
 @media(max-width:600px){
-#ft{display:none}
 #sb{width:130px;min-width:130px}
 .logo-text small{display:none}
 #sbox input{padding-left:28px;font-size:11px}
@@ -149,7 +148,13 @@ background-repeat:no-repeat;background-position:10px center}
 .bh-date{font-size:18px}
 .bh-week{font-size:12px}
 .sk,.mb{padding:4px 8px;font-size:11px}
-#sp{left:8px!important;right:8px!important;top:8px!important;bottom:8px!important;width:auto!important;max-width:none!important;min-width:0!important;display:none;flex-direction:column}
+/* 分时图：底部抽屉 */
+#ft{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;min-width:0!important;max-width:none!important;max-height:50vh;border-left:none!important;border-top:2px solid var(--border);border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:9998;order:0}
+#ft.collapsed{max-height:40px;height:40px;width:100%!important;min-width:0!important}
+#ft-resizer{display:none}
+#ft-h{border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:10px 16px}
+#ft-body{max-height:calc(50vh - 40px)}
+#sp{left:8px!important;right:8px!important;top:8px!important;bottom:8px!important;width:auto!important;max-width:none!important;min-width:0!important;display:none;flex-direction:column;z-index:9999}
 #sp.show{display:flex!important}
 #sp .sp-h{flex:0 0 auto}
 #sp .sp-b{flex:1;min-height:0;max-height:none!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:28px}
