@@ -427,7 +427,7 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
       if(p>=0){el.innerHTML=esc(t.substring(0,p))+'<span class="hl">'+esc(t.substring(p,p+st.length))+'</span>'+esc(t.substring(p+st.length));cnt++;}
     });
     stEl.textContent='匹配 '+cnt+' 处';
-    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl');hl.forEach((x,j)=>{x.style.background=j===0?'#000':'#666';x.style.color='#fff';});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
+    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');hl.forEach((x,j)=>{x.style.background=j===0?'#000':'#666';x.style.color='#fff';});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
   }
 renderFenshi(i);
   render();
@@ -512,7 +512,7 @@ function search(){
 }
 
 function scrollHl(d){
-  const h=document.querySelectorAll('#ct .hl');if(!h.length)return;
+  const h=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');if(!h.length)return;
   hi=((hi+d)%h.length+h.length)%h.length;
   h.forEach((x,j)=>{x.style.background=j===hi?'#000':'#666';x.style.color='#fff';});
   h[hi].scrollIntoView({block:'center',behavior:'smooth'});
