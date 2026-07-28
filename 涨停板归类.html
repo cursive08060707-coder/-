@@ -187,6 +187,22 @@ background-repeat:no-repeat;background-position:10px center}
 #notes-modal .nm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
 #notes-modal .nm-save:hover{background:#1a1a1a;transform:translateY(-1px)}
 #notes-modal .nm-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* ─── summary modal ─── */
+#sum-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10003;justify-content:center;align-items:center}
+#sum-modal.show{display:flex}
+#sum-modal .sm-box{background:#faf8f5;border-radius:12px;width:780px;max-width:94vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 8px 20px rgba(0,0,0,0.3)}
+#sum-modal .sm-h{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(0,0,0,0.06);flex:0 0 auto}
+#sum-modal .sm-title{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:16px;font-weight:700;color:#2c2c2c;letter-spacing:0.02em}
+#sum-modal .sm-title small{font-family:-apple-system,sans-serif;font-size:11px;font-weight:400;color:#999;margin-left:8px}
+#sum-modal .sm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
+#sum-modal .sm-x:hover{opacity:.8}
+#sum-modal .sm-b{padding:20px 28px;overflow-y:auto;flex:1}
+#sum-modal .sm-sec{margin-bottom:24px}
+#sum-modal .sm-sec-h{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;font-weight:700;color:#2c2c2c;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.06)}
+#sum-modal .sm-day{margin-bottom:10px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:6px;border-left:3px solid #b8a88a}
+#sum-modal .sm-day-date{font-family:-apple-system,sans-serif;font-size:11px;color:#999;margin-bottom:4px}
+#sum-modal .sm-day-text{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:13px;line-height:1.75;color:#444;white-space:pre-wrap}
+#sum-modal .sm-empty{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:13px;color:#bbb;font-style:italic;text-align:center;padding:30px}
 </style>
 </head>
 <body>
@@ -311,7 +327,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><span class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</span></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><span class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</span><span class="bh-btn sum-trigger">📊 总结</span></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
@@ -604,6 +620,8 @@ document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.clo
 document.getElementById('ct').addEventListener('click',function(e){
   var notesBtn=e.target.closest('.nm-trigger');
   if(notesBtn){showNotes(notesBtn.getAttribute('data-date'));return;}
+  var sumBtn=e.target.closest('.sum-trigger');
+  if(sumBtn){showSummary();return;}
   var postBtn=e.target.closest('.bh-btn');
   if(postBtn){showPost(postBtn.getAttribute('data-date'));return;}
   var sk=e.target.closest('.sk,.mb');
@@ -699,6 +717,14 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
     </div>
   </div>
 </div>
+
+<!-- 总结弹窗 -->
+<div id="sum-modal">
+  <div class="sm-box">
+    <div class="sm-h"><span class="sm-title">📊 笔记总结<small>跨日期汇总</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
+    <div class="sm-b" id="sum-body"></div>
+  </div>
+</div>
 <script>
 // === 笔记逻辑 ===
 let _notesCurDate='';
@@ -749,6 +775,48 @@ function saveNotes(){
 
 // 页面加载时拉取笔记
 loadNotes();
+
+// === 总结逻辑 ===
+function showSummary(){
+  var body=document.getElementById('sum-body');
+  var dates=Object.keys(_notesData).filter(function(d){return _notesData[d]&&_notesData[d].trim();}).sort().reverse();
+  if(!dates.length){body.innerHTML='<div class="sm-empty">还没有笔记</div>';document.getElementById('sum-modal').classList.add('show');return;}
+  // 5个板块
+  var sections=[
+    {title:'1. 有没有节点',keyword:'1. 有没有节点'},
+    {title:'2. 有没有题材',keyword:'2. 有没有题材'},
+    {title:'3. 有没有指引',keyword:'3. 有没有指引'},
+    {title:'4. 有没有恒单',keyword:'4. 有没有恒单'},
+    {title:'5. 明日计划',keyword:'5. 明日计划'}
+  ];
+  var html='';
+  sections.forEach(function(sec){
+    html+='<div class="sm-sec"><div class="sm-sec-h">'+sec.title+'</div>';
+    var hasContent=false;
+    dates.forEach(function(d){
+      var text=_notesData[d];
+      var idx=text.indexOf(sec.keyword);
+      if(idx<0)return;
+      // 找到该板块内容：从keyword到下一个板块或末尾
+      var nextIdx=text.length;
+      for(var i=0;i<sections.length;i++){
+        if(sections[i].keyword===sec.keyword)continue;
+        var ni=text.indexOf(sections[i].keyword,idx+sec.keyword.length);
+        if(ni>0&&ni<nextIdx)nextIdx=ni;
+      }
+      var snippet=text.substring(idx,nextIdx).trim();
+      if(snippet.length<=sec.keyword.length+2)return; // 只有标题没内容
+      hasContent=true;
+      html+='<div class="sm-day"><div class="sm-day-date">'+d+'</div><div class="sm-day-text">'+esc(snippet)+'</div></div>';
+    });
+    if(!hasContent)html+='<div class="sm-day"><div class="sm-day-text" style="color:#bbb;font-style:italic">暂无</div></div>';
+    html+='</div>';
+  });
+  body.innerHTML=html;
+  document.getElementById('sum-modal').classList.add('show');
+}
+function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
+document.getElementById('sum-modal').addEventListener('click',function(e){if(e.target===this)closeSummary();});
 </script>
 </body>
 </html>
