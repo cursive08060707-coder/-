@@ -24,6 +24,7 @@
 html{-webkit-text-size-adjust:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--fg);display:flex;position:fixed;inset:0;overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
+/* ─── sidebar ─── */
 #sb{width:200px;min-width:200px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:16px 18px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border2)}
 .logo-icon{width:28px;height:28px;border-radius:var(--radius);background:linear-gradient(135deg,#3a3a3c,#636366);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
@@ -52,11 +53,14 @@ background-repeat:no-repeat;background-position:10px center}
 .di .m{color:var(--rise);font-size:10px;margin-left:4px}
 #st{font-size:10px;color:var(--muted2);padding:8px 18px;border-top:1px solid var(--border2);letter-spacing:0.03em}
 
+/* ─── content ─── */
 #ct{flex:1;min-height:0;overflow-y:auto;padding:28px 32px 48px}
 .bh{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
 .bh-date{font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:-0.015em;color:var(--fg)}
 .bh-week{font-size:14px;color:var(--muted);font-weight:500}
-.bh-btn{display:inline-flex;align-items:center;padding:4px 12px;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);border-radius:999px;font-size:11px;cursor:pointer;margin-left:auto;font-weight:500;transition:all var(--tr)}
+.bh .src{font-size:11px;color:var(--muted2);text-decoration:none;margin-left:auto;padding:4px 10px;border:1px solid var(--border);border-radius:999px;transition:all var(--tr)}
+.bh .src:hover{border-color:var(--accent);color:var(--accent)}
+.bh-btn{display:inline-flex;align-items:center;padding:4px 12px;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);border-radius:999px;font-size:11px;cursor:pointer;margin-left:8px;font-weight:500;transition:all var(--tr)}
 .bh-btn:hover{background:var(--accent);color:#fff}
 
 .bl{margin-bottom:20px}
@@ -79,6 +83,7 @@ background-repeat:no-repeat;background-position:10px center}
 #wc{text-align:center;color:var(--muted2);margin-top:60px;font-size:14px}
 #wt{text-align:center;color:var(--muted2);margin-top:30px;font-size:13px}
 
+/* ─── fenshi sidebar ─── */
 #ft{width:300px;min-width:200px;max-width:80vw;background:var(--surface);border-left:2px solid var(--border);display:flex;flex-direction:column;overflow:hidden;order:99;position:relative}
 #ft.collapsed{width:32px;min-width:32px}
 #ft-resizer{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:10;background:transparent;transition:background .15s}
@@ -98,6 +103,7 @@ background-repeat:no-repeat;background-position:10px center}
 .ft-item .ft-label{font-size:11px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:4px}
 .ft-item .ft-label .ft-code{color:var(--muted2);font-size:10px;font-family:var(--font-mono)}
 
+/* ─── stock popup ─── */
 #sp{display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:380px;min-width:280px;max-width:90vw;padding:0;font-size:13px;overflow:hidden;resize:both}
 #sp.show{display:flex;flex-direction:column;animation:spIn .18s ease-out}
 @keyframes spIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
@@ -126,15 +132,8 @@ background-repeat:no-repeat;background-position:10px center}
 .tv-wrap{height:350px;min-height:200px;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
 #sp::after{content:"";position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,rgba(58,58,60,.2) 50%);pointer-events:none;border-radius:0 0 var(--radius-xl) 0}
 
-#post-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;justify-content:center;align-items:center}
-#post-modal.show{display:flex}
-#post-modal .pm-box{background:var(--surface);border-radius:var(--radius-xl);width:700px;max-width:92vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
-#post-modal .pm-h{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
-#post-modal .pm-h .pm-x{cursor:pointer;font-size:20px;opacity:.8}
-#post-modal .pm-h .pm-x:hover{opacity:1}
-#post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--fg)}
-#post-modal .pm-b a{color:var(--accent)}
 
+/* ─── responsive ─── */
 @media(max-width:1023px){
 #sb{width:160px;min-width:160px}
 #ct{padding:20px 20px 40px}
@@ -149,6 +148,7 @@ background-repeat:no-repeat;background-position:10px center}
 .bh-date{font-size:18px}
 .bh-week{font-size:12px}
 .sk,.mb{padding:4px 8px;font-size:11px}
+/* 分时图：底部抽屉 */
 #ft{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;min-width:0!important;max-width:none!important;max-height:50vh;border-left:none!important;border-top:2px solid var(--border);border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:9998;order:0}
 #ft.collapsed{max-height:40px;height:40px;width:100%!important;min-width:0!important}
 #ft-resizer{display:none}
@@ -191,12 +191,13 @@ background-repeat:no-repeat;background-position:10px center}
       <div class="chart-label"><b>日K</b></div>
       <div class="tv-wrap" id="tv-kbox" style="height:350px;min-height:200px"></div>
     </div>
-
+  </div>
 </div>
 
 
 <!-- 分时图侧栏 -->
 <div id="ft">
+  <div id="ft-resizer"></div>
   <div id="ft-h"><span class="ft-title">📊 当日分时图</span><span class="ft-toggle" onclick="toggleFt()">▶</span></div>
   <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
 </div>
@@ -219,7 +220,7 @@ function loadPosts(cb){
 }
 </script>
 <script>
-console.log('✅ 涨停板归类 v2026-07-28-1940 loaded | fenshi-sidebar=on | zt-time-sort=on | init=show(0)');
+console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | zt-time-sort=on | init=show(0)');
 
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
@@ -283,7 +284,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><a class="src" href="'+p.l+'" target="_blank">原文 -></a></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
@@ -356,7 +357,11 @@ renderFenshi(i);
 let ftCollapsed=false;
 function toggleFt(){
   ftCollapsed=!ftCollapsed;
-  document.getElementById('ft').classList.toggle('collapsed',ftCollapsed);
+  var ft=document.getElementById('ft');
+  ft.classList.toggle('collapsed',ftCollapsed);
+  if(ftCollapsed){
+    ft.style.width='';ft.style.minWidth='';
+  }
   document.querySelector('.ft-toggle').textContent=ftCollapsed?'◀':'▶';
 }
 function renderFenshi(idx){
@@ -520,6 +525,9 @@ function showSp(name,e){
     chartEl.innerHTML='';
   }
   // 编辑切换链接
+  const spBody=document.querySelector('#sp .sp-b');
+  if(spBody){
+  }
   
   const spEl=document.getElementById('sp');
   spEl.classList.add('show');
@@ -543,6 +551,17 @@ function showSp(name,e){
     box.appendChild(w);
     try{new TradingView.widget({container_id:'tv-kchart',autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});}catch(er){}
   });
+  // 滚动右侧分时图到对应股票
+  if(d.c&&ai>=0){
+    var ftBody=document.getElementById('ft-body');
+    var date=P[ai].d;
+    var fk=date+'_'+d.c;
+    var img=ftBody&&ftBody.querySelector('img[src*="'+d.c+'"]');
+    if(img){
+      var item=img.closest('.ft-item');
+      if(item)item.scrollIntoView({block:'center',behavior:'smooth'});
+    }
+  }
   fetchHolder(d.c);
 }
 
@@ -553,7 +572,7 @@ function loadTVLib(cb){
   s.src='https://s3.tradingview.com/tv.js';s.onload=cb;
   document.head.appendChild(s);
 }
-function closeSp(){document.getElementById("sp").classList.remove("show");}
+function closeSp(){document.getElementById('sp').classList.remove('show');}
 document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')){closeSp();}});
 document.getElementById('ct').addEventListener('click',function(e){
   var postBtn=e.target.closest('.bh-btn');
@@ -580,6 +599,36 @@ document.getElementById('ct').addEventListener('click',function(e){
   </div>
 </div>
 
+<script>
+// 分时图侧栏拖拽调整宽度
+(function(){
+  var ft=document.getElementById('ft');
+  var resizer=document.getElementById('ft-resizer');
+  if(!ft||!resizer)return;
+  var dragging=false,startX=0,startW=0;
+  resizer.addEventListener('mousedown',function(e){
+    dragging=true;startX=e.clientX;startW=ft.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.cursor='ew-resize';
+    document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var w=startW-(e.clientX-startX);
+    w=Math.max(200,Math.min(w,window.innerWidth*0.8));
+    ft.style.width=w+'px';
+    ft.style.minWidth=w+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    if(!dragging)return;
+    dragging=false;
+    resizer.classList.remove('dragging');
+    document.body.style.cursor='';
+    document.body.style.userSelect='';
+  });
+})();
+</script>
 <script>
 function showPost(date){
   loadPosts(function(){
