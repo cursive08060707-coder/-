@@ -859,7 +859,7 @@ function md2html(md){
   var html='',inList=false,listType='';
   lines.forEach(function(line){
     line=line.replace(/\r/g,'');
-    // 标题
+    // 标题 - 关闭列表
     if(/^###\s+/.test(line)){if(inList){html+='</'+listType+'>';inList=false;}html+='<h3>'+escMd(line.replace(/^###\s+/,''))+'</h3>';return;}
     if(/^##\s+/.test(line)){if(inList){html+='</'+listType+'>';inList=false;}html+='<h2>'+escMd(line.replace(/^##\s+/,''))+'</h2>';return;}
     if(/^#\s+/.test(line)){if(inList){html+='</'+listType+'>';inList=false;}html+='<h1>'+escMd(line.replace(/^#\s+/,''))+'</h1>';return;}
@@ -867,14 +867,15 @@ function md2html(md){
     if(/^---+$/.test(line)){if(inList){html+='</'+listType+'>';inList=false;}html+='<hr>';return;}
     // 引用
     if(/^>\s+/.test(line)){if(inList){html+='</'+listType+'>';inList=false;}html+='<blockquote>'+escMd(line.replace(/^>\s+/,''))+'</blockquote>';return;}
-    // 有序列表
-    if(/^\d+\.\s+/.test(line)){if(!inList||listType!=='ol'){if(inList)html+='</'+listType+'>';inList=true;listType='ol';html+='<ol>';}html+='<li>'+escMd(line.replace(/^\d+\.\s+/,''))+'</li>';return;}
+    // 有序列表（空格可选）
+    var om=line.match(/^(\d+)\.\s*/);
+    if(om){if(!inList||listType!=='ol'){if(inList)html+='</'+listType+'>';inList=true;listType='ol';html+='<ol>';}html+='<li>'+escMd(line.substring(om[0].length))+'</li>';return;}
     // 无序列表
-    if(/^[\-*]\s+/.test(line)){if(!inList||listType!=='ul'){if(inList)html+='</'+listType+'>';inList=true;listType='ul';html+='<ul>';}html+='<li>'+escMd(line.replace(/^[\-*]\s+/,''))+'</li>';return;}
-    // 空行
-    if(!line.trim()){if(inList){html+='</'+listType+'>';inList=false;}return;}
-    // 普通段落
-    if(inList){html+='</'+listType+'>';inList=false;}
+    var um=line.match(/^[\-*]\s+/);
+    if(um){if(!inList||listType!=='ul'){if(inList)html+='</'+listType+'>';inList=true;listType='ul';html+='<ul>';}html+='<li>'+escMd(line.substring(um[0].length))+'</li>';return;}
+    // 空行 - 跳过，不中断列表
+    if(!line.trim()){return;}
+    // 普通段落 - 不关闭列表
     html+='<p>'+escMd(line)+'</p>';
   });
   if(inList)html+='</'+listType+'>';
