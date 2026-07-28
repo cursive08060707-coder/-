@@ -74,8 +74,8 @@ background-repeat:no-repeat;background-position:10px center}
 .sk:active,.mb:active{transform:translateY(0)}
 .sk .lk,.mb .lk{font-size:9px;color:var(--muted2);font-weight:400;margin-left:2px;font-family:var(--font-mono)}
 .hl{background:var(--hl-soft);padding:0 2px;border-radius:2px;color:#fbbf24;font-weight:600}
-.sk.hl,.mb.hl{background:var(--hl)!important;border-color:#f59e0b!important;font-weight:700;color:#fef3c7}
-.sk.hl2,.mb.hl2{background:#ff6b00!important;color:#fff!important;border-color:#ff6b00!important;box-shadow:0 0 0 2px rgba(255,107,0,0.3)}
+.sk.hl,.mb.hl{background:#000!important;border-color:#000!important;font-weight:700;color:#fff}
+.sk.hl2,.mb.hl2{background:#000!important;color:#fff!important;border-color:#000!important;box-shadow:0 0 0 2px rgba(0,0,0,0.3)}
 
 .mbl{margin-bottom:8px}
 .mbs{display:flex;flex-wrap:wrap;gap:6px}
@@ -424,7 +424,7 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
       if(p>=0){el.innerHTML=esc(t.substring(0,p))+'<span class="hl">'+esc(t.substring(p,p+st.length))+'</span>'+esc(t.substring(p+st.length));cnt++;}
     });
     stEl.textContent='匹配 '+cnt+' 处';
-    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl');hl.forEach((x,j)=>{x.style.background=j===0?'#ffd700':'#fff176';});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
+    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl');hl.forEach((x,j)=>{x.style.background=j===0?'#000':'#666';x.style.color='#fff';});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
   }
 renderFenshi(i);
   render();
@@ -511,7 +511,7 @@ function search(){
 function scrollHl(d){
   const h=document.querySelectorAll('#ct .hl');if(!h.length)return;
   hi=((hi+d)%h.length+h.length)%h.length;
-  h.forEach((x,j)=>{x.style.background=j===hi?'#ffd700':'#fff176';});
+  h.forEach((x,j)=>{x.style.background=j===hi?'#000':'#666';x.style.color='#fff';});
   h[hi].scrollIntoView({block:'center',behavior:'smooth'});
 }
 
