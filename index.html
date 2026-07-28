@@ -656,7 +656,7 @@ function showPost(date){
     title.textContent=date+' 周'+wd+' 主帖';
     var h='';
     posts.forEach(function(p){
-      if(p.link)h+='';
+      if(p.link)h+='<a href="'+p.link+'" target="_blank" style="font-size:12px;display:inline-block;margin-bottom:8px">查看原文-></a>\n\n';
       h+=esc(p.text);
     });
     body.innerHTML=h;
