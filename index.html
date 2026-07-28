@@ -160,6 +160,16 @@ background-repeat:no-repeat;background-position:10px center}
 #sp .sp-b{flex:1;min-height:0;max-height:none!important;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:28px}
 .sp-chart img{display:block;width:100%;height:auto}
 }
+
+/* 主帖弹窗 */
+#post-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;justify-content:center;align-items:center}
+#post-modal.show{display:flex}
+#post-modal .pm-box{background:#fff;border-radius:14px;width:700px;max-width:92vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 4px 12px rgba(0,0,0,0.4)}
+#post-modal .pm-h{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
+#post-modal .pm-h .pm-x{cursor:pointer;font-size:20px;opacity:.8}
+#post-modal .pm-h .pm-x:hover{opacity:1}
+#post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:#1d1d1f}
+#post-modal .pm-b a{color:#3a3a3c}
 </style>
 </head>
 <body>
