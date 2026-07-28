@@ -523,11 +523,6 @@ function showSp(name,e){
     chartEl.innerHTML='';
   }
   // 编辑切换链接
-  const spBody=document.querySelector('#sp .sp-b');
-  if(spBody){
-    let editLink=spBody.querySelector('.sp-edit-toggle');
-    if(!editLink){editLink=document.createElement('div');editLink.className='sp-edit-toggle';editLink.textContent='✏️ 编辑概念';editLink.onclick=function(){spEditStart(name);};spBody.appendChild(editLink);}
-  }
   
   const spEl=document.getElementById('sp');
   spEl.classList.add('show');
