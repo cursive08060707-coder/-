@@ -132,54 +132,6 @@ background-repeat:no-repeat;background-position:10px center}
 .tv-wrap{height:350px;min-height:200px;width:100%;border:1px solid var(--border);border-radius:var(--radius)}
 #sp::after{content:"";position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,rgba(58,58,60,.2) 50%);pointer-events:none;border-radius:0 0 var(--radius-xl) 0}
 
-.sp-edit{margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);display:none}
-.sp-edit.show{display:block}
-.sp-edit label{font-size:11px;color:var(--muted);display:block;margin-bottom:2px;margin-top:6px}
-.sp-edit textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:4px 6px;font-size:12px;font-family:inherit;outline:none;resize:vertical}
-.sp-edit textarea:focus{border-color:var(--accent)}
-.sp-edit-btns{display:flex;gap:6px;margin-top:6px}
-.sp-edit-btns button{font-size:12px;padding:3px 12px;border-radius:var(--radius);cursor:pointer;border:1px solid var(--border);background:var(--surface)}
-.sp-edit-btns .sp-btn-save{background:var(--accent);color:#fff;border-color:var(--accent)}
-.sp-edit-btns .sp-btn-save:hover{background:var(--accent2)}
-.sp-edit-btns .sp-btn-cancel:hover{background:var(--surface2)}
-.sp-edit-toggle{cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
-.sp-edit-toggle:hover{color:var(--accent)}
-
-/* ─── post modal ─── */
-#post-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;justify-content:center;align-items:center}
-#post-modal.show{display:flex}
-#post-modal .pm-box{background:var(--surface);border-radius:var(--radius-xl);width:700px;max-width:92vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
-#post-modal .pm-h{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
-#post-modal .pm-h .pm-x{cursor:pointer;font-size:20px;opacity:.8}
-#post-modal .pm-h .pm-x:hover{opacity:1}
-#post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--fg)}
-#post-modal .pm-b a{color:var(--accent)}
-
-/* ─── editor ─── */
-#ed{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;justify-content:center;align-items:center}
-#ed.show{display:flex}
-#ed-p{background:var(--surface);border-radius:var(--radius-xl);width:520px;max-width:90vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
-#ed-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}
-#ed-h .ed-x{cursor:pointer;font-size:20px;color:var(--muted)}
-#ed-h .ed-x:hover{color:var(--accent)}
-#ed-b{padding:18px;overflow-y:auto;flex:1}
-#ed-b label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;margin-top:12px;font-weight:600}
-#ed-b label:first-child{margin-top:0}
-#ed-b input,#ed-b textarea{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;font-family:inherit;box-sizing:border-box}
-#ed-b input:focus,#ed-b textarea:focus{border-color:var(--accent)}
-#ed-b textarea{min-height:60px;resize:vertical}
-#ed-b .tag-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-#ed-b .tag-row span{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);padding:2px 7px;border-radius:3px;font-size:11px;cursor:pointer}
-#ed-b .tag-row span:hover{background:var(--accent);color:#fff}
-#ed-b .tag-row span.rm{background:var(--surface2);color:var(--muted);border-color:var(--border)}
-#ed-b .tag-row span.rm:hover{background:#ff4d4f;color:#fff}
-.ed-btn{padding:8px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600;margin-right:8px;margin-top:8px}
-.ed-btn-primary{background:var(--accent);color:#fff}.ed-btn-primary:hover{background:var(--accent2)}
-.ed-btn-secondary{background:var(--surface2);color:var(--muted)}.ed-btn-secondary:hover{background:var(--border)}
-.ed-btn-save{background:#fa541c;color:#fff}.ed-btn-save:hover{background:#e0480a}
-#ed-f{padding:14px 18px;border-top:1px solid var(--border);text-align:right}
-.ed-toggle{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:18px;cursor:pointer;box-shadow:var(--shadow-md);z-index:100;display:flex;align-items:center;justify-content:center}
-.ed-toggle:hover{background:var(--accent2)}
 
 /* ─── responsive ─── */
 @media(max-width:1023px){
@@ -234,40 +186,9 @@ background-repeat:no-repeat;background-position:10px center}
       <div class="chart-label"><b>日K</b></div>
       <div class="tv-wrap" id="tv-kbox" style="height:350px;min-height:200px"></div>
     </div>
-    <div id="sp-edit-section" style="margin-top:6px;padding-top:6px;border-top:1px dashed #e8e8e8;display:none">
-      <label style="font-size:11px;color:#999;display:block;margin-bottom:2px">题材概念（逗号分隔）</label>
-      <textarea id="sp-edit-themes" style="width:100%;border:1px solid #e8e8e8;border-radius:4px;padding:4px 6px;font-size:12px;outline:none;resize:vertical"></textarea>
-      <label style="font-size:11px;color:#999;display:block;margin-bottom:2px;margin-top:6px">概念解读（每行：概念名|解读）</label>
-      <textarea id="sp-edit-explain" style="width:100%;border:1px solid #e8e8e8;border-radius:4px;padding:4px 6px;font-size:12px;outline:none;resize:vertical;min-height:80px"></textarea>
-      <div style="display:flex;gap:6px;margin-top:6px">
-        <button onclick="spEditSave()" class="sp-btn-save" style="font-size:12px;padding:3px 12px;border-radius:4px;cursor:pointer;border:1px solid #d4380d;background:#d4380d;color:#fff">💾 保存</button>
-        <button onclick="spEditCancel()" class="sp-btn-cancel" style="font-size:12px;padding:3px 12px;border-radius:4px;cursor:pointer;border:1px solid #e8e8e8;background:#fff">取消</button>
-      </div>
-      <div style="font-size:11px;color:#999;margin-top:4px">提示：需启动「编辑概念服务.command」才能写入文件</div>
-    </div>
   </div>
 </div>
 
-<!-- 编辑器弹窗 -->
-<div id="ed">
-  <div id="ed-p">
-    <div id="ed-h"><span>📝 编辑股票题材概念</span><span class="ed-x" onclick="closeEd()">&times;</span></div>
-    <div id="ed-b">
-      <label>股票名称</label><input id="ed-name" placeholder="输入后回车搜索">
-      <label>股票代码</label><input id="ed-code" readonly style="background:#f5f5f5">
-      <label>地域/行业</label><input id="ed-region" readonly style="background:#f5f5f5">
-      <label>题材概念（逗号分隔）</label><textarea id="ed-themes"></textarea>
-      <div class="tag-row" id="ed-tags"></div>
-      <label>概念解读（每行：概念名|解读）</label><textarea id="ed-explain" style="min-height:120px"></textarea>
-    </div>
-    <div id="ed-f">
-      <span style="float:left;font-size:11px;color:#999;margin-top:8px">「永久保存」下载替换 stock_detail_map.js?v=20260728-0215</span>
-      <button class="ed-btn ed-btn-secondary" onclick="closeEd()">取消</button>
-      <button class="ed-btn ed-btn-primary" onclick="saveEd()">临时保存</button>
-      <button class="ed-btn ed-btn-save" onclick="savePerm()">永久保存</button>
-    </div>
-  </div>
-</div>
 
 <!-- 分时图侧栏 -->
 <div id="ft">
@@ -276,7 +197,6 @@ background-repeat:no-repeat;background-position:10px center}
   <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
 </div>
 
-<button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
 <script src="stock_names.js?v=20260728-0215"></script>
 <script src="stock_detail_map.js?v=20260728-0215"></script>
@@ -602,8 +522,6 @@ function showSp(name,e){
   // 编辑切换链接
   const spBody=document.querySelector('#sp .sp-b');
   if(spBody){
-    let editLink=spBody.querySelector('.sp-edit-toggle');
-    if(!editLink){editLink=document.createElement('div');editLink.className='sp-edit-toggle';editLink.textContent='✏️ 编辑概念';editLink.onclick=function(){spEditStart(name);};spBody.appendChild(editLink);}
   }
   
   const spEl=document.getElementById('sp');
@@ -649,7 +567,7 @@ function loadTVLib(cb){
   s.src='https://s3.tradingview.com/tv.js';s.onload=cb;
   document.head.appendChild(s);
 }
-function closeSp(){spEditName=null;document.getElementById('sp-edit-section').style.display='none';document.getElementById('sp').classList.remove('show');}
+function closeSp(){document.getElementById('sp').classList.remove('show');}
 document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')){closeSp();}});
 document.getElementById('ct').addEventListener('click',function(e){
   var postBtn=e.target.closest('.bh-btn');
@@ -659,62 +577,6 @@ document.getElementById('ct').addEventListener('click',function(e){
 });
 
 // === 编辑器逻辑 ===
-let edStock=null;
-function openEd(){document.getElementById('ed').classList.add('show');document.getElementById('ed-name').focus();}
-function closeEd(){document.getElementById('ed').classList.remove('show');edStock=null;}
-function findStock(name){if(typeof SD==='undefined')return null;if(SD[name])return{name:name,data:SD[name]};for(let k in SD){if(k.includes(name)||name.includes(k))return{name:k,data:SD[k]};}return null;}
-
-document.getElementById('ed-name').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){
-    e.preventDefault();const n=this.value.trim();if(!n)return;
-    const f=findStock(n);
-    if(f){
-      edStock=f;
-      document.getElementById('ed-code').value=f.data.c||'';
-      document.getElementById('ed-region').value=f.data.r||'';
-      document.getElementById('ed-themes').value=(f.data.t||'');
-      renderEdTags();
-      let ex='';if(f.data.e&&f.data.e.length){f.data.e.forEach(x=>{ex+=x[0]+'|'+x[1]+'\n';});}
-      document.getElementById('ed-explain').value=ex;
-    }else{alert('未找到: '+n);}
-  }
-});
-
-function renderEdTags(){
-  if(!edStock)return;const tc=document.getElementById('ed-tags');tc.innerHTML='';
-  const themes=document.getElementById('ed-themes').value.split(',').map(t=>t.trim()).filter(Boolean);
-  themes.forEach(t=>{const s=document.createElement('span');s.textContent=t;s.className='rm';s.onclick=()=>{document.getElementById('ed-themes').value=document.getElementById('ed-themes').value.split(',').map(x=>x.trim()).filter(x=>x&&x!==t).join(',');renderEdTags();};tc.appendChild(s);});
-}
-document.getElementById('ed-themes').addEventListener('input',renderEdTags);
-
-function saveEd(){
-  if(!edStock)return;
-  const themes=document.getElementById('ed-themes').value;
-  const explain=document.getElementById('ed-explain').value;
-  const eData=[];
-  explain.split('\n').filter(Boolean).forEach(line=>{const idx=line.indexOf('|');if(idx>0)eData.push([line.substring(0,idx).trim(),line.substring(idx+1).trim()]);});
-  edStock.data.t=themes;edStock.data.e=eData;
-  try{localStorage.setItem('sd_'+edStock.name,JSON.stringify(edStock.data));}catch(e){}
-  if(document.getElementById('sp-n').textContent.includes(edStock.name)){
-    const tc2=document.getElementById('sp-t');tc2.innerHTML='';
-    if(edStock.data.t){edStock.data.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('span');s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc2.appendChild(s);}});}
-    const ec2=document.getElementById('sp-e');ec2.innerHTML='';
-    if(edStock.data.e&&edStock.data.e.length){edStock.data.e.forEach(x=>{const div=document.createElement('div');div.innerHTML='<b>'+esc(x[0])+'：</b>'+esc(x[1]);ec2.appendChild(div);});}
-  }
-  alert('已临时保存。需永久生效点击「永久保存」。');closeEd();
-}
-
-function savePerm(){
-  var content='const SD='+JSON.stringify(SD,null,2)+';\n';
-  var blob=new Blob([content],{type:'application/javascript'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='stock_detail_map.js?v=20260728-0215';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  alert('已下载！覆盖：坚果云/taoguba-延边刺客/stock_detail_map.js?v=20260728-0215');
-}
-
 // localStorage 恢复
 (function(){
   if(typeof SD==='undefined')return;
