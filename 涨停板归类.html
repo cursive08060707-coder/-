@@ -284,7 +284,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><a class="src" href="'+p.l+'" target="_blank">原文 -></a></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" style="margin-left:auto" data-date="'+p.d+'">📝 主帖</span></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
