@@ -74,12 +74,11 @@ background-repeat:no-repeat;background-position:10px center}
 .sk:active,.mb:active{transform:translateY(0)}
 .sk .lk,.mb .lk{font-size:9px;color:var(--muted2);font-weight:400;margin-left:2px;font-family:var(--font-mono)}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
-.sk.hl,.mb.hl{background:#fff!important;border-color:#000!important;font-weight:700;color:#000!important;box-shadow:0 0 0 2px #000}
-.sk.hl .lk,.mb.hl .lk{color:#666!important}
+/* 按钮高亮：名称搜索 hl2=黑底白字，文字高亮 .hl 在 hl2 按钮内=白底黑字 */
 .sk.hl2,.mb.hl2{background:#000!important;color:#fff!important;border-color:#000!important}
 .sk.hl2 .lk,.mb.hl2 .lk{color:#999!important}
-.sk.hl.hl2,.mb.hl.hl2{background:#fff!important;color:#000!important;border-color:#000!important;box-shadow:0 0 0 2px #000;z-index:1}
-.sk.hl.hl2 .lk,.mb.hl.hl2 .lk{color:#666!important}
+.hl2 .hl{background:#fff!important;color:#000!important}
+.hl2 .hl.hl-cur{background:#fff!important;color:#000!important;outline:2px solid #fff}
 
 .mbl{margin-bottom:8px}
 .mbs{display:flex;flex-wrap:wrap;gap:6px}
@@ -428,7 +427,7 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
       if(p>=0){el.innerHTML=esc(t.substring(0,p))+'<span class="hl">'+esc(t.substring(p,p+st.length))+'</span>'+esc(t.substring(p+st.length));cnt++;}
     });
     stEl.textContent='匹配 '+cnt+' 处';
-    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');hl.forEach((x,j)=>{x.style.background=j===0?'#000':'#666';x.style.color='#fff';});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
+    if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');hl.forEach(function(x,j){var inHl2=x.closest('.hl2');if(inHl2){x.style.background=j===0?'#fff':'#ccc';x.style.color='#000';}else{x.style.background=j===0?'#000':'#666';x.style.color='#fff';}});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
   }
 renderFenshi(i);
   render();
@@ -515,7 +514,7 @@ function search(){
 function scrollHl(d){
   const h=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');if(!h.length)return;
   hi=((hi+d)%h.length+h.length)%h.length;
-  h.forEach((x,j)=>{x.style.background=j===hi?'#000':'#666';x.style.color='#fff';});
+  h.forEach(function(x,j){var inHl2=x.closest('.hl2');if(inHl2){x.style.background=j===hi?'#fff':'#ccc';x.style.color='#000';}else{x.style.background=j===hi?'#000':'#666';x.style.color='#fff';}});
   h[hi].scrollIntoView({block:'center',behavior:'smooth'});
 }
 
