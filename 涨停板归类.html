@@ -2,6 +2,7 @@
 <html lang="zh">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="referrer" content="no-referrer">
 <title>涨停板归类</title>
+<meta name="color-scheme" content="light dark">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -272,9 +273,44 @@ background-repeat:no-repeat;background-position:10px center}
 #notes-modal .nm-save,#sum-modal .sm-save{background:#f5f5f7;color:#1a1a1c}
 #notes-modal .nm-save:hover,#sum-modal .sm-save:hover{background:#fff}
 }
+/* ─── dark mode fallback (飞书等不支持 prefers-color-scheme 的浏览器) ─── */
+.dark-fallback{
+--bg:#1a1a1c; --surface:#2c2c2e; --surface2:#1c1c1e; --fg:#f5f5f7; --muted:#86868b; --muted2:#636366;
+--border:#3a3a3c; --border2:#2c2c2e;
+--accent:#e5e5ea; --accent2:#aeaeb2; --accent-soft:rgba(229,229,234,0.08); --accent-border:rgba(229,229,234,0.2);
+--accent-glow:rgba(229,229,234,0.06);
+--shadow-xs:0 1px 2px rgba(0,0,0,0.5);
+--shadow-sm:0 1px 3px rgba(0,0,0,0.6),0 1px 2px rgba(0,0,0,0.4);
+--shadow-md:0 4px 12px rgba(0,0,0,0.7),0 1px 3px rgba(0,0,0,0.4);
+--shadow-lg:0 12px 40px rgba(0,0,0,0.8),0 4px 12px rgba(0,0,0,0.5);
+}
+.dark-fallback .logo-icon{background:linear-gradient(135deg,#636366,#3a3a3c)}
+.dark-fallback .sk.hl2,.dark-fallback .mb.hl2{background:#fff!important;color:#000!important;border-color:#fff!important}
+.dark-fallback .hl2 .hl{background:#000!important;color:#fff!important}
+.dark-fallback .hl{background:#fff!important;color:#000!important}
+.dark-fallback #notes-modal .nm-box,.dark-fallback #sum-modal .sm-box{background:#2c2c2e}
+.dark-fallback #notes-modal .nm-b textarea,.dark-fallback #sum-modal .sm-b textarea{background:#1c1c1e;color:#f5f5f7;border-color:#3a3a3c}
+.dark-fallback #notes-modal .nm-preview,.dark-fallback #sum-modal .sm-preview{background:#1c1c1e;color:#f5f5f7;border-color:#3a3a3c}
+.dark-fallback #notes-modal .nm-title,.dark-fallback #sum-modal .sm-title{color:#f5f5f7}
+.dark-fallback #notes-modal .nm-save,.dark-fallback #sum-modal .sm-save{background:#f5f5f7;color:#1a1a1c}
 </style>
 </head>
 <body>
+<script>
+// 飞书等应用内浏览器可能不支持 prefers-color-scheme，JS fallback
+if(!window.matchMedia('(prefers-color-scheme:dark)').matches){
+  // 检测是否在暗黑模式（通过背景色探测）
+  var test=document.createElement('div');
+  test.style.background='canvas';
+  test.style.color='canvastext';
+  document.body.appendChild(test);
+  var bg=getComputedStyle(test).backgroundColor;
+  document.body.removeChild(test);
+  if(bg&&bg!=='rgb(255, 255, 255)'&&bg!=='rgba(0, 0, 0, 0)'){
+    document.documentElement.classList.add('dark-fallback');
+  }
+}
+</script>
 <div id="sb">
 <div class="logo">
 <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
