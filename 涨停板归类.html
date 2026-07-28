@@ -106,7 +106,8 @@ background-repeat:no-repeat;background-position:10px center}
 #sp{display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:380px;min-width:280px;max-width:90vw;padding:0;font-size:13px;overflow:hidden;resize:both}
 #sp.show{display:flex;flex-direction:column;animation:spIn .18s ease-out}
 @keyframes spIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-#sp .sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:15px;flex:0 0 auto}
+#sp .sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:15px;flex:0 0 auto;cursor:move;user-select:none}
+#sp.dragging{cursor:moveing}
 #sp .sp-h .sp-x{cursor:pointer;font-size:20px;line-height:1;opacity:.7;margin-left:auto;transition:opacity var(--tr);padding:0 2px}
 #sp .sp-h .sp-x:hover{opacity:1}
 #sp .sp-b{padding:14px 16px;overflow-y:auto;max-height:calc(100vh - 80px)}
@@ -617,6 +618,28 @@ function loadTVLib(cb){
   document.head.appendChild(s);
 }
 function closeSp(){document.getElementById('sp').classList.remove('show');}
+// === 弹窗拖拽 ===
+(function(){
+  var sp=document.getElementById('sp'),hdr=document.querySelector('#sp .sp-h');
+  if(!sp||!hdr)return;
+  var dx=0,dy=0,drag=false;
+  hdr.addEventListener('mousedown',function(e){
+    if(e.target.classList.contains('sp-x'))return;
+    drag=true;dx=e.clientX-sp.offsetLeft;dy=e.clientY-sp.offsetTop;
+    sp.style.transition='none';
+    document.body.style.cursor='move';e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var x=e.clientX-dx,y=e.clientY-dy;
+    x=Math.max(0,Math.min(x,innerWidth-sp.offsetWidth-4));
+    y=Math.max(0,Math.min(y,innerHeight-40));
+    sp.style.left=x+'px';sp.style.top=y+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    if(!drag)return;drag=false;sp.style.transition='';document.body.style.cursor='';
+  });
+})();
 document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')){closeSp();}});
 document.getElementById('ct').addEventListener('click',function(e){
   var notesBtn=e.target.closest('.nm-trigger');
