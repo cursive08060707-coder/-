@@ -58,8 +58,7 @@ background-repeat:no-repeat;background-position:10px center}
 .bh{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
 .bh-date{font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:-0.015em;color:var(--fg)}
 .bh-week{font-size:14px;color:var(--muted);font-weight:500}
-.bh .src{font-size:11px;color:var(--muted2);text-decoration:none;margin-left:auto;padding:4px 10px;border:1px solid var(--border);border-radius:999px;transition:all var(--tr)}
-.bh .src:hover{border-color:var(--accent);color:var(--accent)}
+
 .bh-btn{display:inline-flex;align-items:center;padding:4px 12px;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);border-radius:999px;font-size:11px;cursor:pointer;margin-left:8px;font-weight:500;transition:all var(--tr)}
 .bh-btn:hover{background:var(--accent);color:#fff}
 
@@ -107,7 +106,8 @@ background-repeat:no-repeat;background-position:10px center}
 #sp{display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:380px;min-width:280px;max-width:90vw;padding:0;font-size:13px;overflow:hidden;resize:both}
 #sp.show{display:flex;flex-direction:column;animation:spIn .18s ease-out}
 @keyframes spIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-#sp .sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:15px;flex:0 0 auto}
+#sp .sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:15px;flex:0 0 auto;cursor:move;user-select:none}
+#sp.dragging{cursor:moveing}
 #sp .sp-h .sp-x{cursor:pointer;font-size:20px;line-height:1;opacity:.7;margin-left:auto;transition:opacity var(--tr);padding:0 2px}
 #sp .sp-h .sp-x:hover{opacity:1}
 #sp .sp-b{padding:14px 16px;overflow-y:auto;max-height:calc(100vh - 80px)}
@@ -170,6 +170,41 @@ background-repeat:no-repeat;background-position:10px center}
 #post-modal .pm-h .pm-x:hover{opacity:1}
 #post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:#1d1d1f}
 #post-modal .pm-b a{color:#3a3a3c}
+/* ─── notes modal ─── */
+#notes-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;justify-content:center;align-items:center}
+#notes-modal.show{display:flex}
+#notes-modal .nm-box{background:#faf8f5;border-radius:12px;width:620px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 8px 20px rgba(0,0,0,0.3)}
+#notes-modal .nm-h{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;background:transparent;border-bottom:1px solid rgba(0,0,0,0.06);flex:0 0 auto}
+#notes-modal .nm-title{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:16px;font-weight:700;color:#2c2c2c;letter-spacing:0.02em}
+#notes-modal .nm-title small{font-family:-apple-system,sans-serif;font-size:11px;font-weight:400;color:#999;margin-left:8px}
+#notes-modal .nm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
+#notes-modal .nm-x:hover{opacity:.8}
+#notes-modal .nm-b{padding:20px 24px;overflow-y:auto;flex:1}
+#notes-modal .nm-b textarea{width:100%;min-height:320px;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.85;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+#notes-modal .nm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#notes-modal .nm-b textarea::placeholder{color:#ccc;font-style:italic}
+#notes-modal .nm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
+#notes-modal .nm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
+#notes-modal .nm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
+#notes-modal .nm-save:hover{background:#1a1a1a;transform:translateY(-1px)}
+#notes-modal .nm-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* ─── summary modal ─── */
+#sum-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10003;justify-content:center;align-items:center}
+#sum-modal.show{display:flex}
+#sum-modal .sm-box{background:#faf8f5;border-radius:12px;width:780px;max-width:94vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 8px 20px rgba(0,0,0,0.3)}
+#sum-modal .sm-h{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(0,0,0,0.06);flex:0 0 auto}
+#sum-modal .sm-title{font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:16px;font-weight:700;color:#2c2c2c;letter-spacing:0.02em}
+#sum-modal .sm-title small{font-family:-apple-system,sans-serif;font-size:11px;font-weight:400;color:#999;margin-left:8px}
+#sum-modal .sm-x{cursor:pointer;font-size:18px;opacity:.4;color:#666;transition:opacity .2s;background:none;border:none}
+#sum-modal .sm-x:hover{opacity:.8}
+#sum-modal .sm-b{padding:20px 28px;overflow-y:auto;flex:1}
+#sum-modal .sm-b textarea{width:100%;min-height:400px;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.85;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+#sum-modal .sm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#sum-modal .sm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
+#sum-modal .sm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
+#sum-modal .sm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
+#sum-modal .sm-save:hover{background:#1a1a1a;transform:translateY(-1px)}
+#sum-modal .sm-save:disabled{opacity:.4;cursor:not-allowed;transform:none}
 </style>
 </head>
 <body>
@@ -294,7 +329,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><a class="src" href="'+p.l+'" target="_blank">原文 -></a></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><span class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</span><span class="bh-btn sum-trigger">📊 总结</span></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
@@ -583,8 +618,34 @@ function loadTVLib(cb){
   document.head.appendChild(s);
 }
 function closeSp(){document.getElementById('sp').classList.remove('show');}
+// === 弹窗拖拽 ===
+(function(){
+  var sp=document.getElementById('sp'),hdr=document.querySelector('#sp .sp-h');
+  if(!sp||!hdr)return;
+  var dx=0,dy=0,drag=false;
+  hdr.addEventListener('mousedown',function(e){
+    if(e.target.classList.contains('sp-x'))return;
+    drag=true;dx=e.clientX-sp.offsetLeft;dy=e.clientY-sp.offsetTop;
+    sp.style.transition='none';
+    document.body.style.cursor='move';e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var x=e.clientX-dx,y=e.clientY-dy;
+    x=Math.max(0,Math.min(x,innerWidth-sp.offsetWidth-4));
+    y=Math.max(0,Math.min(y,innerHeight-40));
+    sp.style.left=x+'px';sp.style.top=y+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    if(!drag)return;drag=false;sp.style.transition='';document.body.style.cursor='';
+  });
+})();
 document.addEventListener('click',e=>{if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')){closeSp();}});
 document.getElementById('ct').addEventListener('click',function(e){
+  var notesBtn=e.target.closest('.nm-trigger');
+  if(notesBtn){showNotes(notesBtn.getAttribute('data-date'));return;}
+  var sumBtn=e.target.closest('.sum-trigger');
+  if(sumBtn){showSummary();return;}
   var postBtn=e.target.closest('.bh-btn');
   if(postBtn){showPost(postBtn.getAttribute('data-date'));return;}
   var sk=e.target.closest('.sk,.mb');
@@ -667,5 +728,107 @@ function closePost(){document.getElementById('post-modal').classList.remove('sho
 document.getElementById('post-modal').addEventListener('click',function(e){if(e.target===this)closePost();});
 </script>
 
+<!-- 笔记弹窗 -->
+<div id="notes-modal">
+  <div class="nm-box">
+    <div class="nm-h"><span class="nm-title" id="nm-title"></span><button class="nm-x" onclick="closeNotes()">&times;</button></div>
+    <div class="nm-b">
+      <textarea id="nm-text" placeholder="写下你的思考..."></textarea>
+    </div>
+    <div class="nm-footer">
+      <span class="nm-status" id="nm-status"></span>
+      <button class="nm-save" id="nm-save" onclick="saveNotes()">保 存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 总结弹窗 -->
+<div id="sum-modal">
+  <div class="sm-box">
+    <div class="sm-h"><span class="sm-title">📊 笔记总结<small>全日期通用</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
+    <div class="sm-b"><textarea id="sum-text" placeholder="写下你的总结..."></textarea></div>
+    <div class="sm-footer">
+      <span class="sm-status" id="sum-status"></span>
+      <button class="sm-save" id="sum-save" onclick="saveSummary()">保 存</button>
+    </div>
+  </div>
+</div>
+<script>
+// === 笔记逻辑 ===
+let _notesCurDate='';
+let _notesData={};
+const NOTES_API='http://localhost:8765';
+
+// 加载笔记数据
+function loadNotes(cb){
+  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{console.log('笔记服务未连接',e);if(cb)cb();});
+}
+
+function showNotes(date){
+  _notesCurDate=date;
+  var title=document.getElementById('nm-title');
+  var wd=wk[new Date(date).getDay()];
+  title.innerHTML=date+'<small>周'+wd+'</small>';
+  var existing=_notesData[date]||'';
+  var tpl='1. 有没有节点\n   高标角度：\n   指数角度：\n\n2. 有没有题材\n   有没有一家独大的题材：\n   哪些题材没有预期：\n\n3. 有没有指引\n   尾盘微盘涨速：\n\n4. 有没有恒单\n\n5. 明日计划\n';
+  document.getElementById('nm-text').value=existing||tpl;
+  document.getElementById('nm-status').textContent='';
+  document.getElementById('notes-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('nm-text').focus(),100);
+}
+
+function closeNotes(){document.getElementById('notes-modal').classList.remove('show');}
+
+document.getElementById('notes-modal').addEventListener('click',function(e){if(e.target===this)closeNotes();});
+
+document.addEventListener('keydown',function(e){
+  if(e.target===document.getElementById('nm-text')){if(e.key==='Escape')closeNotes();}
+});
+
+function saveNotes(){
+  var text=document.getElementById('nm-text').value;
+  _notesData[_notesCurDate]=text;
+  var btn=document.getElementById('nm-save');
+  var st=document.getElementById('nm-status');
+  btn.disabled=true;btn.textContent='保存中...';
+  fetch(NOTES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_notesData)})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){st.textContent='已保存 ✓';btn.textContent='保存';btn.disabled=false;
+        setTimeout(()=>{closeNotes();},600);
+      }else{st.textContent='保存失败: '+d.error;btn.textContent='保存';btn.disabled=false;}
+    })
+    .catch(e=>{st.textContent='保存失败: 笔记服务未连接';btn.textContent='保存';btn.disabled=false;});
+}
+
+// 页面加载时拉取笔记
+loadNotes();
+
+// === 总结逻辑 ===
+function showSummary(){
+  var existing=_notesData['_summary']||'';
+  var tpl='1. 有没有节点\n   高标角度：\n   指数角度：\n\n2. 有没有题材\n   有没有一家独大的题材：\n   哪些题材没有预期：\n\n3. 有没有指引\n   尾盘微盘涨速：\n\n4. 有没有恒单\n\n5. 明日计划\n';
+  document.getElementById('sum-text').value=existing||tpl;
+  document.getElementById('sum-status').textContent='';
+  document.getElementById('sum-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('sum-text').focus(),100);
+}
+function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
+function saveSummary(){
+  var text=document.getElementById('sum-text').value;
+  _notesData['_summary']=text;
+  var btn=document.getElementById('sum-save');
+  var st=document.getElementById('sum-status');
+  btn.disabled=true;btn.textContent='保存中...';
+  fetch(NOTES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_notesData)})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){st.textContent='已保存 ✓';btn.textContent='保 存';btn.disabled=false;setTimeout(()=>{closeSummary();},600);}
+      else{st.textContent='保存失败: '+d.error;btn.textContent='保 存';btn.disabled=false;}
+    })
+    .catch(e=>{st.textContent='保存失败: 笔记服务未连接';btn.textContent='保 存';btn.disabled=false;});
+}
+document.getElementById('sum-modal').addEventListener('click',function(e){if(e.target===this)closeSummary();});
+</script>
 </body>
 </html>
