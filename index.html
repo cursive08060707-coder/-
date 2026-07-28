@@ -297,24 +297,46 @@ background-repeat:no-repeat;background-position:10px center}
 </head>
 <body>
 <script>
-// 飞书等应用内浏览器可能不支持 prefers-color-scheme，JS fallback
-if(!window.matchMedia('(prefers-color-scheme:dark)').matches){
-  // 检测是否在暗黑模式（通过背景色探测）
+// 暗黑模式检测：prefers-color-scheme + canvas 探测 + 手动切换
+function detectDark(){
+  // 1. 优先用 prefers-color-scheme
+  if(window.matchMedia('(prefers-color-scheme:dark)').matches)return true;
+  // 2. canvas 探测（三星浏览器等）
   var test=document.createElement('div');
-  test.style.background='canvas';
-  test.style.color='canvastext';
+  test.style.cssText='background:Canvas;color:CanvasText;position:absolute;left:-9999px';
   document.body.appendChild(test);
   var bg=getComputedStyle(test).backgroundColor;
   document.body.removeChild(test);
-  if(bg&&bg!=='rgb(255, 255, 255)'&&bg!=='rgba(0, 0, 0, 0)'){
-    document.documentElement.classList.add('dark-fallback');
+  if(bg){
+    var m=bg.match(/\d+/g);
+    if(m&&m.length>=3){
+      var r=+m[0],g=+m[1],b=+m[2];
+      if(r<128&&g<128&&b<128)return true; // 暗背景=暗黑模式
+    }
   }
+  // 3. 检查 localStorage 手动设置
+  return localStorage.getItem('theme')==='dark';
 }
+function applyTheme(){
+  var dark=detectDark();
+  document.documentElement.classList.toggle('dark-fallback',dark);
+}
+applyTheme();
+function toggleTheme(){
+  var cur=document.documentElement.classList.contains('dark-fallback');
+  var next=!cur;
+  document.documentElement.classList.toggle('dark-fallback',next);
+  localStorage.setItem('theme',next?'dark':'light');
+  document.getElementById('theme-btn').textContent=next?'☀️':'🌙';
+}
+// 更新按钮图标
+(function(){var dark=document.documentElement.classList.contains('dark-fallback');var btn=document.getElementById('theme-btn');if(btn)btn.textContent=dark?'☀️':'🌙';})();
 </script>
 <div id="sb">
 <div class="logo">
 <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
 <div class="logo-text">涨停板归类<small>每日复盘</small></div>
+<div style="margin-left:auto;cursor:pointer;font-size:16px;padding:4px;opacity:.5" onclick="toggleTheme()" id="theme-btn">🌙</div>
 </div>
 <div id="sbox"><input id="si" placeholder="搜索股票/板块..."></div>
 <div id="rbox"><input id="ri" placeholder="搜索地域/题材概念（如浙江、PEEK）"></div><div id="rb"></div>
