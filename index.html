@@ -432,7 +432,11 @@ renderFenshi(i);
 let ftCollapsed=false;
 function toggleFt(){
   ftCollapsed=!ftCollapsed;
-  document.getElementById('ft').classList.toggle('collapsed',ftCollapsed);
+  var ft=document.getElementById('ft');
+  ft.classList.toggle('collapsed',ftCollapsed);
+  if(ftCollapsed){
+    ft.style.width='';ft.style.minWidth='';
+  }
   document.querySelector('.ft-toggle').textContent=ftCollapsed?'◀':'▶';
 }
 function renderFenshi(idx){
