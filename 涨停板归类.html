@@ -169,6 +169,21 @@ background-repeat:no-repeat;background-position:10px center}
 #post-modal .pm-h .pm-x:hover{opacity:1}
 #post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:#1d1d1f}
 #post-modal .pm-b a{color:#3a3a3c}
+/* ─── notes modal ─── */
+#notes-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10002;justify-content:center;align-items:center}
+#notes-modal.show{display:flex}
+#notes-modal .nm-box{background:#fff;border-radius:14px;width:600px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.6),0 4px 12px rgba(0,0,0,0.4)}
+#notes-modal .nm-h{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:linear-gradient(135deg,#3a3a3c,#1d1d1f);color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
+#notes-modal .nm-h .nm-x{cursor:pointer;font-size:20px;opacity:.8}
+#notes-modal .nm-h .nm-x:hover{opacity:1}
+#notes-modal .nm-b{padding:16px 18px;overflow-y:auto;flex:1}
+#notes-modal textarea{width:100%;min-height:300px;border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:13px;line-height:1.7;font-family:var(--font-body);resize:vertical;outline:none;box-sizing:border-box}
+#notes-modal textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#notes-modal .nm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-top:1px solid var(--border2);flex:0 0 auto}
+#notes-modal .nm-status{font-size:11px;color:var(--muted2)}
+#notes-modal .nm-save{padding:6px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--tr)}
+#notes-modal .nm-save:hover{background:#1d1d1f}
+#notes-modal .nm-save:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -293,7 +308,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><span class="bh-btn" data-date="'+p.d+'" onclick="showNotes(\''+p.d+'\')">📝 笔记</span></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
@@ -666,5 +681,65 @@ function closePost(){document.getElementById('post-modal').classList.remove('sho
 document.getElementById('post-modal').addEventListener('click',function(e){if(e.target===this)closePost();});
 </script>
 
+<!-- 笔记弹窗 -->
+<div id="notes-modal">
+  <div class="nm-box">
+    <div class="nm-h"><span id="nm-title"></span><span class="nm-x" onclick="closeNotes()">&times;</span></div>
+    <div class="nm-b">
+      <textarea id="nm-text" placeholder="写点什么..."></textarea>
+    </div>
+    <div class="nm-footer">
+      <span class="nm-status" id="nm-status"></span>
+      <button class="nm-save" id="nm-save" onclick="saveNotes()">保存</button>
+    </div>
+  </div>
+</div>
+<script>
+// === 笔记逻辑 ===
+let _notesCurDate='';
+let _notesData={};
+const NOTES_API='http://localhost:8765';
+
+// 加载笔记数据
+function loadNotes(cb){
+  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{console.log('笔记服务未连接',e);if(cb)cb();});
+}
+
+function showNotes(date){
+  _notesCurDate=date;
+  document.getElementById('nm-title').textContent=date+' 笔记';
+  document.getElementById('nm-text').value=_notesData[date]||'';
+  document.getElementById('nm-status').textContent='';
+  document.getElementById('notes-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('nm-text').focus(),100);
+}
+
+function closeNotes(){document.getElementById('notes-modal').classList.remove('show');}
+
+document.getElementById('notes-modal').addEventListener('click',function(e){if(e.target===this)closeNotes();});
+
+document.addEventListener('keydown',function(e){
+  if(e.target===document.getElementById('nm-text')){if(e.key==='Escape')closeNotes();}
+});
+
+function saveNotes(){
+  var text=document.getElementById('nm-text').value;
+  _notesData[_notesCurDate]=text;
+  var btn=document.getElementById('nm-save');
+  var st=document.getElementById('nm-status');
+  btn.disabled=true;btn.textContent='保存中...';
+  fetch(NOTES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_notesData)})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){st.textContent='已保存 ✓';btn.textContent='保存';btn.disabled=false;
+        setTimeout(()=>{closeNotes();},600);
+      }else{st.textContent='保存失败: '+d.error;btn.textContent='保存';btn.disabled=false;}
+    })
+    .catch(e=>{st.textContent='保存失败: 笔记服务未连接';btn.textContent='保存';btn.disabled=false;});
+}
+
+// 页面加载时拉取笔记
+loadNotes();
+</script>
 </body>
 </html>
