@@ -182,12 +182,12 @@ background-repeat:no-repeat;background-position:10px center}
 #notes-modal .nm-b{padding:16px 22px;overflow:hidden;flex:1;display:flex;flex-direction:column}
 #notes-modal .nm-edit-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
 #notes-modal .nm-edit-wrap.hide{display:none}
-#notes-modal .nm-b textarea{display:none}
-#notes-modal .nm-pane-label{display:none}
+#notes-modal .nm-b textarea{width:100%;flex:1;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.9;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:none;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;min-height:300px}
+#notes-modal .nm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#notes-modal .nm-b textarea::placeholder{color:#ccc;font-style:italic}
 #notes-modal .nm-preview-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
 #notes-modal .nm-preview-wrap.hide{display:none}
-#notes-modal .nm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:300px;outline:none;contenteditable:true}
-#notes-modal .nm-preview:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#notes-modal .nm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:300px;cursor:text}
 #notes-modal .nm-preview h1{font-size:18px;font-weight:700;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.08);color:#2c2c2c}
 #notes-modal .nm-preview h2{font-size:16px;font-weight:700;margin:10px 0 6px;color:#2c2c2c}
 #notes-modal .nm-preview h3{font-size:14px;font-weight:600;margin:8px 0 4px;color:#444}
@@ -216,12 +216,11 @@ background-repeat:no-repeat;background-position:10px center}
 #sum-modal .sm-b{padding:16px 22px;overflow:hidden;flex:1;display:flex;flex-direction:column}
 #sum-modal .sm-edit-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
 #sum-modal .sm-edit-wrap.hide{display:none}
-#sum-modal .sm-b textarea{display:none}
-#sum-modal .sm-pane-label{display:none}
+#sum-modal .sm-b textarea{width:100%;flex:1;border:1px solid #e5e0d8;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.9;font-family:Georgia,"Songti SC","Noto Serif SC",serif;color:#333;background:#fff;resize:none;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;min-height:400px}
+#sum-modal .sm-b textarea:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
 #sum-modal .sm-preview-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
 #sum-modal .sm-preview-wrap.hide{display:none}
-#sum-modal .sm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:400px;outline:none;contenteditable:true}
-#sum-modal .sm-preview:focus{border-color:#b8a88a;box-shadow:0 0 0 3px rgba(184,168,138,0.12)}
+#sum-modal .sm-preview{flex:1;padding:18px 22px;overflow-y:auto;font-family:Georgia,"Songti SC","Noto Serif SC",serif;font-size:14px;line-height:1.9;color:#333;background:#fff;border:1px solid #e5e0d8;border-radius:8px;min-height:400px;cursor:text}
 #sum-modal .sm-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 14px;flex:0 0 auto}
 #sum-modal .sm-status{font-size:11px;color:#999;font-family:-apple-system,sans-serif}
 #sum-modal .sm-save{padding:7px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
@@ -768,10 +767,12 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
   <div class="nm-box">
     <div class="nm-h"><span class="nm-title" id="nm-title"></span><button class="nm-x" onclick="closeNotes()">&times;</button></div>
     <div class="nm-b">
-      <div class="nm-preview-wrap">
-        <div class="nm-preview" id="nm-preview" contenteditable="true" spellcheck="false"></div>
+      <div class="nm-edit-wrap hide" id="nm-edit-wrap">
+        <textarea id="nm-text" placeholder="支持 Markdown 语法..."></textarea>
       </div>
-      <textarea id="nm-text" style="display:none"></textarea>
+      <div class="nm-preview-wrap" id="nm-preview-wrap">
+        <div class="nm-preview" id="nm-preview" onclick="nmEdit()"></div>
+      </div>
     </div>
     <div class="nm-footer">
       <span class="nm-status" id="nm-status"></span>
@@ -785,10 +786,12 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
   <div class="sm-box">
     <div class="sm-h"><span class="sm-title">📊 笔记总结<small>全日期通用</small></span><button class="sm-x" onclick="closeSummary()">&times;</button></div>
     <div class="sm-b">
-      <div class="sm-preview-wrap">
-        <div class="sm-preview" id="sm-preview" contenteditable="true" spellcheck="false"></div>
+      <div class="sm-edit-wrap hide" id="sm-edit-wrap">
+        <textarea id="sum-text" placeholder="支持 Markdown 语法..."></textarea>
       </div>
-      <textarea id="sum-text" style="display:none"></textarea>
+      <div class="sm-preview-wrap" id="sm-preview-wrap">
+        <div class="sm-preview" id="sm-preview" onclick="smEdit()"></div>
+      </div>
     </div>
     <div class="sm-footer">
       <span class="sm-status" id="sum-status"></span>
@@ -815,7 +818,9 @@ function showNotes(date){
   var existing=_notesData[date]||'';
   var tpl='# 有没有节点\n## 高标角度\n## 指数角度\n\n# 有没有题材\n## 有没有一家独大的题材\n## 哪些题材没有预期\n\n# 有没有指引\n## 尾盘微盘涨速\n\n# 有没有恒单\n\n# 明日计划\n';
   document.getElementById('nm-text').value=existing||tpl;
-  document.getElementById('nm-preview').innerHTML=md2html(existing||tpl);
+  document.getElementById('nm-preview').innerHTML=md2html(existing||tpl)||'<span style="color:#bbb;font-style:italic">点击编辑...</span>';
+  document.getElementById('nm-edit-wrap').classList.add('hide');
+  document.getElementById('nm-preview-wrap').classList.remove('hide');
   document.getElementById('nm-status').textContent='';
   document.getElementById('notes-modal').classList.add('show');
   setTimeout(()=>document.getElementById('nm-text').focus(),100);
@@ -826,12 +831,9 @@ function closeNotes(){document.getElementById('notes-modal').classList.remove('s
 document.getElementById('notes-modal').addEventListener('click',function(e){if(e.target===this)closeNotes();});
 
 document.addEventListener('keydown',function(e){
-  if(e.target===document.getElementById('nm-text')||e.target===document.getElementById('nm-preview')){if(e.key==='Escape')closeNotes();return;}
-});
+  if(e.target===document.getElementById('nm-text')||e.target===document.getElementById('nm-preview')){if(e.key==='Escape')closeNotes();return;}});
 
 function saveNotes(){
-  // sync from contenteditable before save
-  syncMd(document.getElementById('nm-preview'),document.getElementById('nm-text'));
   var text=document.getElementById('nm-text').value;
   _notesData[_notesCurDate]=text;
   var btn=document.getElementById('nm-save');
@@ -886,71 +888,49 @@ function escMd(s){
   return s;
 }
 
-// === Markdown WYSIWYG 编辑 ===
-// 输入时检测 markdown 语法，自动转换当前行
-function initMdEditor(el,hiddenEl){
-  el.addEventListener('input',function(e){
-    // 只在输入空格后触发检测
-    if(e.inputType!=='insertText'||e.data!==' ')return;
-    var sel=window.getSelection();
-    if(!sel.rangeCount)return;
-    var node=sel.anchorNode;
-    // 找到当前行所在的块级元素
-    var block=node.nodeType===3?node.parentElement:node;
-    while(block&&block.parentElement!==el)block=block.parentElement;
-    if(!block)return;
-    var text=block.textContent;
-    var tag=null,prefix='';
-    if(/^###\s/.test(text)){tag='h3';prefix='### ';}
-    else if(/^##\s/.test(text)){tag='h2';prefix='## ';}
-    else if(/^#\s/.test(text)){tag='h1';prefix='# ';}
-    else if(/^>\s/.test(text)){tag='blockquote';prefix='> ';}
-    else if(/^-\s/.test(text)){tag='li';prefix='- ';}
-    else if(/^\d+\.\s/.test(text)){tag='li';prefix=text.match(/^\d+\.\s/)[0];}
-    if(!tag)return;
-    var remaining=text.substring(prefix.length);
-    var newEl=document.createElement(tag==='li'?'ul':'');
-    if(tag==='li'){newEl=document.createElement('ul');var li=document.createElement('li');li.textContent=remaining;newEl.appendChild(li);}
-    else if(tag==='blockquote'){newEl=document.createElement('blockquote');newEl.textContent=remaining;}
-    else{newEl=document.createElement(tag);newEl.textContent=remaining;}
-    if(tag==='li'){block.parentElement.replaceChild(newEl,block);}
-    else{block.parentElement.replaceChild(newEl,block);}
-    // move cursor to end of new element
-    var r=document.createRange();
-    var target=newEl.lastChild||newEl;
-    r.setStart(target,target.nodeType===3?target.textContent.length:0);
-    r.collapse(true);
-    sel.removeAllRanges();sel.addRange(r);
-    syncMd(el,hiddenEl);
-  });
-  // 空格键外的实时同步
-  el.addEventListener('input',function(){syncMd(el,hiddenEl);});
+// === Markdown 编辑/预览切换 ===
+function nmEdit(){
+  var text=document.getElementById('nm-text').value;
+  document.getElementById('nm-preview-wrap').classList.add('hide');
+  document.getElementById('nm-edit-wrap').classList.remove('hide');
+  document.getElementById('nm-text').focus();
 }
-function syncMd(el,hiddenEl){
-  if(hiddenEl)hiddenEl.value=el.innerText||el.textContent||'';
+function nmPreview(){
+  var text=document.getElementById('nm-text').value;
+  document.getElementById('nm-preview').innerHTML=md2html(text)||'<span style="color:#bbb;font-style:italic">点击编辑...</span>';
+  document.getElementById('nm-edit-wrap').classList.add('hide');
+  document.getElementById('nm-preview-wrap').classList.remove('hide');
 }
-function html2md(html){
-  var tmp=document.createElement('div');tmp.innerHTML=html;
-  return tmp.innerText||tmp.textContent||'';
+// 失焦时切回预览
+document.getElementById('nm-text').addEventListener('blur',nmPreview);
+
+function smEdit(){
+  document.getElementById('sm-preview-wrap').classList.add('hide');
+  document.getElementById('sm-edit-wrap').classList.remove('hide');
+  document.getElementById('sum-text').focus();
 }
-// 初始化
-initMdEditor(document.getElementById('nm-preview'),document.getElementById('nm-text'));
-initMdEditor(document.getElementById('sm-preview'),document.getElementById('sum-text'));
+function smPreview(){
+  var text=document.getElementById('sum-text').value;
+  document.getElementById('sm-preview').innerHTML=md2html(text)||'<span style="color:#bbb;font-style:italic">点击编辑...</span>';
+  document.getElementById('sm-edit-wrap').classList.add('hide');
+  document.getElementById('sm-preview-wrap').classList.remove('hide');
+}
+document.getElementById('sum-text').addEventListener('blur',smPreview);
 
 // === 总结逻辑 ===
 function showSummary(){
   var existing=_notesData['_summary']||'';
   var tpl='# 有没有节点\n## 高标角度\n## 指数角度\n\n# 有没有题材\n## 有没有一家独大的题材\n## 哪些题材没有预期\n\n# 有没有指引\n## 尾盘微盘涨速\n\n# 有没有恒单\n\n# 明日计划\n';
   document.getElementById('sum-text').value=existing||tpl;
-  document.getElementById('sm-preview').innerHTML=md2html(existing||tpl);
+  document.getElementById('sm-preview').innerHTML=md2html(existing||tpl)||'<span style="color:#bbb;font-style:italic">点击编辑...</span>';
+  document.getElementById('sm-edit-wrap').classList.add('hide');
+  document.getElementById('sm-preview-wrap').classList.remove('hide');
   document.getElementById('sum-status').textContent='';
   document.getElementById('sum-modal').classList.add('show');
   setTimeout(()=>document.getElementById('sum-text').focus(),100);
 }
 function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
 function saveSummary(){
-  // sync from contenteditable before save
-  syncMd(document.getElementById('sm-preview'),document.getElementById('sum-text'));
   var text=document.getElementById('sum-text').value;
   _notesData['_summary']=text;
   var btn=document.getElementById('sum-save');
