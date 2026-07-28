@@ -58,8 +58,7 @@ background-repeat:no-repeat;background-position:10px center}
 .bh{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
 .bh-date{font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:-0.015em;color:var(--fg)}
 .bh-week{font-size:14px;color:var(--muted);font-weight:500}
-.bh .src{font-size:11px;color:var(--muted2);text-decoration:none;margin-left:auto;padding:4px 10px;border:1px solid var(--border);border-radius:999px;transition:all var(--tr)}
-.bh .src:hover{border-color:var(--accent);color:var(--accent)}
+
 .bh-btn{display:inline-flex;align-items:center;padding:4px 12px;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);border-radius:999px;font-size:11px;cursor:pointer;margin-left:8px;font-weight:500;transition:all var(--tr)}
 .bh-btn:hover{background:var(--accent);color:#fff}
 
@@ -294,7 +293,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=p.t.split('\n');
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span><a class="src" href="'+p.l+'" target="_blank">原文 -></a></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><span class="bh-btn" data-date="'+p.d+'">📝 主帖</span></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
