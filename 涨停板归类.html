@@ -831,7 +831,7 @@ document.addEventListener('keydown',function(e){
 
 function saveNotes(){
   // sync from contenteditable before save
-  document.getElementById('nm-text').value=html2md(document.getElementById('nm-preview').innerHTML);
+  syncMd(document.getElementById('nm-preview'),document.getElementById('nm-text'));
   var text=document.getElementById('nm-text').value;
   _notesData[_notesCurDate]=text;
   var btn=document.getElementById('nm-save');
@@ -886,14 +886,56 @@ function escMd(s){
   return s;
 }
 
-// === 笔记实时预览 ===
-document.getElementById('nm-preview').addEventListener('input',function(){
-  document.getElementById('nm-text').value=html2md(this.innerHTML);
-});
+// === Markdown WYSIWYG 编辑 ===
+// 输入时检测 markdown 语法，自动转换当前行
+function initMdEditor(el,hiddenEl){
+  el.addEventListener('input',function(e){
+    // 只在输入空格后触发检测
+    if(e.inputType!=='insertText'||e.data!==' ')return;
+    var sel=window.getSelection();
+    if(!sel.rangeCount)return;
+    var node=sel.anchorNode;
+    // 找到当前行所在的块级元素
+    var block=node.nodeType===3?node.parentElement:node;
+    while(block&&block.parentElement!==el)block=block.parentElement;
+    if(!block)return;
+    var text=block.textContent;
+    var tag=null,prefix='';
+    if(/^###\s/.test(text)){tag='h3';prefix='### ';}
+    else if(/^##\s/.test(text)){tag='h2';prefix='## ';}
+    else if(/^#\s/.test(text)){tag='h1';prefix='# ';}
+    else if(/^>\s/.test(text)){tag='blockquote';prefix='> ';}
+    else if(/^-\s/.test(text)){tag='li';prefix='- ';}
+    else if(/^\d+\.\s/.test(text)){tag='li';prefix=text.match(/^\d+\.\s/)[0];}
+    if(!tag)return;
+    var remaining=text.substring(prefix.length);
+    var newEl=document.createElement(tag==='li'?'ul':'');
+    if(tag==='li'){newEl=document.createElement('ul');var li=document.createElement('li');li.textContent=remaining;newEl.appendChild(li);}
+    else if(tag==='blockquote'){newEl=document.createElement('blockquote');newEl.textContent=remaining;}
+    else{newEl=document.createElement(tag);newEl.textContent=remaining;}
+    if(tag==='li'){block.parentElement.replaceChild(newEl,block);}
+    else{block.parentElement.replaceChild(newEl,block);}
+    // move cursor to end of new element
+    var r=document.createRange();
+    var target=newEl.lastChild||newEl;
+    r.setStart(target,target.nodeType===3?target.textContent.length:0);
+    r.collapse(true);
+    sel.removeAllRanges();sel.addRange(r);
+    syncMd(el,hiddenEl);
+  });
+  // 空格键外的实时同步
+  el.addEventListener('input',function(){syncMd(el,hiddenEl);});
+}
+function syncMd(el,hiddenEl){
+  if(hiddenEl)hiddenEl.value=el.innerText||el.textContent||'';
+}
 function html2md(html){
   var tmp=document.createElement('div');tmp.innerHTML=html;
   return tmp.innerText||tmp.textContent||'';
 }
+// 初始化
+initMdEditor(document.getElementById('nm-preview'),document.getElementById('nm-text'));
+initMdEditor(document.getElementById('sm-preview'),document.getElementById('sum-text'));
 
 // === 总结逻辑 ===
 function showSummary(){
@@ -908,7 +950,7 @@ function showSummary(){
 function closeSummary(){document.getElementById('sum-modal').classList.remove('show');}
 function saveSummary(){
   // sync from contenteditable before save
-  document.getElementById('sum-text').value=html2md(document.getElementById('sm-preview').innerHTML);
+  syncMd(document.getElementById('sm-preview'),document.getElementById('sum-text'));
   var text=document.getElementById('sum-text').value;
   _notesData['_summary']=text;
   var btn=document.getElementById('sum-save');
