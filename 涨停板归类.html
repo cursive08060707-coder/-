@@ -373,18 +373,18 @@ function toggleTheme(){
 </div>
 
 
-<script src="stock_names.js?v=20260728-0215"></script>
-<script src="stock_detail_map.js?v=20260728-0215"></script>
-<script src="zt_data.js?v=20260728-0215"></script>
-<script src="hengdan_map.js?v=20260728-0215"></script>
-<script src="fenshi_map.js?v=20260728-0215"></script>
-<script src="zt_time_map.js?v=20260728-0215"></script>
+<script src="stock_names.js?v=20260729-0341"></script>
+<script src="stock_detail_map.js?v=20260729-0341"></script>
+<script src="zt_data.js?v=20260729-0341"></script>
+<script src="hengdan_map.js?v=20260729-0341"></script>
+<script src="fenshi_map.js?v=20260729-0341"></script>
+<script src="zt_time_map.js?v=20260729-0341"></script>
 <script>
 // 延迟加载帖子原文数据
 function loadPosts(cb){
   if(window.ZP){cb();return;}
   var s=document.createElement('script');
-  s.src='zt_posts.js?v=20260728-0215';
+  s.src='zt_posts.js?v=20260729-0341';
   s.onload=function(){cb();};
   document.head.appendChild(s);
 }
@@ -394,7 +394,7 @@ console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | z
 
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
-const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260728-0215初始化
+const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260729-0341初始化
 const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
 const wk=['日','一','二','三','四','五','六'];
 stEl.textContent=P.length+'天';
@@ -484,14 +484,14 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
         for(let x of ps){x=x.trim();for(let s of['\uff1a',':','\u3001']){if(x.includes(s))x=x.split(s)[0].trim();}let px=x.includes('（')?x.split('（')[0].trim():x;if(px.length>=2&&isSN(px))sb.push({disp:x,name:px});}
       }else{
         // 连板格式处理
-        // 格式1（zt_data.js?v=20260728-0215）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
+        // 格式1（zt_data.js?v=20260729-0341）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
         // 格式2（原文）："股票名、描述"（每行一个股票）
         let ps=[];
         // 先用顿号分隔（原文格式）
         if(line.includes('\u3001')){
           ps=line.split(/\u3001+/);
         }else{
-          // 再用中文逗号分隔（zt_data.js?v=20260728-0215格式）
+          // 再用中文逗号分隔（zt_data.js?v=20260729-0341格式）
           ps=line.split(/[,\uff0c]+/);
         }
         for(let p of ps){
@@ -657,7 +657,7 @@ render();show(0);
 let spCode='',spName='';
 function showSp(name,e){
   if(typeof SD==='undefined')return;
-  // 全角/半角转换（zt_data.js?v=20260728-0215 可能是半角，SD 键是全角）
+  // 全角/半角转换（zt_data.js?v=20260729-0341 可能是半角，SD 键是全角）
   let name_conv='';
   for(let c of name){
     if(c>='A'&&c<='Z')name_conv+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
