@@ -86,30 +86,6 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 #sp .sp-e div{margin-bottom:6px;font-size:12px;line-height:1.5}
 #sp .sp-e b{color:#d4380d}
 /* editor */
-#ed{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:10000;justify-content:center;align-items:center}
-#ed.show{display:flex}
-#ed-p{background:#fff;border-radius:12px;width:520px;max-width:90vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
-#ed-h{padding:14px 18px;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}
-#ed-h .ed-x{cursor:pointer;font-size:20px;color:#999}
-#ed-h .ed-x:hover{color:#d4380d}
-#ed-b{padding:18px;overflow-y:auto;flex:1}
-#ed-b label{display:block;font-size:12px;color:#666;margin-bottom:4px;margin-top:12px;font-weight:600}
-#ed-b label:first-child{margin-top:0}
-#ed-b input,#ed-b textarea{width:100%;padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;outline:none;font-family:inherit;box-sizing:border-box}
-#ed-b input:focus,#ed-b textarea:focus{border-color:#d4380d}
-#ed-b textarea{min-height:60px;resize:vertical}
-#ed-b .tag-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-#ed-b .tag-row span{background:#fff5f5;color:#d4380d;border:1px solid #fdd;padding:2px 7px;border-radius:3px;font-size:11px;cursor:pointer}
-#ed-b .tag-row span:hover{background:#d4380d;color:#fff}
-#ed-b .tag-row span.rm{background:#f5f5f5;color:#999;border-color:#ddd}
-#ed-b .tag-row span.rm:hover{background:#ff4d4f;color:#fff}
-.ed-btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;margin-right:8px;margin-top:8px}
-.ed-btn-primary{background:#d4380d;color:#fff}.ed-btn-primary:hover{background:#bf2c0a}
-.ed-btn-secondary{background:#f5f5f5;color:#666}.ed-btn-secondary:hover{background:#e8e8e8}
-.ed-btn-save{background:#fa541c;color:#fff}.ed-btn-save:hover{background:#e0480a}
-#ed-f{padding:14px 18px;border-top:1px solid #e8e8e8;text-align:right}
-.ed-toggle{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:50%;background:#d4380d;color:#fff;border:none;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:100;display:flex;align-items:center;justify-content:center}
-.ed-toggle:hover{background:#bf2c0a}
 .bh-btn{display:inline-block;padding:2px 10px;background:#fff;border:1px solid #d4380d;color:#d4380d;border-radius:4px;font-size:12px;cursor:pointer;margin-left:8px;font-weight:400}
 .bh-btn:hover{background:#d4380d;color:#fff}
 #post-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:10001;justify-content:center;align-items:center}
@@ -178,26 +154,6 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
 
 </div>
 
-<!-- 编辑器弹窗 -->
-<div id="ed">
-  <div id="ed-p">
-    <div id="ed-h"><span>📝 编辑股票题材概念</span><span class="ed-x" onclick="closeEd()">&times;</span></div>
-    <div id="ed-b">
-      <label>股票名称</label><input id="ed-name" placeholder="输入后回车搜索">
-      <label>股票代码</label><input id="ed-code" readonly style="background:#f5f5f5">
-      <label>地域/行业</label><input id="ed-region" readonly style="background:#f5f5f5">
-      <label>题材概念（逗号分隔）</label><textarea id="ed-themes"></textarea>
-      <div class="tag-row" id="ed-tags"></div>
-      <label>概念解读（每行：概念名|解读）</label><textarea id="ed-explain" style="min-height:120px"></textarea>
-    </div>
-    <div id="ed-f">
-      <span style="float:left;font-size:11px;color:#999;margin-top:8px">「永久保存」下载替换 stock_detail_map.js?v=20260728-0215</span>
-      <button class="ed-btn ed-btn-secondary" onclick="closeEd()">取消</button>
-      <button class="ed-btn ed-btn-primary" onclick="saveEd()">临时保存</button>
-      <button class="ed-btn ed-btn-save" onclick="savePerm()">永久保存</button>
-    </div>
-  </div>
-</div>
 
 <!-- 分时图侧栏 -->
 <div id="ft">
@@ -205,7 +161,6 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#fafafa;color
   <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
 </div>
 
-<button class="ed-toggle" onclick="openEd()" title="编辑题材概念">✎</button>
 
 <script src="stock_names.js?v=20260728-0215"></script>
 <script src="stock_detail_map.js?v=20260728-0215"></script>
@@ -566,62 +521,6 @@ document.getElementById('ct').addEventListener('click',function(e){
 });
 
 // === 编辑器逻辑 ===
-let edStock=null;
-function openEd(){document.getElementById('ed').classList.add('show');document.getElementById('ed-name').focus();}
-function closeEd(){document.getElementById('ed').classList.remove('show');edStock=null;}
-function findStock(name){if(typeof SD==='undefined')return null;if(SD[name])return{name:name,data:SD[name]};for(let k in SD){if(k.includes(name)||name.includes(k))return{name:k,data:SD[k]};}return null;}
-
-document.getElementById('ed-name').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){
-    e.preventDefault();const n=this.value.trim();if(!n)return;
-    const f=findStock(n);
-    if(f){
-      edStock=f;
-      document.getElementById('ed-code').value=f.data.c||'';
-      document.getElementById('ed-region').value=f.data.r||'';
-      document.getElementById('ed-themes').value=(f.data.t||'');
-      renderEdTags();
-      let ex='';if(f.data.e&&f.data.e.length){f.data.e.forEach(x=>{ex+=x[0]+'|'+x[1]+'\n';});}
-      document.getElementById('ed-explain').value=ex;
-    }else{alert('未找到: '+n);}
-  }
-});
-
-function renderEdTags(){
-  if(!edStock)return;const tc=document.getElementById('ed-tags');tc.innerHTML='';
-  const themes=document.getElementById('ed-themes').value.split(',').map(t=>t.trim()).filter(Boolean);
-  themes.forEach(t=>{const s=document.createElement('span');s.textContent=t;s.className='rm';s.onclick=()=>{document.getElementById('ed-themes').value=document.getElementById('ed-themes').value.split(',').map(x=>x.trim()).filter(x=>x&&x!==t).join(',');renderEdTags();};tc.appendChild(s);});
-}
-document.getElementById('ed-themes').addEventListener('input',renderEdTags);
-
-function saveEd(){
-  if(!edStock)return;
-  const themes=document.getElementById('ed-themes').value;
-  const explain=document.getElementById('ed-explain').value;
-  const eData=[];
-  explain.split('\n').filter(Boolean).forEach(line=>{const idx=line.indexOf('|');if(idx>0)eData.push([line.substring(0,idx).trim(),line.substring(idx+1).trim()]);});
-  edStock.data.t=themes;edStock.data.e=eData;
-  try{localStorage.setItem('sd_'+edStock.name,JSON.stringify(edStock.data));}catch(e){}
-  if(document.getElementById('sp-n').textContent.includes(edStock.name)){
-    const tc2=document.getElementById('sp-t');tc2.innerHTML='';
-    if(edStock.data.t){edStock.data.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('span');s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc2.appendChild(s);}});}
-    const ec2=document.getElementById('sp-e');ec2.innerHTML='';
-    if(edStock.data.e&&edStock.data.e.length){edStock.data.e.forEach(x=>{const div=document.createElement('div');div.innerHTML='<b>'+esc(x[0])+'：</b>'+esc(x[1]);ec2.appendChild(div);});}
-  }
-  alert('已临时保存。需永久生效点击「永久保存」。');closeEd();
-}
-
-function savePerm(){
-  var content='const SD='+JSON.stringify(SD,null,2)+';\n';
-  var blob=new Blob([content],{type:'application/javascript'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='stock_detail_map.js?v=20260728-0215';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  alert('已下载！覆盖：坚果云/taoguba-延边刺客/stock_detail_map.js?v=20260728-0215');
-}
-
 // localStorage 恢复
 (function(){
   if(typeof SD==='undefined')return;
