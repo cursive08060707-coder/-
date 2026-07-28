@@ -715,7 +715,9 @@ function showNotes(date){
   var title=document.getElementById('nm-title');
   var wd=wk[new Date(date).getDay()];
   title.innerHTML=date+'<small>周'+wd+'</small>';
-  document.getElementById('nm-text').value=_notesData[date]||'';
+  var existing=_notesData[date]||'';
+  var tpl='1. 有没有节点\n   高标角度：\n   指数角度：\n\n2. 有没有题材\n   有没有一家独大的题材：\n   哪些题材没有预期：\n\n3. 有没有指引\n   尾盘微盘涨速：\n\n4. 有没有恒单\n\n5. 明日计划\n';
+  document.getElementById('nm-text').value=existing||tpl;
   document.getElementById('nm-status').textContent='';
   document.getElementById('notes-modal').classList.add('show');
   setTimeout(()=>document.getElementById('nm-text').focus(),100);
