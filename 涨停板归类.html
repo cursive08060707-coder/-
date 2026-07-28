@@ -416,7 +416,7 @@ function render(){
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function lkTag(n){var d=SD[n];if(d&&d.h&&d.h.lk){return ' <small class="lk">'+d.h.lk+'</small>'}return ''}
+function lkTag(n){var d=SD[n];if(d&&d.h&&typeof d.h.lk==='number'){return ' <small class="lk">'+(d.h.lk*100).toFixed(1)+'%</small>'}return ''}
 
 // 题材名覆盖：这些词在首板中应作为题材名，即使也是股票名
 const _TN=new Set(["机器人"]);
