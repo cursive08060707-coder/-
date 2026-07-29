@@ -74,6 +74,7 @@ background-repeat:no-repeat;background-position:10px center}
 .sk:hover,.mb:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.06),0 0 0 1px var(--accent-border);transform:translateY(-1px)}
 .sk:active,.mb:active{transform:translateY(0)}
 .sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
+.sk .pv,.mb .pv{font-size:10px;color:var(--muted);margin-left:3px;padding:1px 4px;background:var(--accent-soft);border-radius:3px;border:1px solid var(--border2);font-weight:500}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
 /* 按钮高亮：名称搜索 hl2=黑底白字，文字高亮 .hl 在 hl2 按钮内=白底黑字 */
 .sk.hl2,.mb.hl2{background:#000!important;color:#fff!important;border-color:#000!important}
@@ -87,7 +88,7 @@ background-repeat:no-repeat;background-position:10px center}
 #wt{text-align:center;color:var(--muted2);margin-top:30px;font-size:13px}
 
 /* ─── fenshi sidebar ─── */
-#ft{width:300px;min-width:200px;max-width:80vw;background:var(--surface);border-left:2px solid var(--border);display:flex;flex-direction:column;overflow:hidden;order:99;position:relative}
+#ft{width:600px;min-width:300px;max-width:90vw;background:var(--surface);border-left:2px solid var(--border);display:flex;flex-direction:column;overflow:hidden;order:99;position:relative}
 #ft.collapsed{width:32px;min-width:32px}
 #ft-resizer{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:10;background:transparent;transition:background .15s}
 #ft-resizer:hover,#ft-resizer.dragging{background:var(--accent);opacity:.3}
@@ -98,9 +99,12 @@ background-repeat:no-repeat;background-position:10px center}
 #ft.collapsed #ft-h .ft-title{display:none}
 #ft.collapsed #ft-h{justify-content:center;padding:8px 0}
 #ft-body{flex:1;overflow-y:auto;padding:6px 8px}
+.ft-cols{display:flex;gap:6px;min-height:0}
+.ft-col{flex:1;min-width:0}
 #ft.collapsed #ft-body{display:none}
 #ft-empty{color:var(--muted2);font-size:11px;text-align:center;padding:20px 8px}
 .ft-item{margin-bottom:8px}
+.ft-col-title{font-size:10px;color:#999;margin-bottom:4px;padding:2px 6px;background:var(--surface2);border-radius:3px;font-weight:600;position:sticky;top:0;z-index:2}
 .ft-item img{width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;cursor:pointer;transition:border-color var(--tr)}
 .ft-item img:hover{border-color:var(--accent)}
 .ft-item .ft-label{font-size:11px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:4px}
@@ -134,6 +138,14 @@ background-repeat:no-repeat;background-position:10px center}
 .sp-hd h4{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
 .sp-hd .hd-r{font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.5}
 .sp-hd .hd-r b{color:var(--accent)}
+.sp-top10{margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)}
+.sp-top10 h4{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.sp-top10-list{max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2)}
+.sp-top10-item{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;font-size:11px;border-bottom:1px solid var(--border2);line-height:1.4}
+.sp-top10-item:last-child{border-bottom:none}
+.sp-top10-item .sp-tname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg);margin-right:8px}
+.sp-top10-item .sp-tratio{font-weight:600;color:var(--accent);font-family:var(--font-mono);flex-shrink:0}
+.sp-top10-item .sp-tchange{font-size:10px;color:var(--muted2);margin-left:6px;flex-shrink:0}
 #sp .sp-e{margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)}
 #sp .sp-e>div{margin-bottom:8px;font-size:12px;line-height:1.6;padding:6px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)}
 #sp .sp-e b{color:var(--accent);font-weight:600}
@@ -166,6 +178,7 @@ background-repeat:no-repeat;background-position:10px center}
 #ft-resizer{display:none}
 #ft-h{border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:10px 16px}
 #ft-body{max-height:calc(50vh - 40px)}
+.ft-cols{flex-direction:column;gap:4px}
 #sp{left:8px!important;right:8px!important;top:8px!important;bottom:8px!important;width:auto!important;max-width:none!important;min-width:0!important;display:none;flex-direction:column;z-index:9999}
 #sp.show{display:flex!important}
 #sp .sp-h{flex:0 0 auto}
@@ -365,6 +378,10 @@ function toggleTheme(){
       <div class="hd-r" id="sp-ht"></div>
       <div id="sp-hl"></div>
     </div>
+    <div class="sp-top10" id="sp-top10-section">
+      <h4>十大股东</h4>
+      <div class="sp-top10-list" id="sp-top10-list"></div>
+    </div>
     <div class="sp-e" id="sp-e"></div>
     <div id="sp-kline-section" style="margin-top:8px">
       <div class="chart-label"><b>日K</b></div>
@@ -377,7 +394,7 @@ function toggleTheme(){
 <!-- 分时图侧栏 -->
 <div id="ft">
   <div id="ft-resizer"></div>
-  <div id="ft-h"><span class="ft-title">📊 当日分时图</span><span class="ft-toggle" onclick="toggleFt()">▶</span></div>
+  <div id="ft-h"><span class="ft-title">📊 分时图 + 买一量</span><span class="ft-toggle" onclick="toggleFt()">▶</span></div>
   <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
 </div>
 
@@ -393,7 +410,7 @@ function toggleTheme(){
 function loadPosts(cb){
   if(window.ZP){cb();return;}
   var s=document.createElement('script');
-  s.src='zt_posts.js?v=20260729-0341';
+  s.src='zt_posts.js?v=20260729-2356';
   s.onload=function(){cb();};
   document.head.appendChild(s);
 }
@@ -426,6 +443,7 @@ function render(){
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function lkTag(n){var d=SD[n];if(d&&d.h&&typeof d.h.lk==='number'){return ' <small class="lk">'+(d.h.lk*100).toFixed(1)+'%</small>'}return ''}
+function provTag(n){var d=SD[n];if(d&&d.r){var p=d.r.split(' / ')[0];if(p&&p.length<=4)return ' <small class="pv">'+esc(p)+'</small>'}return ''}
 
 // 题材名覆盖：这些词在首板中应作为题材名，即使也是股票名
 const _TN=new Set(["机器人"]);
@@ -469,11 +487,11 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
     if(!sb.length)return;
     if(cb==='首板'&&cs){
       h+='<div class="sl"><div class="sh">'+esc(cs)+'</div><div class="stk">';
-      sb.forEach(s=>{h+='<span class="sk" data-n="'+esc(s.name)+'">'+esc(s.disp)+lkTag(s.name)+'</span>'});
+      sb.forEach(s=>{h+='<span class="sk" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</span>'});
       h+='</div></div>';
     }else if(cb){
       h+='<div class="mbl"><div class="mbs">';
-      sb.forEach(s=>{h+='<span class="mb" data-n="'+esc(s.name)+'">'+esc(s.disp)+lkTag(s.name)+'</span>'});
+      sb.forEach(s=>{h+='<span class="mb" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</span>'});
       h+='</div></div>';
     }
     sb=[];
@@ -548,12 +566,9 @@ function renderFenshi(idx){
   if(idx<0||!P[idx]){body.innerHTML='<div id="ft-empty">选择日期后显示分时图</div>';return;}
   const date=P[idx].d;
   if(typeof FM==='undefined'){body.innerHTML='<div id="ft-empty">分时图数据未加载</div>';return;}
-  // 从zt_data提取当日所有股票
   const stocks=extractStocksFromT(P[idx].t);
-  // 收集有分时图的股票
   const items=[];
   for(const name of stocks){
-    // 全角/半角转换
     let nameConv='';
     for(let c of name){
       if(c>='A'&&c<='Z')nameConv+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
@@ -563,27 +578,39 @@ function renderFenshi(idx){
     const d=SD[nameConv]||SD[name];
     if(!d||!d.c)continue;
     const fk=date+'_'+d.c;
-    const src=FM[fk];
-    if(src){
-      const tk=date+'_'+d.c;
-      const ztTime=(typeof ZT!=='undefined'&&ZT[tk])?ZT[tk]:'';
-      items.push({name:name,code:d.c,src:encodeURI(src),time:ztTime});
-    }
+    const fmSrc=FM[fk];
+    const hdFname=(typeof HD!=='undefined')?HD[fk]:null;
+    const hdSrc=hdFname?encodeURI('恒单/'+date+'/'+hdFname):null;
+    if(!fmSrc&&!hdSrc)continue;
+    const tk=date+'_'+d.c;
+    const ztTime=(typeof ZT!=='undefined'&&ZT[tk])?ZT[tk]:'';
+    items.push({name:name,code:d.c,fmSrc:fmSrc?encodeURI(fmSrc):null,hdSrc:hdSrc,time:ztTime});
   }
   if(!items.length){body.innerHTML='<div id="ft-empty">'+date+' 无分时图</div>';return;}
-  // 按首封时间排序（有时间的在前，无时间的在后）
   items.sort(function(a,b){
     if(!a.time&&!b.time)return 0;
     if(!a.time)return 1;
     if(!b.time)return -1;
     return a.time<b.time?-1:a.time>b.time?1:0;
   });
-  let html='<div style="font-size:10px;color:#999;margin-bottom:6px">'+date.slice(5)+' 共'+items.length+'张</div>';
+  var info='<div style="font-size:10px;color:#999;margin-bottom:6px">'+date.slice(5)+' 共'+items.length+'只</div>';
+  var leftHtml='<div class="ft-col-title">📊 分时图</div>';
+  var rightHtml='<div class="ft-col-title">📈 买一量</div>';
   items.forEach(function(it){
-    const timeLabel=it.time?'<span style="color:#d4380d;font-weight:600">'+it.time+'</span> ':'<span style="color:#ccc">--:--:--</span> ';
-    html+='<div class="ft-item"><div class="ft-label">'+timeLabel+'<span>'+esc(it.name)+'</span><span class="ft-code">'+it.code+'</span></div><img src="'+it.src+'" loading="lazy" onclick="clickFenshi(\''+esc(it.name)+'\',this)" onerror="this.parentElement.style.display=\'none\'"></div>';
+    var timeLabel=it.time?'<span style="color:#d4380d;font-weight:600">'+it.time+'</span> ':'<span style="color:#ccc">--:--:--</span> ';
+    var label='<div class="ft-label">'+timeLabel+'<span>'+esc(it.name)+'</span><span class="ft-code">'+it.code+'</span></div>';
+    if(it.fmSrc){
+      leftHtml+='<div class="ft-item">'+label+'<img src="'+it.fmSrc+'" loading="lazy" onclick="clickFenshi(\''+esc(it.name)+'\',this)" onerror="this.parentElement.style.display=\'none\'"></div>';
+    }else{
+      leftHtml+='<div class="ft-item">'+label+'<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:11px;border:1px solid var(--border);border-radius:var(--radius)">无分时图</div></div>';
+    }
+    if(it.hdSrc){
+      rightHtml+='<div class="ft-item">'+label+'<img src="'+it.hdSrc+'" loading="lazy" onclick="clickFenshi(\''+esc(it.name)+'\',this)" onerror="this.parentElement.style.display=\'none\'"></div>';
+    }else{
+      rightHtml+='<div class="ft-item">'+label+'<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:11px;border:1px solid var(--border);border-radius:var(--radius)">无恒单</div></div>';
+    }
   });
-  body.innerHTML=html;
+  body.innerHTML=info+'<div class="ft-cols"><div class="ft-col">'+leftHtml+'</div><div class="ft-col">'+rightHtml+'</div></div>';
 }
 function clickFenshi(name,img){
   // 点击分时图，在主区域高亮对应股票并弹出详情
@@ -684,6 +711,21 @@ function showSp(name,e){
   if(d.t){d.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('span');s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);}});}
   document.getElementById('sp-hc').innerHTML='';
   document.getElementById('sp-ht').innerHTML='';
+  // 十大股东
+  const top10El=document.getElementById('sp-top10-list');
+  const top10Section=document.getElementById('sp-top10-section');
+  if(d.h&&d.h.top10&&d.h.top10.length){
+    let th='';
+    d.h.top10.forEach(function(h,i){
+      var chg=h.c?' <span class="sp-tchange">'+esc(h.c)+'</span>':'';
+      th+='<div class="sp-top10-item"><span class="sp-tname">'+(i+1)+'. '+esc(h.n)+'</span><span class="sp-tratio">'+(h.r||0)+'%</span>'+chg+'</div>';
+    });
+    top10El.innerHTML=th;
+    top10Section.style.display='block';
+  }else{
+    top10El.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted2);font-size:11px">暂无十大股东数据</div>';
+    top10Section.style.display='block';
+  }
   const ec=document.getElementById('sp-e');ec.innerHTML='';
   if(d.e&&d.e.length){d.e.forEach(x=>{const div=document.createElement('div');div.innerHTML='<b>'+esc(x[0])+'：</b>'+esc(x[1]);ec.appendChild(div);});}
   // 买一量曲线图
