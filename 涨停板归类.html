@@ -353,7 +353,7 @@ function toggleTheme(){
 
 <!-- 股票信息弹窗 -->
 <div id="sp">
-  <div class="sp-h"><span id="sp-n"></span><span class="sp-h-btn" onclick="toggleHistory()">📜 历史涨停</span><span class="sp-x" onclick="closeSp()">&times;</span></div>
+  <div class="sp-h"><span id="sp-n"></span><span class="sp-h-btn" onclick="toggleHistory()">📋 历史涨停</span><span class="sp-x" onclick="closeSp()">&times;</span></div>
   <div class="sp-b">
     <div class="sp-history" id="sp-history" style="display:none"><div class="sp-history-list" id="sp-history-list"></div></div>
     <div class="sp-chart" id="sp-chart"></div>
@@ -784,7 +784,6 @@ function toggleHistory(){
     if(!results.length){
       list.innerHTML='<div class="sp-history-empty">无涨停记录</div>';
     }else{
-      results.reverse();
       var h='';
       for(var r=0;r<results.length;r++){
         var item=results[r];
