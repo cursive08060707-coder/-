@@ -22,7 +22,7 @@
 --radius:6px; --radius-lg:10px; --radius-xl:14px;
 --tr:0.18s cubic-bezier(0.4,0,0.2,1);
 }
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;color-scheme:light dark}
 body{font-family:var(--font-body);background:var(--bg);color:var(--fg);display:flex;position:fixed;inset:0;overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 /* ─── sidebar ─── */
@@ -73,11 +73,11 @@ background-repeat:no-repeat;background-position:10px center}
 .sk,.mb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:5px 11px;font-size:12px;cursor:pointer;transition:all var(--tr);position:relative;display:inline-flex;align-items:center;gap:4px;line-height:1.4}
 .sk:hover,.mb:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.06),0 0 0 1px var(--accent-border);transform:translateY(-1px)}
 .sk:active,.mb:active{transform:translateY(0)}
-.sk .lk,.mb .lk{font-size:9px;color:var(--muted2);font-weight:400;margin-left:2px;font-family:var(--font-mono)}
+.sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
 /* 按钮高亮：名称搜索 hl2=黑底白字，文字高亮 .hl 在 hl2 按钮内=白底黑字 */
 .sk.hl2,.mb.hl2{background:#000!important;color:#fff!important;border-color:#000!important}
-.sk.hl2 .lk,.mb.hl2 .lk{color:#999!important}
+.sk.hl2 .lk,.mb.hl2 .lk{color:#ccc!important}
 .hl2 .hl{background:#fff!important;color:#000!important}
 .hl2 .hl.hl-cur{background:#fff!important;color:#000!important;outline:2px solid #fff}
 
@@ -258,7 +258,7 @@ background-repeat:no-repeat;background-position:10px center}
 .logo-icon{background:linear-gradient(135deg,#636366,#3a3a3c)}
 /* 暗黑模式：hl2=白底黑字，hl在hl2内=黑底白字 */
 .sk.hl2,.mb.hl2{background:#fff!important;color:#000!important;border-color:#fff!important}
-.sk.hl2 .lk,.mb.hl2 .lk{color:#666!important}
+.sk.hl2 .lk,.mb.hl2 .lk{color:#444!important}
 .hl2 .hl{background:#000!important;color:#fff!important}
 .hl{background:#fff!important;color:#000!important}
 /* 笔记弹窗 */
@@ -373,18 +373,18 @@ function toggleTheme(){
 </div>
 
 
-<script src="stock_names.js?v=20260728-0215"></script>
-<script src="stock_detail_map.js?v=20260728-0215"></script>
-<script src="zt_data.js?v=20260728-0215"></script>
-<script src="hengdan_map.js?v=20260728-0215"></script>
-<script src="fenshi_map.js?v=20260728-0215"></script>
-<script src="zt_time_map.js?v=20260728-0215"></script>
+<script src="stock_names.js?v=20260729-0341"></script>
+<script src="stock_detail_map.js?v=20260729-0341"></script>
+<script src="zt_data.js?v=20260729-0341"></script>
+<script src="hengdan_map.js?v=20260729-0341"></script>
+<script src="fenshi_map.js?v=20260729-0341"></script>
+<script src="zt_time_map.js?v=20260729-0341"></script>
 <script>
 // 延迟加载帖子原文数据
 function loadPosts(cb){
   if(window.ZP){cb();return;}
   var s=document.createElement('script');
-  s.src='zt_posts.js?v=20260728-0215';
+  s.src='zt_posts.js?v=20260729-0341';
   s.onload=function(){cb();};
   document.head.appendChild(s);
 }
@@ -394,7 +394,7 @@ console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | z
 
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
-const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260728-0215初始化
+const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260729-0341初始化
 const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
 const wk=['日','一','二','三','四','五','六'];
 stEl.textContent=P.length+'天';
@@ -416,7 +416,7 @@ function render(){
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function lkTag(n){var d=SD[n];if(d&&d.h&&d.h.lk){return ' <small class="lk">'+d.h.lk+'</small>'}return ''}
+function lkTag(n){var d=SD[n];if(d&&d.h&&typeof d.h.lk==='number'){return ' <small class="lk">'+(d.h.lk*100).toFixed(1)+'%</small>'}return ''}
 
 // 题材名覆盖：这些词在首板中应作为题材名，即使也是股票名
 const _TN=new Set(["机器人"]);
@@ -484,14 +484,14 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
         for(let x of ps){x=x.trim();for(let s of['\uff1a',':','\u3001']){if(x.includes(s))x=x.split(s)[0].trim();}let px=x.includes('（')?x.split('（')[0].trim():x;if(px.length>=2&&isSN(px))sb.push({disp:x,name:px});}
       }else{
         // 连板格式处理
-        // 格式1（zt_data.js?v=20260728-0215）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
+        // 格式1（zt_data.js?v=20260729-0341）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
         // 格式2（原文）："股票名、描述"（每行一个股票）
         let ps=[];
         // 先用顿号分隔（原文格式）
         if(line.includes('\u3001')){
           ps=line.split(/\u3001+/);
         }else{
-          // 再用中文逗号分隔（zt_data.js?v=20260728-0215格式）
+          // 再用中文逗号分隔（zt_data.js?v=20260729-0341格式）
           ps=line.split(/[,\uff0c]+/);
         }
         for(let p of ps){
@@ -657,7 +657,7 @@ render();show(0);
 let spCode='',spName='';
 function showSp(name,e){
   if(typeof SD==='undefined')return;
-  // 全角/半角转换（zt_data.js?v=20260728-0215 可能是半角，SD 键是全角）
+  // 全角/半角转换（zt_data.js?v=20260729-0341 可能是半角，SD 键是全角）
   let name_conv='';
   for(let c of name){
     if(c>='A'&&c<='Z')name_conv+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
@@ -895,10 +895,14 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
 let _notesCurDate='';
 let _notesData={};
 const NOTES_API='http://localhost:8765';
+const NOTES_GITHUB='notes.json';
 
-// 加载笔记数据
+// 加载笔记数据：优先本地服务，失败回退GitHub静态文件
 function loadNotes(cb){
-  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{console.log('笔记服务未连接',e);if(cb)cb();});
+  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{
+    console.log('本地笔记服务未连接，回退GitHub静态文件',e);
+    fetch(NOTES_GITHUB+'?v='+Date.now()).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e2=>{console.log('GitHub笔记加载失败',e2);if(cb)cb();});
+  });
 }
 
 function showNotes(date){
