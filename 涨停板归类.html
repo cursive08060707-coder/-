@@ -895,10 +895,14 @@ document.getElementById('post-modal').addEventListener('click',function(e){if(e.
 let _notesCurDate='';
 let _notesData={};
 const NOTES_API='http://localhost:8765';
+const NOTES_GITHUB='notes.json';
 
-// 加载笔记数据
+// 加载笔记数据：优先本地服务，失败回退GitHub静态文件
 function loadNotes(cb){
-  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{console.log('笔记服务未连接',e);if(cb)cb();});
+  fetch(NOTES_API).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e=>{
+    console.log('本地笔记服务未连接，回退GitHub静态文件',e);
+    fetch(NOTES_GITHUB+'?v='+Date.now()).then(r=>r.json()).then(d=>{_notesData=d||{};if(cb)cb();}).catch(e2=>{console.log('GitHub笔记加载失败',e2);if(cb)cb();});
+  });
 }
 
 function showNotes(date){
