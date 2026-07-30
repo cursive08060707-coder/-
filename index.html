@@ -399,18 +399,18 @@ function toggleTheme(){
 </div>
 
 
-<script src="stock_names.js?v=20260729-0341"></script>
-<script src="stock_detail_map.js?v=20260729-0341"></script>
-<script src="zt_data.js?v=20260729-0341"></script>
-<script src="hengdan_map.js?v=20260729-0341"></script>
-<script src="fenshi_map.js?v=20260729-0341"></script>
-<script src="zt_time_map.js?v=20260729-0341"></script>
+<script src="stock_names.js?v=20260730-1747"></script>
+<script src="stock_detail_map.js?v=20260730-1747"></script>
+<script src="zt_data.js?v=20260730-1747"></script>
+<script src="hengdan_map.js?v=20260730-1747"></script>
+<script src="fenshi_map.js?v=20260730-1747"></script>
+<script src="zt_time_map.js?v=20260730-1747"></script>
 <script>
 // 延迟加载帖子原文数据
 function loadPosts(cb){
   if(window.ZP){cb();return;}
   var s=document.createElement('script');
-  s.src='zt_posts.js?v=20260729-2356';
+  s.src='zt_posts.js?v=20260730-1747';
   s.onload=function(){cb();};
   document.head.appendChild(s);
 }
@@ -420,7 +420,7 @@ console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | z
 
 // === 主显示逻辑 ===
 let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
-const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260729-0341初始化
+const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260730-1747初始化
 const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
 const wk=['日','一','二','三','四','五','六'];
 stEl.textContent=P.length+'天';
@@ -442,7 +442,7 @@ function render(){
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function lkTag(n){var d=SD[n];if(d&&d.h&&typeof d.h.lk==='number'){return ' <small class="lk">'+(d.h.lk*100).toFixed(1)+'%</small>'}return ''}
+function lkTag(n){var d=SD[n];if(d&&d.h&&d.h.top10&&d.h.top10.length){var s=0;for(var i=0;i<d.h.top10.length;i++){if(d.h.top10[i].r>=5)s+=d.h.top10[i].r}if(s>0)return ' <small class="lk">'+s.toFixed(1)+'%</small>'}return ''}
 function provTag(n){var d=SD[n];if(d&&d.r){var p=d.r.split(' / ')[0];if(p&&p.length<=4)return ' <small class="pv">'+esc(p)+'</small>'}return ''}
 
 // 题材名覆盖：这些词在首板中应作为题材名，即使也是股票名
@@ -511,14 +511,14 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
         for(let x of ps){x=x.trim();for(let s of['\uff1a',':','\u3001']){if(x.includes(s))x=x.split(s)[0].trim();}let px=x.includes('（')?x.split('（')[0].trim():x;if(px.length>=2&&isSN(px))sb.push({disp:x,name:px});}
       }else{
         // 连板格式处理
-        // 格式1（zt_data.js?v=20260729-0341）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
+        // 格式1（zt_data.js?v=20260730-1747）："股票名（拼音）代码，股票名（拼音）代码..."（一行多股票）
         // 格式2（原文）："股票名、描述"（每行一个股票）
         let ps=[];
         // 先用顿号分隔（原文格式）
         if(line.includes('\u3001')){
           ps=line.split(/\u3001+/);
         }else{
-          // 再用中文逗号分隔（zt_data.js?v=20260729-0341格式）
+          // 再用中文逗号分隔（zt_data.js?v=20260730-1747格式）
           ps=line.split(/[,\uff0c]+/);
         }
         for(let p of ps){
@@ -693,7 +693,7 @@ render();show(0);
 let spCode='',spName='';
 function showSp(name,e){
   if(typeof SD==='undefined')return;
-  // 全角/半角转换（zt_data.js?v=20260729-0341 可能是半角，SD 键是全角）
+  // 全角/半角转换（zt_data.js?v=20260730-1747 可能是半角，SD 键是全角）
   let name_conv='';
   for(let c of name){
     if(c>='A'&&c<='Z')name_conv+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
@@ -711,6 +711,13 @@ function showSp(name,e){
   if(d.t){d.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('span');s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);}});}
   document.getElementById('sp-hc').innerHTML='';
   document.getElementById('sp-ht').innerHTML='';
+  // 填充大股东信息
+  if(d.h){
+    var hc=document.getElementById('sp-hc');
+    var ht=document.getElementById('sp-ht');
+    if(d.h.c)hc.innerHTML='<b>控股股东：</b>'+esc(d.h.c);
+    if(d.h.t)ht.innerHTML='<b>持股比例：</b>'+d.h.t+'%';
+  }
   // 十大股东
   const top10El=document.getElementById('sp-top10-list');
   const top10Section=document.getElementById('sp-top10-section');
@@ -783,7 +790,7 @@ function showSp(name,e){
       if(item)item.scrollIntoView({block:'center',behavior:'smooth'});
     }
   }
-  fetchHolder(d.c);
+  // fetchHolder 已废弃，top10 数据直接从 SD 读取
 }
 
 // === K线（弹窗内自动加载） ===
