@@ -6,8 +6,8 @@
 <title>涨停时间轴</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 0; padding: 0; overflow: auto; }
-#wrapper { width: 40000px; }
+html, body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100%; }
+#scroll-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto; }
 .header { text-align: center; padding: 20px 10px; }
 .header h1 { font-size: 20px; color: #58a6ff; margin-bottom: 4px; }
 .header .sub { font-size: 12px; color: #8b949e; }
@@ -33,15 +33,14 @@ canvas { display: block; }
 </style>
 </head>
 <body>
+<div id="scroll-container">
 <div class="header">
   <h1 id="title">涨停时间轴</h1>
   <div class="sub" id="subtitle">横轴：首次涨停时间 09:30→15:00 · 纵轴：连板高度 · 颜色：概念板块</div>
 </div>
 <div class="legend" id="legend"></div>
 <div class="chart-wrap" id="chartWrap">
-  <div id="wrapper">
   <canvas id="chart" width="40000" height="2000"></canvas>
-</div>
 </div>
 <div class="tooltip" id="tooltip"></div>
 
@@ -442,5 +441,6 @@ function renderChart() {
   drawLegend();
 }
 </script>
+</div>
 </body>
 </html>
