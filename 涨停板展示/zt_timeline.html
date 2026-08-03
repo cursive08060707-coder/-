@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>涨停时间轴</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; overflow-x: auto; }
+.header { text-align: center; padding: 20px 10px; }
+.header h1 { font-size: 20px; color: #58a6ff; margin-bottom: 4px; }
+.header .sub { font-size: 12px; color: #8b949e; }
+
+.chart-wrap { padding: 10px 20px 40px; min-width: 1200px; }
+canvas { display: block; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px 20px; justify-content: center; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8b949e; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.tooltip {
+  position: fixed; display: none; background: #161b22; border: 1px solid #30363d;
+  border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #c9d1d9;
+  pointer-events: none; z-index: 100; max-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.tooltip .tt-name { font-weight: 600; color: #58a6ff; margin-bottom: 2px; }
+.tooltip .tt-board { color: #f0883e; font-size: 11px; }
+.tooltip .tt-concept { color: #7ee787; font-size: 11px; }
+.tooltip .tt-time { color: #8b949e; font-size: 11px; }
+
+.no-data { text-align: center; padding: 80px 20px; color: #8b949e; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1 id="title">涨停时间轴</h1>
+  <div class="sub" id="subtitle">横轴：首次涨停时间 09:30→15:00 · 纵轴：连板高度 · 颜色：概念板块</div>
+</div>
+<div class="legend" id="legend"></div>
+<div class="chart-wrap" id="chartWrap">
+  <canvas id="chart" width="40000" height="2000"></canvas>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<!-- 数据文件 -->
+<script src="stock_names.js"></script>
+<script src="zt_data.js"></script>
+<script src="zt_time_detail.js"></script>
+
+<script>
+// ===== 从URL获取日期 =====
+const params = new URLSearchParams(location.search);
+const DATE = params.get('date') || '';
+
+document.getElementById('title').textContent = '涨停时间轴 · ' + (DATE || '未指定');
+
+// ===== 股票名集合 =====
+const _SN = new Set(Object.keys(SN));
+
+// ===== 解析P数组获取当天数据 =====
+function parseDayData(date) {
+  if (!date) return [];
+  const entry = P.find(p => p.d === date);
+  if (!entry || !entry.t) return [];
+
+  const lines = entry.t.split('\n');
+  const result = [];
+  let currentBoard = '';
+  let currentConcept = '';
+
+  const boardMap = {'首板':1,'二板':2,'三板':3,'四板':4,'五板':5,'六板':6,'七板':7,'八板':8,'九板':9,'十板':10};
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    // 检测连板行
+    if (/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板)$/.test(line)) {
+      currentBoard = line;
+      currentConcept = '';
+      continue;
+    }
+
+    // 首板下的概念行：短文本、不含逗号、不是股票名
+    if (currentBoard === '首板' && line.length <= 12 && !line.includes('，') && !line.includes(',') && !_SN.has(line)) {
+      currentConcept = line;
+      continue;
+    }
+
+    // 非首板时，概念行检测：如果该行不含逗号/顿号且不是股票名
+    if (currentBoard && currentBoard !== '首板' && !_SN.has(line.split(/[，,、]/)[0].trim()) && line.length <= 12 && !line.includes('，') && !line.includes(',')) {
+      currentConcept = line;
+      continue;
+    }
+
+    // 解析股票行
+    if (currentBoard) {
+      const boardNum = boardMap[currentBoard] || 1;
+      const parts = line.split(/[，,]+/);
+      for (let p of parts) {
+        p = p.trim();
+        if (!p) continue;
+        // 提取股票名（括号前）
+        let name = p.includes('（') ? p.split('（')[0].trim() : p;
+        // 去掉描述
+        for (let s of ['：',':','。']) { if (name.includes(s)) name = name.split(s)[0].trim(); }
+
+        // 提取代码：括号内拼音后面的数字
+        let code = '';
+        const codeMatch = p.match(/(\d{6})/);
+        if (codeMatch) code = codeMatch[1];
+
+        if (name.length >= 2 && _SN.has(name)) {
+          result.push({
+            name: name,
+            code: code,
+            board: currentBoard,
+            board_num: boardNum,
+            concept: currentConcept || '其他',
+            time: ''
+          });
+        }
+      }
+    }
+  }
+
+  // 从ZTD获取涨停时间
+  if (typeof ZTD !== 'undefined' && ZTD[date]) {
+    const dayZTD = ZTD[date];
+    for (let item of result) {
+      if (item.code && dayZTD[item.code]) {
+        item.time = dayZTD[item.code].ft || '';
+        item.lt = dayZTD[item.code].lt || '';
+      }
+    }
+  }
+
+  // 只保留有时间的股票
+  return result.filter(r => r.time);
+}
+
+// ===== 概念颜色 =====
+const CONCEPT_COLORS = {
+  '算力租赁': '#ff6b6b',
+  '算力硬件': '#ffa94d',
+  '芯片': '#ffd43b',
+  'Ai应用': '#74c0fc',
+  '机器人': '#69db7c',
+  '消费': '#da77f2',
+  '电力': '#ffa07a',
+  '其余形式独苗': '#868e96',
+  '其他': '#6c757d',
+};
+
+function getColor(concept) {
+  return CONCEPT_COLORS[concept] || '#6c757d';
+}
+
+// ===== 渲染 =====
+const DATA = parseDayData(DATE);
+
+if (DATA.length === 0) {
+  document.getElementById('chartWrap').innerHTML = '<div class="no-data">暂无涨停时间数据</div>';
+} else {
+  renderChart();
+}
+
+function renderChart() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('tooltip');
+
+  // 布局参数
+  const PAD_L = 60, PAD_R = 40, PAD_T = 30, PAD_B = 60;
+  const W = 40000, H = 2000;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  // 时间范围
+  const MORNING_START = 9.5 * 3600;
+  const MORNING_END = 11.5 * 3600;
+  const AFTERNOON_START = 13 * 3600;
+  const AFTERNOON_END = 15 * 3600;
+  const MORNING_RANGE = MORNING_END - MORNING_START;
+  const AFTERNOON_RANGE = AFTERNOON_END - AFTERNOON_START;
+  const TOTAL_RANGE = MORNING_RANGE + AFTERNOON_RANGE;
+
+  const MAX_BOARD = 5;
+
+  function timeToX(timeStr) {
+    const parts = timeStr.split(':');
+    const sec = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+    let effective;
+    if (sec <= MORNING_END) {
+      effective = sec - MORNING_START;
+    } else {
+      effective = MORNING_RANGE + (sec - AFTERNOON_START);
+    }
+    return PAD_L + (effective / TOTAL_RANGE) * chartW;
+  }
+
+  function boardToY(boardNum) {
+    const b = Math.min(boardNum, MAX_BOARD);
+    if (b <= 1) {
+      return PAD_T + chartH * 0.28;
+    } else {
+      const positions = {2: 0.24, 3: 0.17, 4: 0.10, 5: 0.03};
+      return PAD_T + chartH * positions[b];
+    }
+  }
+
+  // 绘制网格
+  function drawGrid() {
+    ctx.strokeStyle = '#21262d';
+    ctx.lineWidth = 1;
+    ctx.font = '15px -apple-system, sans-serif';
+    ctx.fillStyle = '#484f58';
+
+    // 纵轴
+    for (let b = 1; b <= 5; b++) {
+      const y = boardToY(b);
+      ctx.beginPath();
+      ctx.moveTo(PAD_L, y);
+      ctx.lineTo(W - PAD_R, y);
+      ctx.stroke();
+      ctx.textAlign = 'right';
+      ctx.fillText(b >= 5 ? '5板+' : b + '板', PAD_L - 16, y + 4);
+    }
+    // 首板和二板之间分隔线
+    const sepY1 = boardToY(1);
+    const sepY2 = boardToY(2);
+    ctx.strokeStyle = '#30363d';
+    ctx.setLineDash([2,4]);
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, (sepY1 + sepY2) / 2);
+    ctx.lineTo(W - PAD_R, (sepY1 + sepY2) / 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#21262d';
+
+    // 横轴时间刻度
+    const timeMarks = generateTimeMarks();
+    for (const tm of timeMarks) {
+      const x = timeToX(tm + ':00');
+      ctx.beginPath();
+      ctx.moveTo(x, PAD_T);
+      ctx.lineTo(x, boardToY(1));
+      ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.font = '13px sans-serif';
+      ctx.fillText(tm, x, boardToY(1) - 6);
+    }
+    // 午休分割线
+    const splitX = timeToX('11:30:00');
+    ctx.strokeStyle = '#30363d';
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(splitX, PAD_T);
+    ctx.lineTo(splitX, H - PAD_B);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#21262d';
+  }
+
+  function generateTimeMarks() {
+    const marks = [];
+    // 09:30 ~ 11:30
+    for (let h = 9; h <= 11; h++) {
+      for (let m = 0; m < 60; m++) {
+        if (h === 9 && m < 30) continue;
+        if (h === 11 && m > 30) continue;
+        marks.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+      }
+    }
+    // 13:00 ~ 15:00
+    for (let h = 13; h <= 15; h++) {
+      for (let m = 0; m < 60; m++) {
+        if (h === 15 && m > 0) continue;
+        marks.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+      }
+    }
+    return marks;
+  }
+
+  // 绘制数据点
+  function drawPoints() {
+    const sorted = [...DATA].sort((a, b) => a.time.localeCompare(b.time));
+
+    // 按分钟+板高分组
+    const groups = {};
+    for (const d of sorted) {
+      const timeKey = d.time.substring(0, 8);
+      const key = timeKey + '_' + Math.min(d.board_num, 5);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(d);
+    }
+
+    for (const d of sorted) {
+      const x = timeToX(d.time);
+      const baseY = boardToY(d.board_num);
+      const color = getColor(d.concept);
+
+      const timeKey = d.time.substring(0, 8);
+      const key = timeKey + '_' + Math.min(d.board_num, 5);
+      const group = groups[key];
+      const idx = group.indexOf(d);
+      const gLen = group.length;
+
+      const px = x;
+      let py = baseY;
+
+      if (gLen > 1) {
+        if (d.board_num >= 2) {
+          const yDir = (idx % 2 === 0) ? 1 : -1;
+          const yMag = (Math.floor(idx / 2) + 1) * 16 * yDir;
+          py = baseY + yMag;
+        } else {
+          py = baseY;
+        }
+      }
+
+      // 画点
+      ctx.beginPath();
+      ctx.arc(px, py, d.board_num >= 5 ? 6 : d.board_num >= 2 ? 5 : 4, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#0d1117';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 文字标注
+      if (d.board_num >= 2) {
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#c9d1d9';
+        ctx.textAlign = 'left';
+        ctx.fillText(d.name, px + 12, py + 4);
+        d._textY = py;
+        if (d.concept && d.concept !== '其他') {
+          ctx.font = '13px sans-serif';
+          ctx.fillStyle = color;
+          ctx.fillText(d.concept, px + 12, py + 20);
+        }
+      } else {
+        // 首板竖排
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        const nameChars = d.name.split('');
+        const conceptStr = (d.concept && d.concept !== '其他' && d.concept !== '其余形式独苗') ? d.concept : '';
+        let yOffset = 22;
+        for (let pi = 0; pi < idx; pi++) {
+          const prev = group[pi];
+          const prevNameLen = prev.name.length;
+          const prevConceptLen = (prev.concept && prev.concept !== '其他' && prev.concept !== '其余形式独苗') ? prev.concept.length + 1 : 0;
+          yOffset += prevNameLen * 20 + prevConceptLen * 18 + 4 + 30;
+        }
+        const textStartY = py + yOffset - 6;
+        const textEndY = py + yOffset + nameChars.length * 20 + (conceptStr ? conceptStr.length * 18 : 0) + 6;
+        d._textY = (textStartY + textEndY) / 2;
+        ctx.fillStyle = '#8b949e';
+        for (let ci = 0; ci < nameChars.length; ci++) {
+          ctx.fillText(nameChars[ci], px, py + yOffset + ci * 20);
+        }
+        if (conceptStr) {
+          ctx.font = '13px sans-serif';
+          ctx.fillStyle = color;
+          for (let ci = 0; ci < conceptStr.length; ci++) {
+            ctx.fillText(conceptStr[ci], px, py + yOffset + nameChars.length * 20 + ci * 18);
+          }
+        }
+      }
+
+      d._px = px;
+      d._py = py;
+    }
+  }
+
+  // 图例
+  function drawLegend() {
+    const legendEl = document.getElementById('legend');
+    // 收集数据中出现的所有概念
+    const usedConcepts = [...new Set(DATA.map(d => d.concept))];
+    // 按预定义顺序排序
+    const orderedConcepts = Object.keys(CONCEPT_COLORS).filter(c => usedConcepts.includes(c));
+    // 加上未预定义的概念
+    for (const c of usedConcepts) {
+      if (!orderedConcepts.includes(c)) orderedConcepts.push(c);
+    }
+    for (const c of orderedConcepts) {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML = `<span class="legend-dot" style="background:${getColor(c)}"></span>${c}`;
+      legendEl.appendChild(item);
+    }
+  }
+
+  // 交互
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    let found = null;
+    let minDist = Infinity;
+    for (const d of DATA) {
+      if (!d._px) continue;
+      const dx = mx - d._px;
+      if (dx < -10 || dx > 150) continue;
+      const checkY = d._textY !== undefined ? d._textY : d._py;
+      const dy = Math.abs(my - checkY);
+      if (dy < minDist) {
+        minDist = dy;
+        found = d;
+      }
+    }
+
+    if (found) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 12) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+      const ltStr = found.lt ? '<div class="tt-time">封板: ' + found.time + '</div><div class="tt-time">最后: ' + found.lt + '</div>' : '<div class="tt-time">⏰ ' + found.time + '</div>';
+      tooltip.innerHTML = `
+        <div class="tt-name">${found.name}</div>
+        <div class="tt-board">${found.board}</div>
+        <div class="tt-concept">${found.concept}</div>
+        ${ltStr}
+      `;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
+
+  // 渲染
+  drawGrid();
+  drawPoints();
+  drawLegend();
+}
+</script>
+</body>
+</html>
