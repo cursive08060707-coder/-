@@ -537,7 +537,7 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
   // 嵌入涨停时间轴iframe
   var tlDate=P[i].d;var tlFrame=document.createElement('div');
   tlFrame.style.cssText='margin-top:28px;padding-top:20px;border-top:1px solid var(--border);';
-  tlFrame.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><h3 style="font-size:15px;font-weight:700;color:var(--accent);padding:4px 12px;border-radius:var(--radius);background:var(--accent-soft);border:1px solid var(--accent-border);display:inline-flex;align-items:center;gap:6px;margin:0;">涨停时间轴</h3><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><button id="tl-zoom-out-'+i+'" style="width:24px;height:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:14px;">−</button><span id="tl-zoom-val-'+i+'">100%</span><button id="tl-zoom-in-'+i+'" style="width:24px;height:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:14px;">+</button></div></div><div id="tl-container-'+i+'" style="position:relative;width:100%;height:500px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto;"><iframe src="zt_timeline.html?date='+tlDate+'" style="width:100%;height:100%;border:none;transform-origin:0 0;" id="tl-iframe-'+i+'" frameborder="0" scrolling="auto"></iframe></div>';
+  tlFrame.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><h3 style="font-size:15px;font-weight:700;color:var(--accent);padding:4px 12px;border-radius:var(--radius);background:var(--accent-soft);border:1px solid var(--accent-border);display:inline-flex;align-items:center;gap:6px;margin:0;">涨停时间轴</h3><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);"><button id="tl-zoom-out-'+i+'" style="width:24px;height:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:14px;">−</button><span id="tl-zoom-val-'+i+'">100%</span><button id="tl-zoom-in-'+i+'" style="width:24px;height:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:14px;">+</button></div></div><div id="tl-container-'+i+'" style="position:relative;width:100%;height:300px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto;"><iframe src="zt_timeline.html?date='+tlDate+'" style="width:100%;height:100%;border:none;" id="tl-iframe-'+i+'" frameborder="0" scrolling="auto"></iframe></div>';
   ct.appendChild(tlFrame);
   // 缩放功能
   (function(idx){
@@ -545,8 +545,8 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
     var valEl=document.getElementById('tl-zoom-val-'+idx);
     var outBtn=document.getElementById('tl-zoom-out-'+idx);
     var inBtn=document.getElementById('tl-zoom-in-'+idx);
-    if(inBtn)inBtn.onclick=function(){zoom=Math.min(zoom+25,200);iframe.style.transform='scale('+zoom/100+')';iframe.style.width=(10000/zoom)+'%';iframe.style.height=(50000/zoom)+'px';valEl.textContent=zoom+'%';};
-    if(outBtn)outBtn.onclick=function(){zoom=Math.max(zoom-25,25);iframe.style.transform='scale('+zoom/100+')';iframe.style.width=(10000/zoom)+'%';iframe.style.height=(50000/zoom)+'px';valEl.textContent=zoom+'%';};
+    if(inBtn)inBtn.onclick=function(){zoom=Math.min(zoom+25,200);iframe.style.transform='scale('+zoom/100+')';iframe.style.width=(100/zoom*100)+'%';iframe.style.height=(30000/zoom)+'px';valEl.textContent=zoom+'%';};
+    if(outBtn)outBtn.onclick=function(){zoom=Math.max(zoom-25,25);iframe.style.transform='scale('+zoom/100+')';iframe.style.width=(100/zoom*100)+'%';iframe.style.height=(30000/zoom)+'px';valEl.textContent=zoom+'%';};
   })(i);
   // 搜索高亮
   if(st){
