@@ -371,6 +371,7 @@ function toggleTheme(){
     <div class="sp-history" id="sp-history" style="display:none"><div class="sp-history-list" id="sp-history-list"></div></div>
     <div class="sp-chart" id="sp-chart"></div>
     <div class="sp-rg" id="sp-rg"></div>
+    <div class="sp-rg" id="sp-mv"></div>
     <div class="sp-r" id="sp-r"></div>
     <div class="sp-t" id="sp-t"></div>
     <div class="sp-hd">
@@ -691,6 +692,14 @@ render();show(0);
 <script>
 // === 股票弹窗逻辑 ===
 let spCode='',spName='';
+function formatMarketCap(value){
+  const n=Number(value);if(!Number.isFinite(n)||n<=0)return '';
+  const trim=function(s){return s.replace(/\.?(0+)$/,'').replace(/\.$/,'');};
+  if(n>=1e12)return trim((n/1e12).toFixed(2))+'万亿';
+  if(n>=1e8)return trim((n/1e8).toFixed(n>=1e10?1:2))+'亿';
+  if(n>=1e4)return trim((n/1e4).toFixed(1))+'万';
+  return Math.round(n).toLocaleString('zh-CN')+'元';
+}
 function showSp(name,e){
   if(typeof SD==='undefined')return;
   // 全角/半角转换（zt_data.js?v=20260730-1747 可能是半角，SD 键是全角）
@@ -707,6 +716,9 @@ function showSp(name,e){
   document.getElementById('sp-n').textContent=name+'（'+d.c+'）';
   const rg=document.getElementById('sp-rg');
   if(d.r){const parts=d.r.split(' / ');rg.innerHTML='<b>'+esc(parts[0]||'')+'</b>'+esc(parts[1]?' / '+parts[1]:'');rg.style.display='block';}else{rg.style.display='none';}
+  const mvEl=document.getElementById('sp-mv');
+  const mvText=formatMarketCap(d.mv);
+  if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
   const tc=document.getElementById('sp-t');tc.innerHTML='';
   if(d.t){d.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('span');s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);}});}
   document.getElementById('sp-hc').innerHTML='';
