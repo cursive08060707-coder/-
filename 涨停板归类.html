@@ -585,10 +585,10 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
     },{passive:false});
 
     // 鼠标按住画布可同时横向、纵向平移；触摸设备继续使用原生手势
-    var dragging=false,startX=0,startY=0,startLeft=0,startTop=0,pointerId=null;
+    var dragging=false,dragMoved=false,startX=0,startY=0,startLeft=0,startTop=0,pointerId=null;
     container.addEventListener('pointerdown',function(e){
       if(e.target!==cv||e.button!==0||(e.pointerType&&e.pointerType!=='mouse'))return;
-      dragging=true;pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;startLeft=container.scrollLeft;startTop=container.scrollTop;
+      dragging=true;dragMoved=false;pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;startLeft=container.scrollLeft;startTop=container.scrollTop;
       container.classList.add('tl-dragging');
       if(tt)tt.style.display='none';
       if(container.setPointerCapture)container.setPointerCapture(pointerId);
@@ -596,11 +596,13 @@ let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week"
     });
     container.addEventListener('pointermove',function(e){
       if(!dragging||e.pointerId!==pointerId)return;
+      if(Math.abs(e.clientX-startX)>3||Math.abs(e.clientY-startY)>3)dragMoved=true;
       container.scrollLeft=startLeft-(e.clientX-startX);
       container.scrollTop=startTop-(e.clientY-startY);
     });
     function stopTimelineDrag(e){
       if(!dragging||(e&&e.pointerId!==pointerId))return;
+      if(dragMoved&&cv&&(!e||e.type==='pointerup'))cv._suppressTimelineClick=true;
       dragging=false;container.classList.remove('tl-dragging');
       if(container.releasePointerCapture&&pointerId!==null&&container.hasPointerCapture&&container.hasPointerCapture(pointerId))container.releasePointerCapture(pointerId);
       pointerId=null;
@@ -1059,11 +1061,9 @@ function renderTimelineInline(date,canvas,tooltip,idx){
   if(layout.hidden.length){ctx.font='12px sans-serif';ctx.fillStyle='#b45309';ctx.textAlign='left';ctx.fillText('另有 '+layout.hidden.length+' 个极密集标签已收起，可悬停圆点查看',TL_PAD_L,H-20);}
   // tooltip
   var hoverFrame=0,hoverPoint=null,lastTooltipKey='';
-  function updateTimelineTooltip(){
-    hoverFrame=0;const e=hoverPoint;if(!e)return;
-    if(e.buttons){tooltip.style.display='none';lastTooltipKey='';return;}
-    if(!canvas.isConnected)return;
-    var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+  function findTimelineHit(e){
+    if(!e||!canvas.isConnected)return null;
+    var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return null;
     var mx=(e.clientX-rect.left)*(canvas.width/rect.width);var my=(e.clientY-rect.top)*(canvas.height/rect.height);
     var found=null,md=Infinity;
     for(const d of DATA){
@@ -1072,21 +1072,48 @@ function renderTimelineInline(date,canvas,tooltip,idx){
       var pointDist=Math.hypot(mx-d._px,my-d._py);if(pointDist<hitDist)hitDist=pointDist;
       if(hitDist<=10&&hitDist<md){md=hitDist;found=d;}
     }
+    return found;
+  }
+  function timelineHoverHtml(found){
+    var detail=null;
+    if(typeof SD!=='undefined')detail=SD[tlNormalizeStockName(found.name)]||SD[found.name]||null;
+    var code=found.code||(detail&&detail.c)||'';
+    var region=detail&&detail.r?detail.r:'';
+    var marketCap=detail&&typeof formatMarketCap==='function'?formatMarketCap(detail.mv):'';
+    var themes=detail&&detail.t?detail.t.split(',').map(function(x){return x.trim();}).filter(Boolean).slice(0,6).join('、'):'';
+    var ltStr=found.lt?'<div class="tt-time">封板：'+esc(found.time)+'</div><div class="tt-time">最后：'+esc(found.lt)+'</div>':'<div class="tt-time">⏰ '+esc(found.time)+'</div>';
+    var html='<div style="font-weight:600;color:#2563eb;margin-bottom:3px;">'+esc(found.name)+(code?' <span style="font-weight:400;color:#64748b">'+esc(code)+'</span>':'')+'</div>';
+    html+='<div style="color:#7c3aed;font-size:11px;">'+esc(found.board)+'</div>';
+    if(region)html+='<div style="color:#475569;font-size:11px;">📍 '+esc(region)+'</div>';
+    if(marketCap)html+='<div style="color:#b45309;font-size:11px;">总市值：'+esc(marketCap)+'</div>';
+    if(themes)html+='<div style="color:#15803d;font-size:11px;line-height:1.4;">题材：'+esc(themes)+'</div>';
+    return html+ltStr;
+  }
+  function updateTimelineTooltip(){
+    hoverFrame=0;const e=hoverPoint;if(!e)return;
+    if(e.buttons){tooltip.style.display='none';lastTooltipKey='';return;}
+    var found=findTimelineHit(e);
     if(found){
       tooltip.style.display='block';tooltip.style.left=(e.clientX+12)+'px';tooltip.style.top=Math.max(8,e.clientY-10)+'px';
-      var key=found.name+'|'+found.time+'|'+(found.lt||'');
+      var key=found.name+'|'+found.code+'|'+found.time+'|'+(found.lt||'');
       if(key!==lastTooltipKey){
-        var ltStr=found.lt?'<div class="tt-time">封板: '+esc(found.time)+'</div><div class="tt-time">最后: '+esc(found.lt)+'</div>':'<div class="tt-time">⏰ '+esc(found.time)+'</div>';
-        tooltip.innerHTML='<div style="font-weight:600;color:#2563eb;margin-bottom:2px;">'+esc(found.name)+'</div><div style="color:#c2410c;font-size:11px;">'+esc(found.board)+'</div><div style="color:#15803d;font-size:11px;">'+esc(found.concept)+'</div>'+ltStr;
+        tooltip.innerHTML=timelineHoverHtml(found);
         lastTooltipKey=key;
       }
     }else{tooltip.style.display='none';lastTooltipKey='';}
   }
   canvas.onmousemove=function(e){
+    canvas.style.cursor=findTimelineHit(e)?'pointer':'default';
     hoverPoint={clientX:e.clientX,clientY:e.clientY,buttons:e.buttons};
     if(!hoverFrame)hoverFrame=requestAnimationFrame(updateTimelineTooltip);
   };
-  canvas.onmouseleave=function(){hoverPoint=null;if(hoverFrame){cancelAnimationFrame(hoverFrame);hoverFrame=0;}lastTooltipKey='';tooltip.style.display='none';};
+  canvas.onclick=function(e){
+    if(canvas._suppressTimelineClick){canvas._suppressTimelineClick=false;return;}
+    var found=findTimelineHit(e);if(!found)return;
+    e.stopPropagation();tooltip.style.display='none';
+    showSp(found.name,e,{left:e.clientX,top:e.clientY,right:e.clientX,bottom:e.clientY});
+  };
+  canvas.onmouseleave=function(){hoverPoint=null;canvas.style.cursor='default';if(hoverFrame){cancelAnimationFrame(hoverFrame);hoverFrame=0;}lastTooltipKey='';tooltip.style.display='none';};
 }
 
 render();show(0);
@@ -1102,7 +1129,7 @@ function formatMarketCap(value){
   if(n>=1e4)return trim((n/1e4).toFixed(1))+'万';
   return Math.round(n).toLocaleString('zh-CN')+'元';
 }
-function showSp(name,e){
+function showSp(name,e,anchorRect){
   if(typeof SD==='undefined')return;
   // 全角/半角转换（zt_data.js?v=20260730-1747 可能是半角，SD 键是全角）
   let name_conv='';
@@ -1174,7 +1201,7 @@ function showSp(name,e){
   const spEl=document.getElementById('sp');
   spEl.classList.add('show');
   spEl.setAttribute('aria-hidden','false');
-  const r=e.target.getBoundingClientRect();
+  const r=anchorRect||e.target.getBoundingClientRect();
   let left=r.left;
   if(left+380>innerWidth)left=innerWidth-390;if(left<10)left=10;
   spEl.style.left=left+'px';
