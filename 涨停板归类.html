@@ -244,6 +244,31 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #img-preview .ip-img{display:block;width:auto;height:auto;max-width:calc(100vw - 48px);max-height:calc(100vh - 100px);object-fit:contain;background:#fff;box-shadow:0 14px 50px rgba(0,0,0,.45);cursor:zoom-in}
 #img-preview .ip-img.is-natural{max-width:none;max-height:none;cursor:zoom-out}
 #img-preview .ip-hint{font-size:10px;color:rgba(255,255,255,.7);text-align:center}
+/* ─── 竞价一字板小窗口 ─── */
+#bid-modal{display:none;position:fixed;inset:0;z-index:10004;background:rgba(15,23,42,.34);padding:20px;align-items:center;justify-content:center}
+#bid-modal.show{display:flex}
+#bid-modal .bm-box{width:560px;max-width:94vw;max-height:min(78vh,680px);display:flex;flex-direction:column;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg)}
+#bid-modal .bm-h{display:flex;align-items:center;gap:8px;padding:13px 16px;background:var(--surface2);border-bottom:1px solid var(--border);flex:0 0 auto}
+#bid-modal .bm-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--fg)}
+#bid-modal .bm-title small{margin-left:7px;font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--muted)}
+#bid-modal .bm-x{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 2px}
+#bid-modal .bm-x:hover{color:var(--fg)}
+#bid-modal .bm-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 16px;border-bottom:1px solid var(--border2);font-size:11px;color:var(--muted);flex:0 0 auto}
+#bid-modal .bm-total{font-family:var(--font-mono);color:var(--accent);font-weight:600;white-space:nowrap}
+#bid-modal .bm-list{overflow:auto;padding:8px 10px 12px}
+#bid-modal .bm-table-head,#bid-modal .bm-row{display:grid;grid-template-columns:32px minmax(0,1fr) 68px 104px;gap:8px;align-items:center}
+#bid-modal .bm-table-head{padding:3px 8px 7px;font-size:10px;color:var(--muted2);letter-spacing:.02em}
+#bid-modal .bm-table-head span:last-child{text-align:right}
+#bid-modal .bm-row{min-height:44px;padding:5px 8px;border:1px solid var(--border2);border-radius:var(--radius);margin-top:5px;background:var(--surface);transition:border-color var(--tr),background var(--tr)}
+#bid-modal .bm-row:hover{border-color:var(--accent-border);background:var(--accent-soft)}
+#bid-modal .bm-rank{font:11px var(--font-mono);color:var(--muted2);text-align:center}
+#bid-modal .bm-stock{min-width:0;padding:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:13px;font-weight:650;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bid-modal .bm-stock:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+#bid-modal .bm-stock small{margin-left:5px;color:var(--muted2);font:10px var(--font-mono);font-weight:400}
+#bid-modal .bm-price{font:11px var(--font-mono);color:var(--muted);text-align:right;white-space:nowrap}
+#bid-modal .bm-amount{font:600 12px var(--font-mono);color:#c2410c;text-align:right;white-space:nowrap}
+#bid-modal .bm-empty{padding:42px 16px;text-align:center;color:var(--muted2);font-size:13px}
+@media(max-width:520px){#bid-modal{padding:12px}#bid-modal .bm-table-head,#bid-modal .bm-row{grid-template-columns:28px minmax(0,1fr) 56px 88px;gap:5px}#bid-modal .bm-stock small{display:none}#bid-modal .bm-meta{padding:9px 12px}}
 /* ─── notes modal ─── */
 #notes-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;justify-content:center;align-items:center}
 #notes-modal.show{display:flex}
@@ -387,6 +412,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="fenshi_map.js?v=20260730-1747"></script>
 <script src="zt_time_map.js?v=20260730-1747"></script>
 <script src="zt_time_detail.js?v=20260730-1747"></script>
+<script src="bid_seal_data.js?v=20260804-1"></script>
 <script src="notes_data.js?v=20260804-1"></script>
 <script>
 // 延迟加载帖子原文数据
@@ -512,7 +538,7 @@ function isRealSN(s){
 
 function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
+let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
   let cb='',cs='',sb=[],bo=false;
   function fs(){
     if(!sb.length)return;
@@ -915,9 +941,10 @@ document.addEventListener('keydown',e=>{
     if(document.getElementById('notes-modal').classList.contains('show')){closeNotes();return;}
     if(document.getElementById('sum-modal').classList.contains('show')){closeSummary();return;}
     if(document.getElementById('post-modal').classList.contains('show')){closePost();return;}
+    if(document.getElementById('bid-modal').classList.contains('show')){closeBidSeal();return;}
     if(document.getElementById('sp').classList.contains('show')){closeSp();return;}
   }
-  if(document.querySelector('#img-preview.show,#notes-modal.show,#sum-modal.show,#post-modal.show,#sp.show'))return;
+  if(document.querySelector('#img-preview.show,#notes-modal.show,#sum-modal.show,#post-modal.show,#bid-modal.show,#sp.show'))return;
   const tag=e.target&&e.target.tagName;
   const inText=e.target===si||e.target===ri||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable);
   if(inText){
@@ -986,7 +1013,7 @@ function tlParseDayData(date){
   _timelineDataCache.set(date,filtered);
   return filtered;
 }
-const TL_LABEL_GAP=4,TL_PAD_L=60,TL_PAD_R=40,TL_PAD_T=30,TL_PAD_B=60,TL_UPPER_LEADER_GAP=24;
+const TL_LABEL_GAP=4,TL_PAD_L=60,TL_PAD_R=40,TL_PAD_T=30,TL_PAD_B=60,TL_UPPER_LEADER_GAP=24,TL_UPPER_BAND_GAP=12;
 function tlHorizontalOverlap(a,b,gap){return a.left<b.right+gap&&a.right+gap>b.left;}
 function tlDropLabelRect(baseRect,blockers,maxBottom){
   const relevant=[];
@@ -1012,6 +1039,25 @@ function tlRaiseLabelRect(baseRect,blockers,minTop){
   }
   return {left:baseRect.left,right:baseRect.right,top:bottom-baseRect.height,bottom:bottom,height:baseRect.height};
 }
+// 同一板位在开盘瞬间过于密集时，允许最后一个标签小幅横向错开。
+// 圆点仍严格落在真实封板时间，引线明确连接到错开的名称，避免直接收起股票名。
+function tlFindUpperOverflowSlot(baseRect,blockers,minTop,W,anchorX){
+  const width=baseRect.right-baseRect.left;
+  const step=Math.max(24,Math.ceil(width*.8));
+  const candidates=[];
+  for(let lane=1;lane<=12;lane++){candidates.push(lane*step,-lane*step);}
+  let best=null;
+  for(const offset of candidates){
+    const left=baseRect.left+offset,right=baseRect.right+offset;
+    if(left<TL_PAD_L||right>W-TL_PAD_R)continue;
+    const rect=tlRaiseLabelRect({left:left,right:right,bottom:baseRect.bottom,height:baseRect.height},blockers,minTop);
+    if(!rect)continue;
+    const verticalLift=baseRect.bottom-rect.bottom;
+    const score=Math.abs(offset)*2+verticalLift;
+    if(!best||score<best.score)best={rect:rect,centerX:anchorX+offset,score:score};
+  }
+  return best;
+}
 function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
   if(upperMinTop===undefined)upperMinTop=TL_PAD_T;
   const sorted=[...data].sort((a,b)=>a.time.localeCompare(b.time));
@@ -1024,8 +1070,14 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
   let maxBottom=b2y(1)+20,minUpperTop=Infinity;
   const maxLabelBottom=TL_MAX_H-TL_PAD_B;
 
-  // 二板及以上标签严格以真实时间点为水平中心，只在纵向分层避让。
-  const upper=sorted.filter(d=>d.board_num>=2).sort((a,b)=>b.board_num-a.board_num||a.time.localeCompare(b.time));
+  // 二板及以上标签严格以真实时间点为水平中心，只在本板位区间内纵向避让。
+  // 5板+共用一条轨道时，先放低连板、再把更高连板向上排，避免低板名称反而跑到高板上方。
+  const upper=sorted.filter(d=>d.board_num>=2).sort((a,b)=>{
+    const ar=Math.min(a.board_num,5),br=Math.min(b.board_num,5);
+    if(ar!==br)return br-ar;
+    if(ar===5&&a.board_num!==b.board_num)return a.board_num-b.board_num;
+    return a.time.localeCompare(b.time);
+  });
   for(const d of upper){
     const anchorX=t2x(d.time),anchorY=b2y(d.board_num);
     const concept=d.concept&&d.concept!=='其他'?d.concept:'';
@@ -1034,12 +1086,20 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
     const width=Math.ceil(Math.max(nameWidth,conceptWidth))+8,height=concept?36:19;
     const left=anchorX-width/2;
     const base={left:left,right:left+width,bottom:anchorY-TL_UPPER_LEADER_GAP,height:height};
-    const rect=tlRaiseLabelRect(base,pointBoxes.concat(placed),upperMinTop);
+    // 低连板标签不得跨过上一板位轨道；密集到本区间放不下时收起标签，圆点和悬停详情仍保留。
+    const bandMinTop=d.board_num>=5?upperMinTop:Math.max(upperMinTop,b2y(d.board_num+1)+TL_UPPER_BAND_GAP);
+    const blockers=pointBoxes.concat(placed);
+    let rect=tlRaiseLabelRect(base,blockers,bandMinTop);
+    let labelCenterX=anchorX;
+    if(!rect){
+      const overflow=tlFindUpperOverflowSlot(base,blockers,bandMinTop,W,anchorX);
+      if(overflow){rect=overflow.rect;labelCenterX=overflow.centerX;}
+    }
     if(!rect){hidden.push(d);byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:null});continue;}
     minUpperTop=Math.min(minUpperTop,rect.top);
     placed.push(rect);maxBottom=Math.max(maxBottom,rect.bottom);
-    byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:rect,centerX:anchorX,
-      textX:anchorX,textAlign:'center',nameY:rect.top+13,conceptY:rect.top+30});
+    byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:rect,centerX:labelCenterX,
+      textX:labelCenterX,textAlign:'center',nameY:rect.top+13,conceptY:rect.top+30});
   }
 
   // 首板使用竖排标签：尝试邻近列，再在列内向下落位。
@@ -1079,7 +1139,7 @@ function renderTimelineInline(date,canvas,tooltip,idx){
   const MS=9.5*3600,ME=11.5*3600,AS=13*3600,AE=15*3600;const MR=ME-MS,AR=AE-AS,TR=MR+AR;
   function t2x(t){const p=t.split(':');const s=+p[0]*3600+ +p[1]*60+ +p[2];let e;if(s<=ME)e=s-MS;else e=MR+(s-AS);e=Math.max(0,Math.min(TR,e));return TL_PAD_L+(e/TR)*chartW;}
   let boardShift=0;
-  function b2y(b){b=Math.min(b,5);const pos={1:446,2:376,3:306,4:236,5:166};return (pos[b]||pos[1])+boardShift;}
+  function b2y(b){b=Math.min(b,5);const pos={1:606,2:496,3:386,4:276,5:166};return (pos[b]||pos[1])+boardShift;}
   const ctx=canvas.getContext('2d');
   let layout=null;
   if(DATA.length){
@@ -1121,7 +1181,7 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     if(!item.rect)continue;
     const d=item.data,color=tlGetColor(d.concept);ctx.strokeStyle=color;ctx.beginPath();
     ctx.moveTo(item.anchorX,item.anchorY);
-    if(d.board_num>=2)ctx.lineTo(item.anchorX,item.rect.bottom);
+    if(d.board_num>=2)ctx.lineTo(item.centerX,item.rect.bottom);
     else ctx.lineTo(item.centerX,item.rect.top);
     ctx.stroke();
   }
@@ -1435,9 +1495,11 @@ function jumpToDate(idx){
 document.addEventListener('click',e=>{
   // 某些浏览器在时间轴 pointerup 后会把补发的 click 落到滚动容器；
   // 此时不能立刻关闭刚刚打开的股票弹窗。
-  if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')&&!e.target.closest('.tl-container')&&!e.target.closest('#img-preview'))closeSp();
+  if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')&&!e.target.closest('.tl-container')&&!e.target.closest('#img-preview')&&!e.target.closest('#bid-modal'))closeSp();
 });
 document.getElementById('ct').addEventListener('click',function(e){
+  var auctionBtn=e.target.closest('.auction-trigger');
+  if(auctionBtn){showBidSeal(auctionBtn.getAttribute('data-date'));return;}
   var notesBtn=e.target.closest('.nm-trigger');
   if(notesBtn){showNotes(notesBtn.getAttribute('data-date'));return;}
   var sumBtn=e.target.closest('.sum-trigger');
@@ -1462,6 +1524,64 @@ document.getElementById('ct').addEventListener('click',function(e){
     });
   }catch(e){}
 })();
+</script>
+
+<!-- 竞价一字板弹窗 -->
+<div id="bid-modal" role="dialog" aria-modal="true" aria-labelledby="bm-title" aria-hidden="true">
+  <div class="bm-box">
+    <div class="bm-h"><span class="bm-title" id="bm-title">💰 竞价一字板</span><button type="button" class="bm-x" onclick="closeBidSeal()" aria-label="关闭竞价一字板窗口">&times;</button></div>
+    <div class="bm-meta"><span id="bm-caption">09:25 竞价结束时仍为一字板</span><span class="bm-total" id="bm-total"></span></div>
+    <div class="bm-list" id="bm-list"></div>
+  </div>
+</div>
+<script>
+function formatBidSealAmount(value){
+  var n=Number(value);if(!Number.isFinite(n)||n<0)return '—';
+  var trim=function(s){return s.replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');};
+  if(n>=10000)return trim((n/10000).toFixed(n>=1000000?1:2))+'亿';
+  return trim(n.toFixed(n>=1000?0:1))+'万';
+}
+function formatBidPrice(value){
+  var n=Number(value);return Number.isFinite(n)?n.toFixed(2):'—';
+}
+function showBidSeal(date){
+  var modal=document.getElementById('bid-modal');
+  var title=document.getElementById('bm-title');
+  var caption=document.getElementById('bm-caption');
+  var totalEl=document.getElementById('bm-total');
+  var list=document.getElementById('bm-list');
+  var rows=typeof BID!=='undefined'&&Array.isArray(BID[date])?BID[date].slice():[];
+  rows.sort(function(a,b){return Number(b.a||0)-Number(a.a||0);});
+  title.innerHTML='💰 竞价一字板<small>'+esc(date)+' · 可点击股票查看详情</small>';
+  caption.textContent='09:25 竞价结束时仍为一字板 · 封单金额单位：万元';
+  if(!rows.length){
+    totalEl.textContent='';
+    list.innerHTML='<div class="bm-empty">该日无竞价一字板数据</div>';
+  }else{
+    var total=rows.reduce(function(sum,item){var n=Number(item.a);return sum+(Number.isFinite(n)?n:0);},0);
+    totalEl.textContent=rows.length+'只 · 合计 '+formatBidSealAmount(total);
+    var h='<div class="bm-table-head"><span>#</span><span>股票</span><span style="text-align:right">竞价价</span><span>封单金额</span></div>';
+    rows.forEach(function(item,index){
+      var name=String(item.n||'').trim(),code=String(item.c||'').trim();
+      var amount=Number(item.a),rawAmount=Number.isFinite(amount)?amount.toLocaleString('zh-CN',{maximumFractionDigits:1}):'—';
+      h+='<div class="bm-row"><span class="bm-rank">'+(index+1)+'</span><button type="button" class="bm-stock" data-name="'+esc(name)+'" data-code="'+esc(code)+'">'+esc(name)+(code?'<small>'+esc(code)+'</small>':'')+'</button><span class="bm-price">'+formatBidPrice(item.p)+'</span><span class="bm-amount" title="原始封单：'+rawAmount+'万元">'+formatBidSealAmount(amount)+'</span></div>';
+    });
+    list.innerHTML=h;
+  }
+  modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  setTimeout(function(){var close=modal.querySelector('.bm-x');if(close)close.focus();},0);
+}
+function closeBidSeal(){
+  var modal=document.getElementById('bid-modal');
+  modal.classList.remove('show');modal.setAttribute('aria-hidden','true');
+}
+document.getElementById('bid-modal').addEventListener('click',function(e){
+  if(e.target===this){closeBidSeal();return;}
+  var stock=e.target.closest('.bm-stock');if(!stock)return;
+  var rect=stock.getBoundingClientRect(),name=stock.getAttribute('data-name');
+  closeBidSeal();
+  if(name)showSp(name,e,rect);
+});
 </script>
 
 <!-- 主帖弹窗 -->
