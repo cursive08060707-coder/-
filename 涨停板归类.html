@@ -68,6 +68,12 @@ background-repeat:no-repeat;background-position:10px center}
 .sl{margin-bottom:14px}
 .sh{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:0.02em;display:flex;align-items:center;gap:6px}
 .sh::before{content:'';width:3px;height:12px;background:var(--accent2);border-radius:2px;opacity:0.5}
+.origin-tag{font-size:10px;font-weight:500;color:var(--muted2);padding:1px 5px;border:1px solid var(--border2);border-radius:3px;background:var(--surface2);letter-spacing:0}
+.boge-subgroup{margin:8px 0 0 12px;padding-left:10px;border-left:2px solid #0f766e22}
+.mbs>.boge-subgroup{flex-basis:100%}
+.boge-subhead{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;font-weight:600;color:#0f766e}
+.boge-subhead::before{content:'↳';font-size:12px;color:#0f766e88}
+.boge-tag{font-size:9px;font-weight:500;color:#0f766e99;padding:1px 4px;border:1px solid #0f766e33;border-radius:3px;background:#f0fdfa;letter-spacing:0}
 .stk{display:flex;flex-wrap:wrap;gap:6px}
 
 .sk,.mb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:5px 11px;font:inherit;font-size:12px;color:var(--fg);cursor:pointer;transition:all var(--tr);position:relative;display:inline-flex;align-items:center;gap:4px;line-height:1.4}
@@ -145,6 +151,23 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #sp .sp-t{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 #sp .sp-t button{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);padding:3px 9px;border-radius:4px;font:inherit;font-size:11px;cursor:pointer;transition:all var(--tr);font-weight:500}
 #sp .sp-t button:hover{background:var(--accent);color:#fff}
+.sp-boge{margin:10px 0 12px;padding:9px 10px;border:1px solid #99f6e4;border-radius:var(--radius);background:#f0fdfa}
+.sp-boge-head{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;color:#0f766e;font-weight:700}
+.sp-boge-head small{font-size:10px;font-weight:500;color:#64748b;margin-left:auto}
+.sp-boge-edit-btn{border:1px solid #99f6e4;background:#fff;color:#0f766e;border-radius:4px;padding:2px 7px;font:inherit;font-size:10px;cursor:pointer}
+.sp-boge-edit-btn:hover{background:#ccfbf1}
+.sp-boge-value{font-size:12px;color:#134e4a;line-height:1.5;min-height:18px}
+.sp-boge-empty{color:#64748b;font-style:italic}
+.sp-boge-editor{margin-top:7px;padding-top:7px;border-top:1px solid #ccfbf1}
+.sp-boge-editor[hidden]{display:none}
+.sp-boge-editor label{display:block;font-size:10px;color:#64748b;margin-bottom:4px}
+.sp-boge-editor input{width:100%;box-sizing:border-box;border:1px solid #99f6e4;border-radius:4px;padding:5px 7px;background:#fff;color:#134e4a;font:inherit;font-size:11px;outline:none}
+.sp-boge-editor input:focus{border-color:#0f766e;box-shadow:0 0 0 2px #99f6e455}
+.sp-boge-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:7px}
+.sp-boge-actions button{border:1px solid #99f6e4;border-radius:4px;padding:3px 10px;font:inherit;font-size:10px;cursor:pointer}
+.sp-boge-save{background:#0f766e;color:#fff;border-color:#0f766e!important}
+.sp-boge-cancel{background:#fff;color:#64748b}
+.sp-boge-status{margin-top:5px;font-size:10px;color:#64748b;min-height:14px}
 .sp-hd{margin-top:10px;padding-top:10px;border-top:1px solid var(--border2)}
 .sp-hd h4{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
 .sp-hd .hd-r{font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.5}
@@ -369,6 +392,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
     <div class="sp-rg" id="sp-mv"></div>
     <div class="sp-r" id="sp-r"></div>
     <div class="sp-t" id="sp-t"></div>
+    <div class="sp-boge" id="sp-boge" style="display:none">
+      <div class="sp-boge-head"><span>博哥分类</span><small id="sp-boge-parent"></small><button type="button" class="sp-boge-edit-btn" id="sp-boge-edit" onclick="toggleBogeEditor()">编辑</button></div>
+      <div class="sp-boge-value" id="sp-boge-value"></div>
+      <div class="sp-boge-editor" id="sp-boge-editor" hidden>
+        <label for="sp-boge-input">当前股票在本日延边分类下的子分类</label>
+        <input id="sp-boge-input" type="text" maxlength="40" placeholder="例如：上游材料、玻璃基板">
+        <div class="sp-boge-actions"><button type="button" class="sp-boge-cancel" onclick="toggleBogeEditor(false)">取消</button><button type="button" class="sp-boge-save" id="sp-boge-save" onclick="saveBogeCategory()">保存</button></div>
+        <div class="sp-boge-status" id="sp-boge-status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
     <div class="sp-hd">
       <div class="hd-r" id="sp-hc"></div>
       <div class="hd-r" id="sp-ht"></div>
@@ -414,6 +447,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="zt_time_detail.js?v=20260730-1747"></script>
 <script src="bid_seal_data.js?v=20260804-1"></script>
 <script src="notes_data.js?v=20260804-1"></script>
+<script src="stock_custom_category.js?v=20260805-2"></script>
 <script>
 // 延迟加载帖子原文数据
 let _postsPromise=null;
@@ -441,7 +475,7 @@ const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=docum
 const wk=['日','一','二','三','四','五','六'];
 const _allDateIndices=P.map(function(_,i){return i;});
 const _dayLines=P.map(function(p){return p.t.split('\n');});
-const _daySearchText=P.map(function(p){return normalizeSearchText(p.t);});
+let _daySearchText=P.map(function(p){return normalizeSearchText(p.t);});
 const _dateIndex=new Map(P.map(function(p,i){return[p.d,i];}));
 const _dayStocksCache=new Map();
 let _renderedDateIndices=[],_renderedSearchMode=false;
@@ -499,6 +533,38 @@ function findStockDetail(name){
   }
   return SD[raw]||SD[full]||SD[half]||null;
 }
+// 博哥分类是叠加在 zt_data.js 之上的人工覆盖层，直接保存在 stock_custom_category.js，
+// 按日期、原始分类和股票代码保存。网页可在没有本地服务时直接读取这个文件。
+const BOGE_CATEGORY_API='http://localhost:8765/boge-categories';
+function normalizeBogeData(data){
+  const out={version:1,dates:{}};
+  if(data&&typeof data==='object'&&data.dates&&typeof data.dates==='object')out.dates=data.dates;
+  return out;
+}
+let _bogeData=normalizeBogeData(window.BOGE_CATEGORY_DATA);
+let _bogeLoadPromise=null;
+function rebuildBogeSearchText(){
+  _daySearchText=P.map(function(p){
+    const dateMap=_bogeData.dates&&_bogeData.dates[p.d];
+    const labels=[];
+    if(dateMap)Object.keys(dateMap).forEach(function(parent){labels.push(parent);const m=dateMap[parent];if(m&&typeof m==='object')Object.keys(m).forEach(function(code){labels.push(m[code]);});});
+    return normalizeSearchText(p.t+' '+labels.join(' '));
+  });
+}
+function getBogeSubcategory(date,parent,code){
+  if(!date||!parent||!code)return '';
+  const dateMap=_bogeData&&_bogeData.dates&&_bogeData.dates[date];
+  const parentMap=dateMap&&dateMap[parent];
+  const value=parentMap&&parentMap[String(code)];
+  return typeof value==='string'?value.trim():'';
+}
+function loadBogeCategories(){
+  // 分类数据已经由 stock_custom_category.js 直接加载。
+  // 服务只负责保存，不参与页面启动时的读取，这样手动修改 JS 后双击 HTML
+  // 刷新即可生效，也不会被服务中的旧数据覆盖。
+  _bogeLoadPromise=Promise.resolve(_bogeData);
+  return _bogeLoadPromise;
+}
 function lkTag(n){var d=findStockDetail(n);if(d&&d.h&&d.h.top10&&d.h.top10.length){var s=0;for(var i=0;i<d.h.top10.length;i++){if(d.h.top10[i].r>=5)s+=d.h.top10[i].r}if(s>0)return ' <small class="lk">'+s.toFixed(1)+'%</small>'}return ''}
 function provTag(n){var d=findStockDetail(n);if(d&&d.r){var p=d.r.split(' / ')[0];if(p&&p.length<=4)return ' <small class="pv">'+esc(p)+'</small>'}return ''}
 
@@ -536,19 +602,71 @@ function isRealSN(s){
   }catch(e){return false}
 }
 
+function stockNameFromCategoryToken(token){
+  let value=String(token||'').trim();
+  if(value.includes('（'))value=value.split('（')[0].trim();
+  if(value.includes('('))value=value.split('(')[0].trim();
+  for(const mark of ['：',':','。'])if(value.includes(mark))value=value.split(mark)[0].trim();
+  return value;
+}
+function findOriginalCategory(date,name){
+  const idx=_dateIndex.get(date);if(idx===undefined)return {board:'',parent:''};
+  const lines=_dayLines[idx];let board='',parent='';
+  for(let raw of lines){
+    const line=raw.trim();if(!line)continue;
+    const bm=line.match(/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板|十一板|十二板)$/);
+    if(bm){board=bm[1];parent=board==='首板'?'':'';continue;}
+    if(board==='首板'&&line.length<=12&&!line.includes('，')&&!line.includes(',')&&!isSN(line)){parent=line;continue;}
+    if(!board)continue;
+    const parts=line.split(/[，,、]+/);
+    for(const part of parts){
+      const candidate=stockNameFromCategoryToken(part);
+      if(candidate===name||normalizeSearchText(candidate)===normalizeSearchText(name)){
+        return {board:board,parent:parent||board};
+      }
+    }
+  }
+  return {board:'',parent:''};
+}
+
 function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
-let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
+  let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
   let cb='',cs='',sb=[],bo=false;
+  function stockHtml(s,klass){return '<button type="button" class="'+klass+'" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';}
+  function renderBogeGroups(stocks,parent,klass){
+    const groups=[],plain=[];const byLabel=new Map();
+    stocks.forEach(function(s){
+      const detail=findStockDetail(s.name);const code=detail&&detail.c?String(detail.c):'';
+      const sub=getBogeSubcategory(p.d,parent,code);
+      if(!sub){plain.push(s);return;}
+      let group=byLabel.get(sub);
+      if(!group){group={label:sub,stocks:[]};byLabel.set(sub,group);groups.push(group);}
+      group.stocks.push(s);
+    });
+    let out='';
+    groups.forEach(function(group){
+      out+='<div class="boge-subgroup"><div class="boge-subhead">'+esc(group.label)+'<small class="boge-tag">博哥分类</small></div><div class="stk">';
+      group.stocks.forEach(function(s){out+=stockHtml(s,klass);});
+      out+='</div></div>';
+    });
+    if(plain.length){out+='<div class="stk">';plain.forEach(function(s){out+=stockHtml(s,klass);});out+='</div>';}
+    return out;
+  }
   function fs(){
     if(!sb.length)return;
     if(cb==='首板'&&cs){
-      h+='<div class="sl"><div class="sh">'+esc(cs)+'</div><div class="stk">';
-      sb.forEach(s=>{h+='<button type="button" class="sk" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>'});
-      h+='</div></div>';
+      h+='<div class="sl"><div class="sh">'+esc(cs)+'<small class="origin-tag">延边刺客分类</small></div>';
+      h+=renderBogeGroups(sb,cs,'sk');
+      h+='</div>';
     }else if(cb){
+      const parent=cs||cb;const hasBoge=sb.some(function(s){const d=findStockDetail(s.name);return getBogeSubcategory(p.d,parent,d&&d.c?String(d.c):'');});
       h+='<div class="mbl"><div class="mbs">';
-      sb.forEach(s=>{h+='<button type="button" class="mb" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>'});
+      if(hasBoge){
+        h+=renderBogeGroups(sb,parent,'mb');
+      }else{
+        sb.forEach(function(s){h+=stockHtml(s,'mb');});
+      }
       h+='</div></div>';
     }
     sb=[];
@@ -988,7 +1106,7 @@ function tlResolveStockCode(name,embeddedCode){
 function tlMatchesSearch(item,query){
   const lo=normalizeSearchText(query);
   if(!lo||!item)return false;
-  return normalizeSearchText(item.name).includes(lo)||String(item.code||'').includes(lo);
+  return normalizeSearchText(item.name).includes(lo)||String(item.code||'').includes(lo)||normalizeSearchText(item.boge||'').includes(lo);
 }
 function tlParseDayData(date){
   if(!date)return[];
@@ -1004,7 +1122,7 @@ function tlParseDayData(date){
       for(let p of parts){p=p.trim();if(!p)continue;let name=p.includes('（')?p.split('（')[0].trim():p;
         for(let s of['：',':','。']){if(name.includes(s))name=name.split(s)[0].trim();}
         const cm=p.match(/(\d{6})/);const code=tlResolveStockCode(name,cm&&cm[1]);
-        if(name.length>=2&&isRealSN(name))result.push({name:name,code:code,board:curB,board_num:bn,concept:curC||'其他',time:''});
+        if(name.length>=2&&isRealSN(name))result.push({name:name,code:code,board:curB,board_num:bn,concept:curC||'其他',boge:getBogeSubcategory(date,curC||curB,code),time:''});
       }
     }
   }
@@ -1081,9 +1199,12 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
   for(const d of upper){
     const anchorX=t2x(d.time),anchorY=b2y(d.board_num);
     const concept=d.concept&&d.concept!=='其他'?d.concept:'';
+    const boge=d.boge?'↳ '+d.boge:'';
     ctx.font='bold 11px sans-serif';const nameWidth=ctx.measureText(d.name).width;
     ctx.font='13px sans-serif';const conceptWidth=concept?ctx.measureText(concept).width:0;
-    const width=Math.ceil(Math.max(nameWidth,conceptWidth))+8,height=concept?36:19;
+    const bogeWidth=boge?ctx.measureText(boge).width:0;
+    const lineCount=1+(concept?1:0)+(boge?1:0);
+    const width=Math.ceil(Math.max(nameWidth,conceptWidth,bogeWidth))+8,height=19+((lineCount-1)*17);
     const left=anchorX-width/2;
     const base={left:left,right:left+width,bottom:anchorY-TL_UPPER_LEADER_GAP,height:height};
     // 低连板标签不得跨过上一板位轨道；密集到本区间放不下时收起标签，圆点和悬停详情仍保留。
@@ -1099,7 +1220,8 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
     minUpperTop=Math.min(minUpperTop,rect.top);
     placed.push(rect);maxBottom=Math.max(maxBottom,rect.bottom);
     byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:rect,centerX:labelCenterX,
-      textX:labelCenterX,textAlign:'center',nameY:rect.top+13,conceptY:rect.top+30});
+      textX:labelCenterX,textAlign:'center',nameY:rect.top+13,
+      conceptY:rect.top+30,bogeY:rect.top+30+(concept?17:0)});
   }
 
   // 首板使用竖排标签：尝试邻近列，再在列内向下落位。
@@ -1107,9 +1229,11 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
   for(const d of first){
     const anchorX=t2x(d.time),anchorY=b2y(1);
     const concept=(d.concept&&d.concept!=='其他'&&d.concept!=='其余形式独苗')?d.concept:'';
+    const boge=d.boge?'↳'+d.boge:'';
     ctx.font='14px sans-serif';let charWidth=0;for(const c of d.name)charWidth=Math.max(charWidth,ctx.measureText(c).width);
     ctx.font='13px sans-serif';for(const c of concept)charWidth=Math.max(charWidth,ctx.measureText(c).width);
-    const width=Math.ceil(charWidth)+8,height=d.name.length*20+(concept?concept.length*18:0)+8;
+    for(const c of boge)charWidth=Math.max(charWidth,ctx.measureText(c).width);
+    const width=Math.ceil(charWidth)+8,height=d.name.length*20+(concept?concept.length*18:0)+(boge?boge.length*18:0)+8;
     const step=width+TL_LABEL_GAP,blockers=pointBoxes.concat(placed);let best=null;
     const offsets=[0];for(let lane=1;lane<=10;lane++)offsets.push(lane,-lane);
     for(const lane of offsets){
@@ -1123,7 +1247,8 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
     if(!best){hidden.push(d);byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:null});continue;}
     placed.push(best.rect);maxBottom=Math.max(maxBottom,best.rect.bottom);
     byData.set(d,{data:d,anchorX:anchorX,anchorY:anchorY,rect:best.rect,centerX:best.centerX,
-      nameY:best.rect.top+15,conceptY:best.rect.top+15+d.name.length*20});
+      nameY:best.rect.top+15,conceptY:best.rect.top+15+d.name.length*20,
+      bogeY:best.rect.top+15+d.name.length*20+(concept?concept.length*18:0)});
   }
   return {items:sorted.map(d=>byData.get(d)),hidden:hidden,maxBottom:maxBottom,minUpperTop:minUpperTop};
 }
@@ -1211,11 +1336,13 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     if(d.board_num>=2){
       ctx.font='bold 11px sans-serif';ctx.fillStyle=searchMatches.has(d)?'#92400e':'#1f2937';ctx.textAlign=item.textAlign;ctx.fillText(d.name,item.textX,item.nameY);
       if(d.concept&&d.concept!=='其他'){ctx.font='13px sans-serif';ctx.fillStyle=color;ctx.fillText(d.concept,item.textX,item.conceptY);}
+      if(d.boge){ctx.font='12px sans-serif';ctx.fillStyle='#0f766e';ctx.fillText('↳ '+d.boge,item.textX,item.bogeY);}
     }else{
       ctx.font=(searchMatches.has(d)?'bold ':'')+'14px sans-serif';ctx.textAlign='center';ctx.fillStyle=searchMatches.has(d)?'#92400e':'#4b5563';const nc=d.name.split('');
       for(let ci=0;ci<nc.length;ci++)ctx.fillText(nc[ci],item.centerX,item.nameY+ci*20);
       const cs=(d.concept&&d.concept!=='其他'&&d.concept!=='其余形式独苗')?d.concept:'';
       if(cs){ctx.font='13px sans-serif';ctx.fillStyle=color;for(let ci=0;ci<cs.length;ci++)ctx.fillText(cs[ci],item.centerX,item.conceptY+ci*18);}
+      if(d.boge){ctx.font='12px sans-serif';ctx.fillStyle='#0f766e';for(let ci=0;ci<d.boge.length+1;ci++){const ch=ci===0?'↳':d.boge[ci-1];ctx.fillText(ch,item.centerX,item.bogeY+ci*18);}}
     }
   }
   if(layout.hidden.length){ctx.font='12px sans-serif';ctx.fillStyle='#b45309';ctx.textAlign='left';ctx.fillText('另有 '+layout.hidden.length+' 个极密集标签已收起，可悬停圆点查看',TL_PAD_L,H-20);}
@@ -1244,6 +1371,8 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     var ltStr=found.lt?'<div class="tt-time">封板：'+esc(found.time)+'</div><div class="tt-time">最后：'+esc(found.lt)+'</div>':'<div class="tt-time">⏰ '+esc(found.time)+'</div>';
     var html='<div style="font-weight:600;color:#2563eb;margin-bottom:3px;">'+esc(found.name)+(code?' <span style="font-weight:400;color:#64748b">'+esc(code)+'</span>':'')+'</div>';
     html+='<div style="color:#7c3aed;font-size:11px;">'+esc(found.board)+'</div>';
+    if(found.concept&&found.concept!=='其他')html+='<div style="color:#64748b;font-size:11px;">延边分类：'+esc(found.concept)+'</div>';
+    if(found.boge)html+='<div style="color:#0f766e;font-size:11px;">博哥分类：'+esc(found.boge)+'</div>';
     if(region)html+='<div style="color:#475569;font-size:11px;">📍 '+esc(region)+'</div>';
     if(marketCap)html+='<div style="color:#b45309;font-size:11px;">总市值：'+esc(marketCap)+'</div>';
     if(themes)html+='<div style="color:#15803d;font-size:11px;line-height:1.4;">题材：'+esc(themes)+'</div>';
@@ -1255,7 +1384,7 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     var found=findTimelineHit(e);
     if(found){
       tooltip.style.display='block';tooltip.style.left=(e.clientX+12)+'px';tooltip.style.top=Math.max(8,e.clientY-10)+'px';
-      var key=found.name+'|'+found.code+'|'+found.time+'|'+(found.lt||'');
+      var key=found.name+'|'+found.code+'|'+found.time+'|'+(found.lt||'')+'|'+(found.boge||'');
       if(key!==lastTooltipKey){
         tooltip.innerHTML=timelineHoverHtml(found);
         lastTooltipKey=key;
@@ -1281,11 +1410,12 @@ function renderTimelineInline(date,canvas,tooltip,idx){
   canvas.onmouseleave=function(){hoverPoint=null;canvas.style.cursor='default';if(hoverFrame){cancelAnimationFrame(hoverFrame);hoverFrame=0;}lastTooltipKey='';tooltip.style.display='none';};
 }
 
-render();show(0);
+rebuildBogeSearchText();render();show(0);loadBogeCategories();
 </script>
 <script>
 // === 股票弹窗逻辑 ===
 let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0;
+let _bogeCurDate='',_bogeParent='';
 function formatMarketCap(value){
   const n=Number(value);if(!Number.isFinite(n)||n<=0)return '';
   const trim=function(s){return s.replace(/\.?(0+)$/,'').replace(/\.$/,'');};
@@ -1294,11 +1424,75 @@ function formatMarketCap(value){
   if(n>=1e4)return trim((n/1e4).toFixed(1))+'万';
   return Math.round(n).toLocaleString('zh-CN')+'元';
 }
+function renderBogeCard(){
+  const card=document.getElementById('sp-boge');if(!card)return;
+  const parentEl=document.getElementById('sp-boge-parent');
+  const valueEl=document.getElementById('sp-boge-value');
+  const editor=document.getElementById('sp-boge-editor');
+  const editBtn=document.getElementById('sp-boge-edit');
+  if(!_bogeCurDate||!_bogeParent||!spCode){card.style.display='none';return;}
+  card.style.display='block';
+  parentEl.textContent='延边分类：'+_bogeParent;
+  const value=getBogeSubcategory(_bogeCurDate,_bogeParent,spCode);
+  valueEl.innerHTML=value?'<span>'+esc(value)+'</span>':'<span class="sp-boge-empty">尚未细分，点击编辑添加</span>';
+  if(editor)editor.hidden=true;
+  if(editBtn)editBtn.textContent='编辑';
+}
+function toggleBogeEditor(force){
+  const editor=document.getElementById('sp-boge-editor');if(!editor)return;
+  const open=typeof force==='boolean'?force:editor.hidden;
+  const input=document.getElementById('sp-boge-input');
+  if(open){
+    input.value=getBogeSubcategory(_bogeCurDate,_bogeParent,spCode);
+    editor.hidden=false;document.getElementById('sp-boge-edit').textContent='收起';
+    document.getElementById('sp-boge-status').textContent='';
+    setTimeout(function(){input.focus();input.select();},0);
+  }else{
+    editor.hidden=true;document.getElementById('sp-boge-edit').textContent='编辑';
+  }
+}
+function cloneBogeData(data){return JSON.parse(JSON.stringify(data&&typeof data==='object'?data:{version:1,dates:{}}));}
+function saveBogeCategory(){
+  const input=document.getElementById('sp-boge-input');
+  const status=document.getElementById('sp-boge-status');
+  const btn=document.getElementById('sp-boge-save');
+  if(!_bogeCurDate||!_bogeParent||!spCode){status.textContent='缺少当前日期或原始分类，无法保存';return;}
+  const value=String(input.value||'').trim();
+  const next=cloneBogeData(_bogeData);next.version=1;next.dates=next.dates&&typeof next.dates==='object'?next.dates:{};
+  const dateMap=next.dates[_bogeCurDate]||(next.dates[_bogeCurDate]={});
+  Object.keys(dateMap).forEach(function(parent){
+    if(dateMap[parent]&&typeof dateMap[parent]==='object'){
+      delete dateMap[parent][String(spCode)];
+      if(!Object.keys(dateMap[parent]).length)delete dateMap[parent];
+    }
+  });
+  if(value){dateMap[_bogeParent]=dateMap[_bogeParent]||{};dateMap[_bogeParent][String(spCode)]=value;}
+  next.updatedAt=new Date().toISOString();
+  btn.disabled=true;btn.textContent='保存中';status.textContent='正在写入 stock_custom_category.js…';
+  fetch(BOGE_CATEGORY_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(next)})
+    .then(function(r){return r.json();})
+    .then(function(result){
+      if(!result||!result.ok)throw new Error(result&&result.error||'服务未确认保存');
+      _bogeData=normalizeBogeData(next);_bogeData.updatedAt=next.updatedAt;
+      rebuildBogeSearchText();
+      if(typeof _timelineDataCache!=='undefined')_timelineDataCache.clear();
+      status.textContent='已保存 ✓';btn.textContent='保存';btn.disabled=false;
+      renderBogeCard();
+      if(ai>=0)show(ai);
+      setTimeout(function(){var ed=document.getElementById('sp-boge-editor');if(ed)ed.hidden=true;},300);
+    })
+    .catch(function(err){
+      status.textContent='保存失败：请确认笔记服务已启动';btn.textContent='保存';btn.disabled=false;
+      console.error('博哥分类保存失败',err);
+    });
+}
 function showSp(name,e,anchorRect){
   if(typeof SD==='undefined')return;
   const d=findStockDetail(name);if(!d)return;
   e.stopPropagation();
   spCode=d.c||'';spName=name;_historyOpen=false;var _hsEl=document.getElementById('sp-history');if(_hsEl)_hsEl.style.display='none';
+  const originalCategory=findOriginalCategory(ai>=0?P[ai].d:'',name);
+  _bogeCurDate=ai>=0?P[ai].d:'';_bogeParent=originalCategory.parent||originalCategory.board||'';
   document.getElementById('sp-n').textContent=name+'（'+d.c+'）';
   const rg=document.getElementById('sp-rg');
   if(d.r){const parts=d.r.split(' / ');rg.innerHTML='<b>'+esc(parts[0]||'')+'</b>'+esc(parts[1]?' / '+parts[1]:'');rg.style.display='block';}else{rg.style.display='none';}
@@ -1307,6 +1501,7 @@ function showSp(name,e,anchorRect){
   if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
   const tc=document.getElementById('sp-t');tc.innerHTML='';
   if(d.t){d.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('button');s.type='button';s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);}});}
+  renderBogeCard();
   document.getElementById('sp-hc').innerHTML='';
   document.getElementById('sp-ht').innerHTML='';
   // 填充大股东信息
