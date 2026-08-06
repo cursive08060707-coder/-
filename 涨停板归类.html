@@ -148,9 +148,27 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 .sp-rg{color:#555;font-size:12px;margin-bottom:8px;padding:6px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);display:flex;align-items:center;gap:6px}
 .sp-rg b{color:var(--accent)}
 #sp .sp-r{color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5}
+#sp .sp-concept-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 5px;padding-top:2px}
+#sp .sp-concept-head h4{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin:0}
+.sp-concept-edit-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:4px;padding:2px 7px;font:inherit;font-size:10px;cursor:pointer}
+.sp-concept-edit-btn:hover{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)}
 #sp .sp-t{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
 #sp .sp-t button{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);padding:3px 9px;border-radius:4px;font:inherit;font-size:11px;cursor:pointer;transition:all var(--tr);font-weight:500}
 #sp .sp-t button:hover{background:var(--accent);color:#fff}
+.sp-concept-editor{margin:4px 0 12px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2)}
+.sp-concept-editor[hidden]{display:none}
+.sp-concept-row{display:grid;grid-template-columns:100px minmax(0,1fr) 24px;gap:5px;align-items:start;margin-bottom:6px}
+.sp-concept-row input,.sp-concept-row textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--fg);font:inherit;font-size:11px;padding:5px 6px;outline:none}
+.sp-concept-row textarea{min-height:42px;resize:vertical;line-height:1.45}
+.sp-concept-row input:focus,.sp-concept-row textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.sp-concept-row .sp-concept-remove{border:1px solid var(--border);background:var(--surface);color:#b91c1c;border-radius:4px;padding:4px 0;font-size:13px;line-height:1;cursor:pointer}
+.sp-concept-row .sp-concept-remove:hover{background:#fef2f2;border-color:#fecaca}
+.sp-concept-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:7px}
+.sp-concept-actions button{border:1px solid var(--border);border-radius:4px;padding:4px 9px;font:inherit;font-size:10px;cursor:pointer}
+.sp-concept-add{margin-right:auto;background:var(--surface);color:var(--muted)}
+.sp-concept-save{background:var(--accent);color:#fff;border-color:var(--accent)!important}
+.sp-concept-cancel{background:var(--surface);color:var(--muted)}
+.sp-concept-status{margin-top:5px;min-height:14px;color:var(--muted);font-size:10px}
 .sp-boge{margin:10px 0 12px;padding:9px 10px;border:1px solid #99f6e4;border-radius:var(--radius);background:#f0fdfa}
 .sp-boge-head{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;color:#0f766e;font-weight:700}
 .sp-boge-head small{font-size:10px;font-weight:500;color:#64748b;margin-left:auto}
@@ -391,7 +409,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
     <div class="sp-rg" id="sp-rg"></div>
     <div class="sp-rg" id="sp-mv"></div>
     <div class="sp-r" id="sp-r"></div>
+    <div class="sp-concept-head"><h4>题材概念</h4><button type="button" class="sp-concept-edit-btn" id="sp-concept-edit" onclick="toggleConceptEditor()">编辑</button></div>
     <div class="sp-t" id="sp-t"></div>
+    <div class="sp-concept-editor" id="sp-concept-editor" hidden>
+      <div id="sp-concept-rows"></div>
+      <div class="sp-concept-actions"><button type="button" class="sp-concept-add" onclick="addConceptRow()">＋ 添加概念</button><button type="button" class="sp-concept-cancel" onclick="toggleConceptEditor(false)">取消</button><button type="button" class="sp-concept-save" id="sp-concept-save" onclick="saveConceptData()">保存</button></div>
+      <div class="sp-concept-status" id="sp-concept-status" role="status" aria-live="polite"></div>
+    </div>
     <div class="sp-boge" id="sp-boge" style="display:none">
       <div class="sp-boge-head"><span>博哥分类</span><small id="sp-boge-parent"></small><button type="button" class="sp-boge-edit-btn" id="sp-boge-edit" onclick="toggleBogeEditor()">编辑</button></div>
       <div class="sp-boge-value" id="sp-boge-value"></div>
@@ -439,7 +463,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 
 
 <script src="stock_names.js?v=20260730-1747"></script>
-<script src="stock_detail_map.js?v=20260730-1747"></script>
+<script src="stock_detail_map.js?v=20260806-0122"></script>
 <script src="zt_data.js?v=20260730-1747"></script>
 <script src="hengdan_map.js?v=20260730-1747"></script>
 <script src="fenshi_map.js?v=20260730-1747"></script>
@@ -533,9 +557,28 @@ function findStockDetail(name){
   }
   return SD[raw]||SD[full]||SD[half]||null;
 }
+function findStockDetailKey(name,detail){
+  if(typeof SD==='undefined')return String(name||'');
+  const raw=String(name||'').trim();
+  if(Object.prototype.hasOwnProperty.call(SD,raw))return raw;
+  let full='',half='';
+  for(const c of raw){
+    if(c>='A'&&c<='Z')full+=String.fromCharCode(c.charCodeAt(0)+0xFF21-0x41);
+    else if(c>='a'&&c<='z')full+=String.fromCharCode(c.charCodeAt(0)+0xFF41-0x61);
+    else full+=c;
+    if(c>='Ａ'&&c<='Ｚ')half+=String.fromCharCode(c.charCodeAt(0)-0xFF21+0x41);
+    else if(c>='ａ'&&c<='ｚ')half+=String.fromCharCode(c.charCodeAt(0)-0xFF41+0x61);
+    else half+=c;
+  }
+  if(Object.prototype.hasOwnProperty.call(SD,full))return full;
+  if(Object.prototype.hasOwnProperty.call(SD,half))return half;
+  if(detail){for(const key of Object.keys(SD))if(SD[key]===detail)return key;}
+  return raw;
+}
 // 博哥分类是叠加在 zt_data.js 之上的人工覆盖层，直接保存在 stock_custom_category.js，
 // 按日期、原始分类和股票代码保存。网页可在没有本地服务时直接读取这个文件。
 const BOGE_CATEGORY_API='http://localhost:8765/boge-categories';
+const STOCK_DETAIL_API='http://localhost:8765/stock-details';
 function normalizeBogeData(data){
   const out={version:1,dates:{}};
   if(data&&typeof data==='object'&&data.dates&&typeof data.dates==='object')out.dates=data.dates;
@@ -564,6 +607,84 @@ function loadBogeCategories(){
   // 刷新即可生效，也不会被服务中的旧数据覆盖。
   _bogeLoadPromise=Promise.resolve(_bogeData);
   return _bogeLoadPromise;
+}
+let _conceptEditName='',_conceptRows=[];
+function conceptRowsFromDetail(detail){
+  const rows=[],seen=new Set();
+  function add(concept,reason){
+    concept=String(concept||'').trim();reason=String(reason||'').trim();
+    if(!concept)return;
+    if(seen.has(concept)){const old=rows.find(function(row){return row[0]===concept;});if(old&&!old[1]&&reason)old[1]=reason;return;}
+    seen.add(concept);rows.push([concept,reason]);
+  }
+  if(detail&&typeof detail.t==='string')detail.t.split(',').forEach(function(x){add(x,'');});
+  if(detail&&Array.isArray(detail.e))detail.e.forEach(function(row){if(Array.isArray(row))add(row[0],row[1]);});
+  return rows;
+}
+function renderConceptView(detail){
+  const tc=document.getElementById('sp-t');
+  const ec=document.getElementById('sp-e');
+  if(!tc||!ec)return;
+  tc.innerHTML='';ec.innerHTML='';
+  const themes=detail&&typeof detail.t==='string'?detail.t.split(',').map(function(x){return x.trim();}).filter(Boolean):[];
+  if(!themes.length)tc.innerHTML='<span style="color:var(--muted2);font-size:11px">暂无概念</span>';
+  themes.forEach(function(t){const s=document.createElement('button');s.type='button';s.textContent=t;s.onclick=function(){document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);});
+  if(detail&&Array.isArray(detail.e))detail.e.forEach(function(row){
+    if(!Array.isArray(row)||(!row[0]&&!row[1]))return;
+    const div=document.createElement('div');
+    const title=String(row[0]||'').trim(),reason=String(row[1]||'').trim();
+    div.innerHTML='<b>'+esc(title)+'：</b>'+esc(reason);ec.appendChild(div);
+  });
+}
+function renderConceptEditor(){
+  const box=document.getElementById('sp-concept-rows');if(!box)return;
+  box.replaceChildren();
+  _conceptRows.forEach(function(row,index){
+    const wrap=document.createElement('div');wrap.className='sp-concept-row';
+    const input=document.createElement('input');input.type='text';input.maxLength=40;input.placeholder='概念名称';input.value=row[0]||'';
+    const textarea=document.createElement('textarea');textarea.maxLength=500;textarea.placeholder='概念原因（可选）';textarea.value=row[1]||'';
+    const remove=document.createElement('button');remove.type='button';remove.className='sp-concept-remove';remove.title='删除概念';remove.setAttribute('aria-label','删除该概念');remove.textContent='×';
+    input.oninput=function(){_conceptRows[index][0]=input.value;};textarea.oninput=function(){_conceptRows[index][1]=textarea.value;};
+    remove.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      _conceptRows.splice(index,1);
+      renderConceptEditor();
+    });
+    wrap.append(input,textarea,remove);box.appendChild(wrap);
+  });
+}
+function toggleConceptEditor(force){
+  const editor=document.getElementById('sp-concept-editor');if(!editor)return;
+  const open=typeof force==='boolean'?force:editor.hidden;
+  const btn=document.getElementById('sp-concept-edit');
+  if(open){
+    const detail=SD&&SD[_conceptEditName]?SD[_conceptEditName]:findStockDetail(spName);
+    _conceptRows=conceptRowsFromDetail(detail);renderConceptEditor();editor.hidden=false;if(btn)btn.textContent='收起';
+    const status=document.getElementById('sp-concept-status');if(status)status.textContent='';
+  }else{editor.hidden=true;if(btn)btn.textContent='编辑';}
+}
+function addConceptRow(){
+  if(document.getElementById('sp-concept-editor').hidden)toggleConceptEditor(true);
+  _conceptRows.push(['','']);renderConceptEditor();
+  const rows=document.querySelectorAll('#sp-concept-rows input');if(rows.length)rows[rows.length-1].focus();
+}
+function saveConceptData(){
+  const status=document.getElementById('sp-concept-status');const btn=document.getElementById('sp-concept-save');
+  if(!_conceptEditName){if(status)status.textContent='缺少股票名称，无法保存';return;}
+  const clean=[],seen=new Set();
+  _conceptRows.forEach(function(row){const concept=String(row[0]||'').trim(),reason=String(row[1]||'').trim();if(concept&&!seen.has(concept)){seen.add(concept);clean.push([concept,reason]);}});
+  const payload={name:_conceptEditName,themes:clean.map(function(row){return row[0];}).join(','),explain:clean.filter(function(row){return row[1];})};
+  if(btn){btn.disabled=true;btn.textContent='保存中';}if(status)status.textContent='正在写入 stock_detail_map.js…';
+  fetch(STOCK_DETAIL_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json();})
+    .then(function(result){
+      if(!result||!result.ok)throw new Error(result&&result.error||'服务未确认保存');
+      const detail=SD[_conceptEditName];detail.t=payload.themes;detail.e=payload.explain;_conceptRows=clean;renderConceptView(detail);toggleConceptEditor(false);
+      if(status)status.textContent='已保存 ✓';
+    })
+    .catch(function(err){if(status)status.textContent='保存失败：请确认笔记服务已启动';console.error('股票概念保存失败',err);})
+    .finally(function(){if(btn){btn.disabled=false;btn.textContent='保存';}});
 }
 function lkTag(n){var d=findStockDetail(n);if(d&&d.h&&d.h.top10&&d.h.top10.length){var s=0;for(var i=0;i<d.h.top10.length;i++){if(d.h.top10[i].r>=5)s+=d.h.top10[i].r}if(s>0)return ' <small class="lk">'+s.toFixed(1)+'%</small>'}return ''}
 function provTag(n){var d=findStockDetail(n);if(d&&d.r){var p=d.r.split(' / ')[0];if(p&&p.length<=4)return ' <small class="pv">'+esc(p)+'</small>'}return ''}
@@ -749,8 +870,8 @@ function show(i){
       inBtn.disabled=!hasTimelineData||zoom>=TL_MAX_ZOOM;
       resetBtn.disabled=!hasTimelineData||zoom===TL_DEFAULT_ZOOM;
       requestAnimationFrame(function(){
-        var query=normalizeSearchText(st);
-        var match=query?tlParseDayData(date).find(function(d){return tlMatchesSearch(d,query);}):null;
+        var query=normalizeSearchText(tlSearchQuery());
+        var match=query?tlParseDayData(date).find(function(d){return tlSearchMatcher(d,query);}):null;
         if(match&&Number.isFinite(match._px)){
           var targetY=match._labelBox?(match._labelBox.top+match._labelBox.bottom)/2:match._py;
           container.scrollLeft=Math.max(0,match._px-container.clientWidth/2);
@@ -814,7 +935,8 @@ function show(i){
   var tlCanvas=document.getElementById('tl-canvas-'+i);
   var tlMatchCount=tlCanvas?Number(tlCanvas.dataset.searchMatchCount||0):0;
   var tlTitle=tlFrame.querySelector('.tl-title');
-  if(st&&tlMatchCount&&tlTitle)tlTitle.textContent='涨停时间轴 · 匹配 '+tlMatchCount+' 只';
+  const timelineQuery=tlSearchQuery();
+  if(timelineQuery&&tlMatchCount&&tlTitle)tlTitle.textContent='涨停时间轴 · 匹配 '+tlMatchCount+' 只';
   // 搜索高亮
   if(st){
     let cnt=0;const lo=normalizeSearchText(st);
@@ -1019,10 +1141,31 @@ function extractStocksFromT(t){
   for(const match of m){stocks.push(match[1].trim());}
   return stocks;
 }
+function refreshTimelineRegionSearch(){
+  if(ai<0||!P[ai]||typeof renderTimelineInline!=='function')return 0;
+  const canvas=document.getElementById('tl-canvas-'+ai);
+  const tooltip=document.getElementById('tl-tooltip-'+ai);
+  if(!canvas||!tooltip)return 0;
+  renderTimelineInline(P[ai].d,canvas,tooltip,ai);
+  const count=Number(canvas.dataset.searchMatchCount||0);
+  const frame=canvas.closest('.tl-frame');
+  const title=frame&&frame.querySelector('.tl-title');
+  if(title)title.textContent=rst&&count?'涨停时间轴 · 匹配 '+count+' 只':'涨停时间轴';
+  if(rst&&count){
+    const query=normalizeSearchText(rst);
+    const match=tlParseDayData(P[ai].d).find(function(item){return tlMatchesRegion(item,query);});
+    const container=document.getElementById('tl-container-'+ai);
+    if(match&&container)requestAnimationFrame(function(){
+      if(Number.isFinite(match._px))container.scrollLeft=Math.max(0,match._px-container.clientWidth/2);
+      if(Number.isFinite(match._py))container.scrollTop=Math.max(0,match._py-container.clientHeight/2);
+    });
+  }
+  return count;
+}
 function searchRegion(){
   rst=ri.value.trim();
   document.querySelectorAll('.hl2').forEach(el=>el.classList.remove('hl2'));
-  if(!rst){rb.textContent='';return;}
+  if(!rst){rb.textContent='';refreshTimelineRegionSearch();return;}
   const sd=window.SD||SD||{};
   const matches=new Set();
   // 只搜当前选中日期
@@ -1040,7 +1183,11 @@ function searchRegion(){
     const n=el.getAttribute('data-n');
     if(matches.has(n)){el.classList.add('hl2');cnt++;}
   });
-  rb.textContent=matches.size?`找到 ${cnt} 只`:'无结果';
+  const timelineCount=refreshTimelineRegionSearch();
+  if(matches.size||timelineCount){
+    rb.textContent=matches.size?`正文找到 ${cnt} 只`:'正文无结果';
+    if(timelineCount)rb.textContent+=` · 时间轴找到 ${timelineCount} 只`;
+  }else rb.textContent='无结果';
 }
 let rt;ri.addEventListener('input',()=>{clearTimeout(rt);rt=setTimeout(searchRegion,150);});
 
@@ -1108,6 +1255,23 @@ function tlMatchesSearch(item,query){
   if(!lo||!item)return false;
   return normalizeSearchText(item.name).includes(lo)||String(item.code||'').includes(lo)||normalizeSearchText(item.boge||'').includes(lo);
 }
+function tlMatchesRegion(item,query){
+  const lo=normalizeSearchText(query);
+  if(!lo||!item)return false;
+  if(tlMatchesSearch(item,lo)||normalizeSearchText(item.concept||'').includes(lo))return true;
+  const detail=findStockDetail(item.name);
+  if(!detail)return false;
+  if(normalizeSearchText(detail.r||'').includes(lo)||normalizeSearchText(detail.t||'').includes(lo))return true;
+  if(Array.isArray(detail.e)){
+    for(const row of detail.e){
+      const concept=Array.isArray(row)?row[0]:row;
+      if(typeof concept==='string'&&normalizeSearchText(concept).includes(lo))return true;
+    }
+  }
+  return false;
+}
+function tlSearchQuery(){return rst||st;}
+function tlSearchMatcher(item,query){return rst?tlMatchesRegion(item,query):tlMatchesSearch(item,query);}
 function tlParseDayData(date){
   if(!date)return[];
   if(_timelineDataCache.has(date))return _timelineDataCache.get(date);
@@ -1255,8 +1419,8 @@ function tlBuildLabelLayout(data,W,t2x,b2y,ctx,upperMinTop){
 function tlCanvasHeight(layout){return Math.max(TL_MIN_H,Math.min(TL_MAX_H,Math.ceil(layout.maxBottom+TL_PAD_B)));}
 function renderTimelineInline(date,canvas,tooltip,idx){
   const DATA=tlParseDayData(date);
-  const searchLo=normalizeSearchText(st);
-  const searchMatches=new Set(searchLo?DATA.filter(function(d){return tlMatchesSearch(d,searchLo);}):[]);
+  const searchLo=normalizeSearchText(tlSearchQuery());
+  const searchMatches=new Set(searchLo?DATA.filter(function(d){return tlSearchMatcher(d,searchLo);}):[]);
   canvas.dataset.searchMatchCount=String(searchMatches.size);
   const W=canvas.width||TL_BASE_W;
   const emptyContainer=document.getElementById('tl-container-'+idx);
@@ -1491,6 +1655,7 @@ function showSp(name,e,anchorRect){
   const d=findStockDetail(name);if(!d)return;
   e.stopPropagation();
   spCode=d.c||'';spName=name;_historyOpen=false;var _hsEl=document.getElementById('sp-history');if(_hsEl)_hsEl.style.display='none';
+  _conceptEditName=findStockDetailKey(name,d);
   const originalCategory=findOriginalCategory(ai>=0?P[ai].d:'',name);
   _bogeCurDate=ai>=0?P[ai].d:'';_bogeParent=originalCategory.parent||originalCategory.board||'';
   document.getElementById('sp-n').textContent=name+'（'+d.c+'）';
@@ -1499,8 +1664,7 @@ function showSp(name,e,anchorRect){
   const mvEl=document.getElementById('sp-mv');
   const mvText=formatMarketCap(d.mv);
   if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
-  const tc=document.getElementById('sp-t');tc.innerHTML='';
-  if(d.t){d.t.split(',').forEach(t=>{t=t.trim();if(t){const s=document.createElement('button');s.type='button';s.textContent=t;s.onclick=()=>{document.getElementById('si').value=t;search();closeSp();};tc.appendChild(s);}});}
+  renderConceptView(d);toggleConceptEditor(false);
   renderBogeCard();
   document.getElementById('sp-hc').innerHTML='';
   document.getElementById('sp-ht').innerHTML='';
@@ -1526,8 +1690,6 @@ function showSp(name,e,anchorRect){
     top10El.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted2);font-size:11px">暂无十大股东数据</div>';
     top10Section.style.display='block';
   }
-  const ec=document.getElementById('sp-e');ec.innerHTML='';
-  if(d.e&&d.e.length){d.e.forEach(x=>{const div=document.createElement('div');div.innerHTML='<b>'+esc(x[0])+'：</b>'+esc(x[1]);ec.appendChild(div);});}
   // 买一量曲线图
   const chartEl=document.getElementById('sp-chart');
   if(ai>=0&&d.c&&typeof HD!=='undefined'){
