@@ -69,6 +69,10 @@
     .stock-group { display: grid; grid-template-columns: repeat(3, max-content); grid-auto-rows: min-content; align-content: start; gap: 4px 6px; }
     .stock-grid .stock-chip { margin: 0; }
     .stock-chip em { color: #8b9bb3; font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; font-style: normal; }
+    .stock-chip .auction-pct { margin-left: 2px; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .auction-pct.positive { color: #d95c45; }
+    .auction-pct.negative { color: #2b9c73; }
+    .auction-pct.flat { color: #8b9bb3; }
     .no-data { padding: 50px; color: var(--muted); text-align: center; font-size: 13px; }
     .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(31,43,61,.24); backdrop-filter: blur(3px); }
     .modal-backdrop.open { display: flex; }
@@ -114,7 +118,7 @@
     <header class="topbar">
       <div>
         <h1>连板多日对比</h1>
-        <div class="subtitle">纵轴：连板层级　·　横轴：交易日期（近 → 远）　·　单击高亮，双击查看历史涨停和股票详情</div>
+        <div class="subtitle">纵轴：连板层级　·　横轴：交易日期（近 → 远）　·　按钮显示当日 9:25 竞价涨幅　·　单击高亮，双击查看历史涨停和股票详情</div>
       </div>
       <div class="status" id="status">正在读取涨停数据…</div>
     </header>
@@ -166,11 +170,13 @@
 
   <script src="zt_data.js"></script>
   <script src="stock_detail_map.js"></script>
+  <script src="zt_auction_change_data.js"></script>
   <script>
     (() => {
       'use strict';
       const LABEL_WIDTH = 112, CELL_WIDTH = 290, BATCH_SIZE = 24;
       const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
+      const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
       const els = {
         viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
@@ -226,6 +232,15 @@
       function stockCount(lines) {
         return lines.reduce((total, line) => total + [...line.matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)].length, 0);
       }
+      function auctionPctMarkup(date, code) {
+        const day = AUCTION_DATA.dates && AUCTION_DATA.dates[date];
+        const value = day && day.values ? Number(day.values[code]) : NaN;
+        if (!Number.isFinite(value)) return '';
+        const sign = value > 0 ? '+' : '';
+        const cls = value > 0 ? 'positive' : value < 0 ? 'negative' : 'flat';
+        const sourceDate = day.sourceDate && day.sourceDate !== date ? `，数据日 ${day.sourceDate}` : '';
+        return `<span class="auction-pct ${cls}" title="9:25竞价涨幅${sourceDate}">竞${sign}${value.toFixed(2)}%</span>`;
+      }
       function dateColumnWidths(dates) {
         const byDate = new Map(state.records.map(record => [record.date, record]));
         return dates.map(date => {
@@ -237,7 +252,8 @@
             }
           }
           // 二板及以上按每组 3 列、每列最多 10 行排列；首板保持普通列宽并纵向展开。
-          return Math.max(CELL_WIDTH, groups * 3 * 112 + 28);
+          // 股票按钮现在还显示 9:25 竞价涨幅，给每列预留足够宽度避免被单元格裁切。
+          return Math.max(CELL_WIDTH, groups * 3 * 140 + 28);
         });
       }
       function setGridColumns(dates) {
@@ -251,7 +267,7 @@
       function renderHeader(dates) {
         els.header.innerHTML = '<div class="corner">连板层级 / 日期（近 → 远）</div>' + dates.map((date, index) => `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small></div>`).join('');
       }
-      function renderLine(line, compact) {
+      function renderLine(line, compact, date) {
         const pattern = /([^，,、；;\s]+?)（[^）]*）(\d{6})/g;
         let html = '', cursor = 0, found = false;
         for (const match of line.matchAll(pattern)) {
@@ -261,13 +277,13 @@
           const text = `${match[1]} ${match[2]}`.toLowerCase();
           const hit = state.query && text.includes(state.query);
           const selected = state.selectedCode === match[2];
-          html += `<span class="stock-chip${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}">${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em></span>`;
+          html += `<span class="stock-chip${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}">${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
           cursor = match.index + match[0].length;
         }
         html += escapeHtml(compact ? line.slice(cursor).replace(/[，,、；;]/g, '') : line.slice(cursor));
         return found ? `<div class="content-line">${html}</div>` : `<div class="theme-line">${escapeHtml(line)}</div>`;
       }
-      function renderLimitedContent(lines) {
+      function renderLimitedContent(lines, date) {
         const themes = [];
         const stocks = [];
         for (const line of lines) {
@@ -283,7 +299,7 @@
           const group = stocks.slice(i, i + 30).map(stock => {
             const hit = state.query && `${stock.name} ${stock.code}`.toLowerCase().includes(state.query);
             const selected = state.selectedCode === stock.code;
-            return `<span class="stock-chip${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em></span>`;
+            return `<span class="stock-chip${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
           }).join('');
           groups.push(`<div class="stock-group">${group}</div>`);
         }
@@ -296,7 +312,7 @@
         const hasMatch = state.query && text.includes(state.query);
         const dim = state.query && !hasMatch;
         const selected = state.selectedCode && lines.some(line => line.includes(state.selectedCode));
-        const content = board === 1 ? lines.map(line => renderLine(line, true)).join('') : renderLimitedContent(lines);
+        const content = board === 1 ? lines.map(line => renderLine(line, true, date)).join('') : renderLimitedContent(lines, date);
         return `<div class="board-cell has-content${hasMatch ? ' cell-match' : ''}${dim ? ' cell-dim' : ''}${selected ? ' selected-cell' : ''}" data-date="${date}" data-board="${board}" data-text="${escapeAttr(text)}">${content}</div>`;
       }
       function renderRows(dates) {
