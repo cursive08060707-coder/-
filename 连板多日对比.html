@@ -22,26 +22,29 @@
     html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif; }
     body { padding: 22px; }
     .page { max-width: 2100px; margin: 0 auto; }
-    .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
-    h1 { margin: 0 0 5px; font-size: 25px; letter-spacing: .02em; }
-    .subtitle { color: var(--muted); font-size: 13px; }
-    .status { color: var(--muted); font-size: 12px; text-align: right; white-space: nowrap; }
-    .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; padding: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 5px 18px rgba(45,68,104,.05); }
-    .toolbar label { color: var(--muted); font-size: 12px; }
+    .control-panel { display: flex; align-items: center; gap: 12px; min-height: 52px; margin-bottom: 10px; padding: 8px 10px; overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 5px 18px rgba(45,68,104,.05); scrollbar-width: thin; }
+    .topbar { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; margin: 0; }
+    h1 { margin: 0; font-size: 20px; letter-spacing: .02em; line-height: 34px; white-space: nowrap; }
+    .subtitle { display: none; }
+    .status { max-width: 150px; overflow: hidden; color: var(--muted); font-size: 11px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+    .toolbar { display: flex; flex: 1 0 auto; align-items: center; flex-wrap: nowrap; gap: 7px; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+    .toolbar label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .toolbar input#search { width: 170px; }
+    .toolbar input#dateSearch { width: 125px; }
     input, select, button { height: 34px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; color: var(--text); font: inherit; font-size: 13px; }
     input { width: 195px; padding: 0 10px; }
     select, button { padding: 0 10px; cursor: pointer; }
     button:hover { border-color: var(--accent); color: var(--accent); }
     button.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
     button.primary:hover { color: #fff; background: #2d5ed0; }
-    .legend { display: flex; align-items: center; gap: 13px; margin-left: auto; color: var(--muted); font-size: 12px; }
+    .legend { display: none; }
     .legend span { display: inline-flex; align-items: center; gap: 5px; }
     .legend i { display: inline-block; width: 17px; height: 11px; border-radius: 3px; }
     .legend .board-mark { background: #f0f4fb; border: 1px solid #d4deed; }
     .legend .stock-mark { background: var(--accent-soft); border: 1px solid #bdd0f7; }
     .legend .empty-mark { background: #fafbfe; border: 1px dashed #dce3ef; }
-    .hint { margin: 11px 2px 8px; color: var(--muted); font-size: 12px; }
-    .viewport { position: relative; height: calc(100vh - 205px); min-height: 500px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 8px 28px rgba(45,68,104,.07); overscroll-behavior: contain; scrollbar-color: #bdc8d9 #f3f6fa; }
+    .hint { flex: 0 1 210px; min-width: 0; margin: 0; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+    .viewport { position: relative; height: calc(100vh - 105px); min-height: 500px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 8px 28px rgba(45,68,104,.07); overscroll-behavior: contain; scrollbar-color: #bdc8d9 #f3f6fa; }
     .matrix { min-width: calc(var(--label-width) + var(--cell-width)); }
     .matrix-header, .board-row { display: grid; width: max-content; }
     .board-row { grid-template-columns: var(--date-template); }
@@ -61,7 +64,7 @@
     .cell-empty { display: flex; align-items: flex-start; justify-content: center; min-height: 80px; padding-top: 23px; color: #d6deea; font-size: 18px; }
     .content-line { margin: 0 0 7px; line-height: 1.7; font-size: 12px; }
     .theme-line { margin: 1px 0 4px; color: #5d79a1; font-size: 11px; font-weight: 700; }
-    .stock-chip { display: inline-flex; align-items: baseline; gap: 4px; margin: 0 4px 4px 0; padding: 3px 6px; border: 1px solid #d6e1f4; border-radius: 5px; background: #f7faff; color: #344f79; cursor: pointer; line-height: 1.2; transition: .15s ease; }
+    .stock-chip { display: inline-flex; align-items: baseline; gap: 4px; margin: 0 4px 4px 0; padding: 3px 6px; border: 1px solid #d6e1f4; border-radius: 5px; background: #f7faff; color: #344f79; cursor: pointer; line-height: 1.2; white-space: nowrap; transition: .15s ease; }
     .stock-chip:hover, .stock-chip.match { border-color: #8eafea; background: var(--accent-soft); color: #2458bd; }
     .stock-chip.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; box-shadow: 0 0 0 2px rgba(220,152,36,.18); font-weight: 700; opacity: 1 !important; }
     .stock-chip.selected em { color: #9b6b1a; }
@@ -103,49 +106,54 @@
     .top10-ratio { color: #49658e; text-align: right; }
     .top10-change { color: var(--muted); text-align: right; }
     .empty-detail { color: var(--muted); font-size: 12px; }
+    @media (max-width: 1200px) {
+      .control-panel { flex-wrap: wrap; align-items: center; }
+      .toolbar { flex-basis: 100%; overflow-x: auto; padding-bottom: 2px; }
+      .hint { flex-basis: 100%; }
+      .viewport { height: calc(100vh - 155px); }
+    }
     @media (max-width: 720px) {
       body { padding: 12px; }
-      .topbar { align-items: flex-start; flex-direction: column; gap: 7px; }
+      .control-panel { align-items: flex-start; gap: 6px 10px; }
+      .topbar { align-items: center; flex-direction: row; gap: 8px; }
       .status { text-align: left; }
-      .legend { width: 100%; margin-left: 0; }
-      .viewport { height: calc(100vh - 260px); min-height: 430px; }
+      .toolbar { flex-wrap: wrap; row-gap: 6px; }
+      .hint { flex-basis: 100%; }
+      .viewport { height: calc(100vh - 175px); min-height: 430px; }
       input { width: 160px; }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <header class="topbar">
-      <div>
-        <h1>连板多日对比</h1>
-        <div class="subtitle">纵轴：连板层级　·　横轴：交易日期（近 → 远）　·　按钮显示当日 9:25 竞价涨幅　·　单击高亮，双击查看历史涨停和股票详情</div>
-      </div>
-      <div class="status" id="status">正在读取涨停数据…</div>
-    </header>
-    <section class="toolbar">
-      <label for="search">搜索股票</label>
-      <input id="search" type="search" placeholder="名称或代码，匹配后高亮">
-      <label for="dateSearch">按日期</label>
-      <input id="dateSearch" type="search" placeholder="如 2026-08-07" aria-label="按日期定位">
-      <button id="dateSearchBtn">定位日期</button>
-      <label for="initialDays">初始天数</label>
-      <select id="initialDays">
-        <option value="12">12天</option>
-        <option value="24" selected>24天</option>
-        <option value="40">40天</option>
-        <option value="80">80天</option>
-        <option value="all">全部</option>
-      </select>
-      <button class="primary" id="todayBtn">回到最近</button>
-      <button id="clearSelection">取消股票高亮</button>
-      <button id="reloadBtn">重新读取</button>
-      <div class="legend">
-        <span><i class="board-mark"></i>板位内容</span>
-        <span><i class="stock-mark"></i>股票</span>
-        <span><i class="empty-mark"></i>无数据</span>
-      </div>
-    </section>
-    <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动到最右侧会自动加载更早日期。</div>
+    <div class="control-panel">
+      <header class="topbar">
+        <div>
+          <h1>连板多日对比</h1>
+          <div class="subtitle">纵轴：连板层级　·　横轴：交易日期（近 → 远）　·　按钮显示当日 9:25 竞价涨幅　·　单击高亮，双击查看历史涨停和股票详情</div>
+        </div>
+        <div class="status" id="status">正在读取涨停数据…</div>
+      </header>
+      <section class="toolbar">
+        <label for="search">搜索股票</label>
+        <input id="search" type="search" placeholder="名称或代码，匹配后高亮">
+        <label for="dateSearch">按日期</label>
+        <input id="dateSearch" type="search" placeholder="如 2026-08-07" aria-label="按日期定位">
+        <button id="dateSearchBtn">定位日期</button>
+        <label for="initialDays">初始天数</label>
+        <select id="initialDays">
+          <option value="12">12天</option>
+          <option value="24" selected>24天</option>
+          <option value="40">40天</option>
+          <option value="80">80天</option>
+          <option value="all">全部</option>
+        </select>
+        <button class="primary" id="todayBtn">回到最近</button>
+        <button id="clearSelection">取消股票高亮</button>
+        <button id="reloadBtn">重新读取</button>
+      </section>
+      <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动到最右侧会自动加载更早日期。</div>
+    </div>
     <section class="viewport" id="viewport" aria-label="连板多日对比矩阵">
       <div class="matrix" id="matrix">
         <div class="matrix-header" id="matrixHeader"></div>
@@ -253,7 +261,8 @@
           }
           // 二板及以上按每组 3 列、每列最多 10 行排列；首板保持普通列宽并纵向展开。
           // 股票按钮现在还显示 9:25 竞价涨幅，给每列预留足够宽度避免被单元格裁切。
-          return Math.max(CELL_WIDTH, groups * 3 * 140 + 28);
+          // 190px 可容纳较长名称、6位代码和最高至 +30.00% 的竞价涨幅。
+          return Math.max(CELL_WIDTH, groups * 3 * 190 + 28);
         });
       }
       function setGridColumns(dates) {
