@@ -44,6 +44,11 @@ background-repeat:no-repeat;background-position:10px center}
 #rbox input:focus{border-color:var(--accent);background-color:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
 #rb{font-size:11px;color:var(--muted2);padding:2px 14px 4px}
 
+#fbox{background:var(--surface);border-bottom:1px solid var(--border2);padding:0 14px 8px}
+#fbox input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;font-size:12px;outline:none;color:var(--fg)}
+#fbox input:focus{border-color:var(--accent);background-color:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
+#fb{font-size:11px;color:var(--muted2);padding:2px 14px 4px}
+
 #dl{flex:1;overflow-y:auto;padding:6px 8px}
 .di{width:100%;padding:8px 12px;cursor:pointer;font:inherit;font-size:12px;color:var(--muted);border:0;background:transparent;text-align:left;border-radius:var(--radius);transition:background var(--tr),color var(--tr);display:flex;align-items:center;gap:10px;margin:1px 0}
 .di:hover{background:var(--accent-soft);color:var(--fg)}
@@ -79,6 +84,9 @@ background-repeat:no-repeat;background-position:10px center}
 .sk,.mb{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:5px 11px;font:inherit;font-size:12px;color:var(--fg);cursor:pointer;transition:all var(--tr);position:relative;display:inline-flex;align-items:center;gap:4px;line-height:1.4}
 .sk:hover,.mb:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.06),0 0 0 1px var(--accent-border);transform:translateY(-1px)}
 .sk:active,.mb:active{transform:translateY(0)}
+/* 当天 09:25 仍为一字板：用淡红色与普通涨停股快速区分。 */
+.sk.bid-seal,.mb.bid-seal{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+.sk.bid-seal:hover,.mb.bid-seal:hover{background:#ffe4e6;border-color:#fda4af;color:#881337;box-shadow:0 1px 2px rgba(159,18,57,.08),0 0 0 1px rgba(244,63,94,.12)}
 .sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .sk .pv,.mb .pv{font-size:10px;color:var(--muted);margin-left:3px;padding:1px 4px;background:var(--accent-soft);border-radius:3px;border:1px solid var(--border2);font-weight:500}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
@@ -87,6 +95,7 @@ background-repeat:no-repeat;background-position:10px center}
 .sk.hl2 .lk,.mb.hl2 .lk{color:#ccc!important}
 .hl2 .hl{background:#fff!important;color:#000!important}
 .hl2 .hl.hl-cur{background:#fff!important;color:#000!important;outline:2px solid #fff}
+.fzhl{background:var(--hl-soft)!important;color:#92400e!important;border-radius:3px}
 
 .mbl{margin-bottom:8px}
 .mbs{display:flex;flex-wrap:wrap;gap:6px}
@@ -105,8 +114,15 @@ background-repeat:no-repeat;background-position:10px center}
 #ft-h .ft-toggle:hover{opacity:1}
 #ft.collapsed #ft-h .ft-title{display:none}
 #ft.collapsed #ft-h{justify-content:center;padding:8px 0}
-#ft-body{flex:1;overflow-y:auto;padding:6px 8px}
-#ft.collapsed #ft-body{display:none}
+#ft-content{flex:1;min-height:0;display:grid;grid-template-rows:minmax(280px,46%) minmax(0,54%);overflow:hidden}
+#ft-kline{min-height:0;display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--surface)}
+#ft-kline-head{display:flex;align-items:center;gap:6px;min-height:32px;padding:6px 10px;border-bottom:1px solid var(--border2);background:var(--surface);font-size:11px;color:var(--muted);flex:0 0 auto}
+#ft-kline-head b{color:var(--fg);font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ft-kline-code{margin-left:auto;color:var(--muted2);font:10px var(--font-mono);white-space:nowrap}
+#ft-kbox{flex:1;min-height:0;width:100%;background:var(--surface)}
+#ft-kbox .ft-kempty{height:100%;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--muted2);font-size:11px;background:var(--surface2)}
+#ft-body{min-height:0;overflow-y:auto;padding:6px 8px}
+#ft.collapsed #ft-content{display:none}
 #ft-empty{color:var(--muted2);font-size:11px;text-align:center;padding:20px 8px}
 .ft-stock-row{margin-bottom:10px;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);content-visibility:auto;contain-intrinsic-size:320px}
 .ft-stock-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px;color:var(--muted);min-width:0}
@@ -239,6 +255,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #ft-resizer{display:none}
 #ft-h{border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:10px 16px}
 #ft-body{max-height:calc(60vh - 44px)}
+#ft-content{grid-template-rows:minmax(220px,46%) minmax(0,54%);max-height:calc(60vh - 44px)}
+#ft-body{max-height:none}
 #ct{padding-bottom:76px}
 }
 @media(max-width:600px){
@@ -397,6 +415,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 </div>
 <div id="sbox"><input id="si" aria-label="搜索股票或板块" placeholder="搜索股票/板块..."></div>
 <div id="rbox"><input id="ri" aria-label="搜索地域或题材概念" placeholder="搜索地域/题材概念（如浙江、PEEK）"></div><div id="rb" role="status" aria-live="polite"></div>
+<div id="fbox"><input id="fi" aria-label="模糊搜索股票或分类" placeholder="模糊搜索（如 ty、y*t）" title="支持相邻字母交换；* 表示中间可隔任意字符"></div><div id="fb" role="status" aria-live="polite"></div>
 <div id="dl" aria-label="交易日期"></div><div id="st" role="status" aria-live="polite"></div></div>
 <div id="ct"><div id="wc">点击左侧日期查看数据</div></div>
 
@@ -436,10 +455,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
       <div class="sp-top10-list" id="sp-top10-list"></div>
     </div>
     <div class="sp-e" id="sp-e"></div>
-    <div id="sp-kline-section" style="margin-top:8px">
-      <div class="chart-label"><b>日K</b></div>
-      <div class="tv-wrap" id="tv-kbox" style="height:350px;min-height:200px"></div>
-    </div>
   </div>
 </div>
 
@@ -454,11 +469,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 </div>
 
 
-<!-- 分时图侧栏 -->
+<!-- K线 / 分时图侧栏 -->
 <div id="ft">
   <div id="ft-resizer"></div>
-  <div id="ft-h"><span class="ft-title">📊 分时图 + 买一量</span><button type="button" class="ft-toggle" onclick="toggleFt()" aria-controls="ft-body" aria-expanded="true" aria-label="折叠分时图">▶</button></div>
-  <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
+  <div id="ft-h"><span class="ft-title">📊 K线 / 分时图 / 买一量</span><button type="button" class="ft-toggle" onclick="toggleFt()" aria-controls="ft-content" aria-expanded="true" aria-label="折叠图表区">▶</button></div>
+  <div id="ft-content">
+    <section id="ft-kline" aria-label="股票日K线">
+      <div id="ft-kline-head"><span>日K</span><b id="ft-kline-name">点击股票查看K线</b><span id="ft-kline-code"></span></div>
+      <div id="ft-kbox"><div class="ft-kempty">点击任意股票按钮，上方自动加载日K线</div></div>
+    </section>
+    <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
+  </div>
 </div>
 
 
@@ -493,21 +514,22 @@ function loadPosts(cb){
 console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | zt-time-sort=on | init=show(0)');
 
 // === 主显示逻辑 ===
-let ai=-1,st='',sr=new Set(),fd=[],hi=-1;
+let ai=-1,st='',fst='',sr=new Set(),fd=[],hi=-1;
 const _SN = new Set(Object.keys(SN));  // 从stock_names.js?v=20260730-1747初始化
-const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb');
+const dl=document.getElementById('dl'),ct=document.getElementById('ct'),si=document.getElementById('si'),stEl=document.getElementById('st'),ri=document.getElementById('ri'),rb=document.getElementById('rb'),fi=document.getElementById('fi'),fb=document.getElementById('fb');
 const wk=['日','一','二','三','四','五','六'];
 const _allDateIndices=P.map(function(_,i){return i;});
 const _dayLines=P.map(function(p){return p.t.split('\n');});
 let _daySearchText=P.map(function(p){return normalizeSearchText(p.t);});
+let _dayFuzzyTokens=null;
 const _dateIndex=new Map(P.map(function(p,i){return[p.d,i];}));
 const _dayStocksCache=new Map();
 let _renderedDateIndices=[],_renderedSearchMode=false;
 stEl.textContent=P.length+'天';
 
 function render(){
-  const a=st?fd:_allDateIndices;
-  const searchMode=Boolean(st);
+  const searchMode=Boolean(st||fst);
+  const a=searchMode?fd:_allDateIndices;
   const same=searchMode===_renderedSearchMode&&a.length===_renderedDateIndices.length&&a.every(function(v,j){return v===_renderedDateIndices[j];});
   if(!same){
     const frag=document.createDocumentFragment();
@@ -516,7 +538,7 @@ function render(){
       e.type='button';e.className='di';e.dataset.i=i;
       let dot='<span class="di-dot"></span>';
       let label='<span>'+P[i].d.slice(5)+' 周'+wk[new Date(P[i].d).getDay()]+'</span>';
-      let mark=st&&sr.has(i)?'<span class="m">✓</span>':'';
+      let mark=(st||fst)&&sr.has(i)?'<span class="m">✓</span>':'';
       let day='<span class="di-day">'+(i+1)+'</span>';
       e.innerHTML=dot+label+mark+day;
       frag.appendChild(e);
@@ -541,6 +563,49 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function normalizeSearchText(value){
   return String(value==null?'':value).toLowerCase().replace(/[！-～]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/　/g,' ');
 }
+function makeFuzzyTokens(value){
+  const matches=normalizeSearchText(value).match(/[a-z0-9]+|[\u3400-\u9fff]+/g)||[];
+  return Array.from(new Set(matches));
+}
+function ensureDayFuzzyTokens(){
+  if(!_dayFuzzyTokens)_dayFuzzyTokens=_daySearchText.map(makeFuzzyTokens);
+}
+function makeFuzzySpec(value){
+  const query=normalizeSearchText(value).replace(/\s+/g,'').trim();
+  const significant=query.replace(/\*/g,'');
+  if(significant.length<2)return null;
+  if(query.includes('*')){
+    const parts=query.split('*').filter(Boolean);
+    return parts.length>=2?{kind:'wildcard',query:query,parts:parts}:null;
+  }
+  const needles=[query];
+  // 只扩展相邻字母交换，例如 ty 同时匹配 yt；不运行高成本的通用编辑距离。
+  if(/^[a-z0-9]{2,12}$/.test(query)){
+    for(let i=0;i<query.length-1;i++){
+      if(query[i]===query[i+1])continue;
+      const swapped=query.slice(0,i)+query[i+1]+query[i]+query.slice(i+2);
+      if(!needles.includes(swapped))needles.push(swapped);
+    }
+  }
+  return {kind:'needles',query:query,needles:needles};
+}
+function fuzzyTokenHasParts(token,parts){
+  let pos=0;
+  for(const part of parts){
+    pos=token.indexOf(part,pos);
+    if(pos<0)return false;
+    pos+=part.length;
+  }
+  return true;
+}
+function fuzzyTextMatches(text,spec,tokens){
+  if(!spec)return false;
+  const normalized=normalizeSearchText(text);
+  if(spec.kind==='needles')return spec.needles.some(function(needle){return normalized.includes(needle);});
+  const list=tokens||makeFuzzyTokens(normalized);
+  return list.some(function(token){return fuzzyTokenHasParts(token,spec.parts);});
+}
+function globalSearchMode(){return Boolean(st||fst);}
 // 股票名称在不同数据源中可能使用半角/全角字母（例如“深南电A”/“深南电Ａ”）。
 // 统一做双向兼容，避免资料映射存在但弹窗查找失败。
 function findStockDetail(name){
@@ -593,6 +658,7 @@ function rebuildBogeSearchText(){
     if(dateMap)Object.keys(dateMap).forEach(function(parent){labels.push(parent);const m=dateMap[parent];if(m&&typeof m==='object')Object.keys(m).forEach(function(code){labels.push(m[code]);});});
     return normalizeSearchText(p.t+' '+labels.join(' '));
   });
+  _dayFuzzyTokens=null;
 }
 function getBogeSubcategory(date,parent,code){
   if(!date||!parent||!code)return '';
@@ -754,7 +820,17 @@ function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
   let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
   let cb='',cs='',sb=[],bo=false;
-  function stockHtml(s,klass){return '<button type="button" class="'+klass+'" data-n="'+esc(s.name)+'">'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';}
+  const bidRows=typeof BID!=='undefined'&&Array.isArray(BID[p.d])?BID[p.d]:[];
+  const bidCodes=new Set(bidRows.map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
+  const bidNames=new Set(bidRows.map(function(item){return normalizeSearchText(item&&item.n||'');}).filter(Boolean));
+  function isBidSealStock(name){
+    const detail=findStockDetail(name);const code=detail&&detail.c?String(detail.c).trim():'';
+    return (code&&bidCodes.has(code))||bidNames.has(normalizeSearchText(name));
+  }
+  function stockHtml(s,klass){
+    const bidSeal=isBidSealStock(s.name);
+    return '<button type="button" class="'+klass+(bidSeal?' bid-seal':'')+'" data-n="'+esc(s.name)+'"'+(bidSeal?' title="09:25 竞价一字板"':'')+'>'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';
+  }
   function renderBogeGroups(stocks,parent,klass){
     const groups=[],plain=[];const byLabel=new Map();
     stocks.forEach(function(s){
@@ -798,7 +874,9 @@ function show(i){
     if(/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板)$/.test(line)){
       cl();cb=line;cs='';bo=true;h+='<div class="bl"><div class="blh">'+line+'</div>';continue;
     }
-    if(cb==='首板'&&line.length<=12&&!line.includes('\uff0c')&&!line.includes(',')&&!isSN(line)){
+    // 分类标题不带“（拼音）六位代码”。不能只依赖 stock_names.js 判断，
+    // 因为历史名称表中曾混入“有色金属”“华为汽车”等概念词。
+    if(cb==='首板'&&line.length<=20&&!line.includes('\uff0c')&&!line.includes(',')&&!/（[^）]+）\d{6}/.test(line)){
       fs();cs=line;continue;
     }
     if(cb){
@@ -947,9 +1025,21 @@ function show(i){
     stEl.textContent=tlMatchCount?(cnt?'正文 '+cnt+' 处 · 时间轴 '+tlMatchCount+' 只':'时间轴 '+tlMatchCount+' 只'):'匹配 '+cnt+' 处';
     if(cnt>0){hi=0;const hl=document.querySelectorAll('#ct .hl:not(.sk):not(.mb)');hl.forEach(function(x,j){var inHl2=x.closest('.hl2');if(inHl2){x.style.background=j===0?'#fff':'#ccc';x.style.color='#000';}else{x.style.background=j===0?'#000':'#666';x.style.color='#fff';}});setTimeout(()=>{if(hl[0])hl[0].scrollIntoView({block:'center',behavior:'smooth'});},120);}
   }
+  if(fst){
+    const fuzzySpec=makeFuzzySpec(fst);let fuzzyCount=0,firstFuzzy=null;
+    ct.querySelectorAll('.sk,.mb,.sh').forEach(function(el){
+      if(fuzzyTextMatches(el.textContent,fuzzySpec)){
+        el.classList.add('fzhl');fuzzyCount++;
+        if(!firstFuzzy)firstFuzzy=el;
+      }
+    });
+    const fuzzyTimelineCount=tlMatchCount;
+    fb.textContent=fuzzyTimelineCount?(fuzzyCount?'正文 '+fuzzyCount+' 处 · 时间轴 '+fuzzyTimelineCount+' 只':'时间轴 '+fuzzyTimelineCount+' 只'):'正文匹配 '+fuzzyCount+' 处';
+    if(firstFuzzy)setTimeout(function(){firstFuzzy.scrollIntoView({block:'center',behavior:'smooth'});},120);
+  }
 renderFenshi(i);
   render();
-  const vi=st?fd.indexOf(i):i;const items=dl.querySelectorAll('.di');
+  const vi=globalSearchMode()?fd.indexOf(i):i;const items=dl.querySelectorAll('.di');
   if(items[vi])items[vi].scrollIntoView({block:'nearest'});
 }
 
@@ -983,7 +1073,7 @@ function applyFtState(loadPending){
   ft.classList.toggle('collapsed',ftCollapsed);
   toggle.textContent=ftCollapsed?'＋':'−';
   toggle.setAttribute('aria-expanded',String(!ftCollapsed));
-  toggle.setAttribute('aria-label',ftCollapsed?'展开分时图':'折叠分时图');
+  toggle.setAttribute('aria-label',ftCollapsed?'展开图表区':'折叠图表区');
   if(ftCollapsed){ft.style.width='';ft.style.minWidth='';}
   else restoreFtWidth();
   if(loadPending&&ftCollapsed&&ai>=0)renderFenshi(ai,false);
@@ -1114,7 +1204,7 @@ document.addEventListener('click',function(e){
 });
 
 function search(){
-  st=si.value.trim();sr.clear();fd=[];hi=-1;rst='';if(ri)ri.value='';rb.textContent='';document.querySelectorAll('.hl2').forEach(el=>el.classList.remove('hl2'));
+  st=si.value.trim();fst='';if(fi)fi.value='';if(fb)fb.textContent='';sr.clear();fd=[];hi=-1;rst='';if(ri)ri.value='';rb.textContent='';document.querySelectorAll('.hl2,.fzhl').forEach(el=>el.classList.remove('hl2','fzhl'));
   if(!st){stEl.textContent=P.length+'天';render();if(ai>=0)show(ai);return;}
   const lo=normalizeSearchText(st),aliases=[];
   if(/^\d{6}$/.test(lo)&&typeof SD!=='undefined'){
@@ -1124,6 +1214,38 @@ function search(){
     if(text.includes(lo)||aliases.some(function(name){return text.includes(name);})){sr.add(i);fd.push(i);}
   });
   render();fd.length?show(fd[0]):(ct.innerHTML='<div id="wt">无结果</div>',stEl.textContent='0 结果');
+}
+
+// === 受控模糊搜索：短字段包含、相邻字母交换、显式 * 间隔 ===
+function searchFuzzy(){
+  const hadSearch=globalSearchMode(),raw=fi.value.trim(),spec=makeFuzzySpec(raw);
+  st='';si.value='';rst='';ri.value='';rb.textContent='';sr.clear();fd=[];hi=-1;
+  document.querySelectorAll('.hl2,.fzhl').forEach(function(el){el.classList.remove('hl2','fzhl');});
+  if(!raw){
+    fst='';fb.textContent='';stEl.textContent=P.length+'天';render();
+    if(hadSearch&&ai>=0)show(ai);
+    return;
+  }
+  if(!spec){
+    fst='';fb.textContent='请至少输入2个字符；* 两侧都需要内容';stEl.textContent=P.length+'天';render();
+    if(hadSearch&&ai>=0)show(ai);
+    return;
+  }
+  fst=raw;
+  if(spec.kind==='wildcard')ensureDayFuzzyTokens();
+  _daySearchText.forEach(function(text,i){
+    if(fuzzyTextMatches(text,spec,_dayFuzzyTokens&&_dayFuzzyTokens[i])){sr.add(i);fd.push(i);}
+  });
+  render();
+  if(fd.length){
+    const target=fd.includes(ai)?ai:fd[0];
+    fb.textContent='找到 '+fd.length+' 个交易日';
+    stEl.textContent=fd.length+' 个交易日';
+    show(target);
+  }else{
+    ct.innerHTML='<div id="wt">模糊搜索无结果</div>';
+    fb.textContent='无结果';stEl.textContent='0 结果';
+  }
 }
 
 function scrollHl(d){
@@ -1163,8 +1285,9 @@ function refreshTimelineRegionSearch(){
   return count;
 }
 function searchRegion(){
+  if(fst){fst='';fi.value='';fb.textContent='';fd=[];sr.clear();render();}
   rst=ri.value.trim();
-  document.querySelectorAll('.hl2').forEach(el=>el.classList.remove('hl2'));
+  document.querySelectorAll('.hl2,.fzhl').forEach(el=>el.classList.remove('hl2','fzhl'));
   if(!rst){rb.textContent='';refreshTimelineRegionSearch();return;}
   const sd=window.SD||SD||{};
   const matches=new Set();
@@ -1192,6 +1315,7 @@ function searchRegion(){
 let rt;ri.addEventListener('input',()=>{clearTimeout(rt);rt=setTimeout(searchRegion,150);});
 
 let t;si.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(search,150);});
+let ftimer;fi.addEventListener('input',()=>{clearTimeout(ftimer);ftimer=setTimeout(searchFuzzy,260);});
 function closeImagePreview(){
   const modal=document.getElementById('img-preview');
   const img=document.getElementById('ip-img');
@@ -1211,17 +1335,17 @@ document.addEventListener('keydown',e=>{
   }
   if(document.querySelector('#img-preview.show,#notes-modal.show,#sum-modal.show,#post-modal.show,#bid-modal.show,#sp.show'))return;
   const tag=e.target&&e.target.tagName;
-  const inText=e.target===si||e.target===ri||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable);
+  const inText=e.target===si||e.target===ri||e.target===fi||tag==='TEXTAREA'||(e.target&&e.target.isContentEditable);
   if(inText){
     if(e.target&&e.target.isContentEditable)return;
-    if(e.key==='Escape'&&tag!=='TEXTAREA'){si.value='';search();if(ri){ri.value='';searchRegion();}e.target.blur();}
+    if(e.key==='Escape'&&tag!=='TEXTAREA'){si.value='';if(fi)fi.value='';search();if(ri){ri.value='';searchRegion();}e.target.blur();}
     else if(tag!=='TEXTAREA'&&e.target===si&&(e.key==='.'||e.key==='>')){e.preventDefault();ri.focus();}
     else if(tag!=='TEXTAREA'&&e.key==='Enter'){e.preventDefault();scrollHl(1);}
     return;
   }
   if(e.target&&e.target.closest&&e.target.closest('.tl-container'))return;
   if(tag==='BUTTON'||tag==='A'||tag==='SELECT')return;
-  const a=st?fd:_allDateIndices,cv=st?fd.indexOf(ai):ai;
+  const a=globalSearchMode()?fd:_allDateIndices,cv=globalSearchMode()?fd.indexOf(ai):ai;
   if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();if(cv>0)show(a[cv-1]);}
   else if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();if(cv<a.length-1)show(a[cv+1]);}
   else if(e.key==='/'){e.preventDefault();si.focus();}
@@ -1255,6 +1379,12 @@ function tlMatchesSearch(item,query){
   if(!lo||!item)return false;
   return normalizeSearchText(item.name).includes(lo)||String(item.code||'').includes(lo)||normalizeSearchText(item.boge||'').includes(lo);
 }
+function tlMatchesFuzzy(item,query){
+  if(!item)return false;
+  const spec=makeFuzzySpec(query);
+  if(!spec)return false;
+  return fuzzyTextMatches([item.name,item.py,item.code,item.boge,item.concept].join(' '),spec);
+}
 function tlMatchesRegion(item,query){
   const lo=normalizeSearchText(query);
   if(!lo||!item)return false;
@@ -1270,8 +1400,8 @@ function tlMatchesRegion(item,query){
   }
   return false;
 }
-function tlSearchQuery(){return rst||st;}
-function tlSearchMatcher(item,query){return rst?tlMatchesRegion(item,query):tlMatchesSearch(item,query);}
+function tlSearchQuery(){return rst||fst||st;}
+function tlSearchMatcher(item,query){return rst?tlMatchesRegion(item,query):(fst?tlMatchesFuzzy(item,query):tlMatchesSearch(item,query));}
 function tlParseDayData(date){
   if(!date)return[];
   if(_timelineDataCache.has(date))return _timelineDataCache.get(date);
@@ -1280,13 +1410,13 @@ function tlParseDayData(date){
   const bm={'首板':1,'二板':2,'三板':3,'四板':4,'五板':5,'六板':6,'七板':7,'八板':8,'九板':9,'十板':10};
   for(let line of lines){line=line.trim();if(!line)continue;
     if(/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板)$/.test(line)){curB=line;curC='';continue;}
-    if(curB==='首板'&&line.length<=12&&!line.includes('，')&&!line.includes(',')&&!isSN(line)){curC=line;continue;}
+    if(curB==='首板'&&line.length<=20&&!line.includes('，')&&!line.includes(',')&&!/（[^）]+）\d{6}/.test(line)){curC=line;continue;}
     if(curB&&curB!=='首板'&&!isSN(line.split(/[，,、]/)[0].trim())&&line.length<=12&&!line.includes('，')&&!line.includes(',')){curC=line;continue;}
     if(curB){const bn=bm[curB]||1;const parts=line.split(/[，,]+/);
       for(let p of parts){p=p.trim();if(!p)continue;let name=p.includes('（')?p.split('（')[0].trim():p;
         for(let s of['：',':','。']){if(name.includes(s))name=name.split(s)[0].trim();}
-        const cm=p.match(/(\d{6})/);const code=tlResolveStockCode(name,cm&&cm[1]);
-        if(name.length>=2&&isRealSN(name))result.push({name:name,code:code,board:curB,board_num:bn,concept:curC||'其他',boge:getBogeSubcategory(date,curC||curB,code),time:''});
+        const cm=p.match(/(\d{6})/);const code=tlResolveStockCode(name,cm&&cm[1]);const pm=p.match(/（([^）]+)）/);const py=pm?normalizeSearchText(pm[1]).replace(/[^a-z0-9]/g,''):'';
+        if(name.length>=2&&isRealSN(name))result.push({name:name,py:py,code:code,board:curB,board_num:bn,concept:curC||'其他',boge:getBogeSubcategory(date,curC||curB,code),time:''});
       }
     }
   }
@@ -1578,7 +1708,7 @@ rebuildBogeSearchText();render();show(0);loadBogeCategories();
 </script>
 <script>
 // === 股票弹窗逻辑 ===
-let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0;
+let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0,_tvCurrentCode='';
 let _bogeCurDate='',_bogeParent='';
 function formatMarketCap(value){
   const n=Number(value);if(!Number.isFinite(n)||n<=0)return '';
@@ -1654,6 +1784,7 @@ function showSp(name,e,anchorRect){
   if(typeof SD==='undefined')return;
   const d=findStockDetail(name);if(!d)return;
   e.stopPropagation();
+  renderSidebarKline(name,d.c||'');
   spCode=d.c||'';spName=name;_historyOpen=false;var _hsEl=document.getElementById('sp-history');if(_hsEl)_hsEl.style.display='none';
   _conceptEditName=findStockDetailKey(name,d);
   const originalCategory=findOriginalCategory(ai>=0?P[ai].d:'',name);
@@ -1725,20 +1856,6 @@ function showSp(name,e,anchorRect){
   if(top+ph>innerHeight-10)top=Math.min(r.top-ph-6,innerHeight-ph-10);
   if(top<10)top=Math.max(10,innerHeight-ph-10);
   spEl.style.top=top+'px';
-  // 自动加载K线
-  const sym=(d.c.startsWith('6')||d.c.startsWith('68')?'SSE:':'SZSE:')+d.c;
-  const tvToken=++_tvRenderToken;
-  const tvBox=document.getElementById('tv-kbox');
-  if(tvBox)tvBox.innerHTML='<div class="sp-nochart">K线加载中…</div>';
-  loadTVLib((err)=>{
-    const box=document.getElementById('tv-kbox');
-    if(!box||tvToken!==_tvRenderToken||!spEl.classList.contains('show'))return;
-    if(err){box.innerHTML='<div class="sp-nochart">K线加载失败，请稍后重试</div>';return;}
-    box.innerHTML='';
-    const w=document.createElement('div');w.id='tv-kchart';w.style.height='100%';w.style.width='100%';
-    box.appendChild(w);
-    try{new TradingView.widget({container_id:'tv-kchart',autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});}catch(er){box.innerHTML='<div class="sp-nochart">K线初始化失败</div>';}
-  });
   // 滚动右侧分时图到对应股票
   if(d.c&&ai>=0){
     var ftBody=document.getElementById('ft-body');
@@ -1748,7 +1865,7 @@ function showSp(name,e,anchorRect){
   // fetchHolder 已废弃，top10 数据直接从 SD 读取
 }
 
-// === K线（弹窗内自动加载） ===
+// === 右侧固定 K 线窗口 ===
 function loadTVLib(cb){
   if(window.TradingView){cb(null);return;}
   if(!_tvLibPromise){
@@ -1760,11 +1877,37 @@ function loadTVLib(cb){
   }
   _tvLibPromise.then(function(){cb(null);}).catch(function(err){_tvLibPromise=null;cb(err);});
 }
+function renderSidebarKline(name,code){
+  const box=document.getElementById('ft-kbox');
+  const nameEl=document.getElementById('ft-kline-name');
+  const codeEl=document.getElementById('ft-kline-code');
+  if(!box)return;
+  nameEl.textContent=name||'点击股票查看K线';
+  codeEl.textContent=code||'';
+  if(!/^\d{6}$/.test(String(code||''))){
+    _tvCurrentCode='';
+    _tvRenderToken++;
+    box.innerHTML='<div class="ft-kempty">该股票缺少有效代码，无法加载K线</div>';
+    return;
+  }
+  if(_tvCurrentCode===code&&box.querySelector('iframe'))return;
+  _tvCurrentCode=code;
+  const token=++_tvRenderToken;
+  box.innerHTML='<div class="ft-kempty">K线加载中…</div>';
+  const sym=(code.startsWith('6')||code.startsWith('68')?'SSE:':code.startsWith('4')||code.startsWith('8')||code.startsWith('92')?'BSE:':'SZSE:')+code;
+  loadTVLib(function(err){
+    if(token!==_tvRenderToken||_tvCurrentCode!==code)return;
+    if(err){box.innerHTML='<div class="ft-kempty">K线加载失败，请检查网络后重试</div>';return;}
+    box.innerHTML='';
+    const chart=document.createElement('div');chart.id='ft-tv-kchart';chart.style.height='100%';chart.style.width='100%';box.appendChild(chart);
+    try{
+      new TradingView.widget({container_id:'ft-tv-kchart',autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});
+    }catch(error){box.innerHTML='<div class="ft-kempty">K线初始化失败</div>';}
+  });
+}
 function closeSp(){
   const sp=document.getElementById('sp');
   sp.classList.remove('show');sp.setAttribute('aria-hidden','true');
-  _tvRenderToken++;
-  const box=document.getElementById('tv-kbox');if(box)box.innerHTML='';
 }
 let _historyOpen=false;
 const _historyCache=new Map();
