@@ -66,6 +66,8 @@
     .theme-line { margin: 1px 0 4px; color: #5d79a1; font-size: 11px; font-weight: 700; }
     .stock-chip { display: inline-flex; align-items: baseline; gap: 4px; margin: 0 4px 4px 0; padding: 3px 6px; border: 1px solid #d6e1f4; border-radius: 5px; background: #f7faff; color: #344f79; cursor: pointer; line-height: 1.2; white-space: nowrap; transition: .15s ease; }
     .stock-chip.bid-seal { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
+    .stock-chip.three-board-pool { border-color: #60a5fa; background: #eff6ff; color: #1d4ed8; font-weight: 700; box-shadow: 0 0 0 1px rgba(37,99,235,.10); }
+    .stock-chip.bid-seal.three-board-pool { background: linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px); }
     .stock-chip:hover, .stock-chip.match { border-color: #8eafea; background: var(--accent-soft); color: #2458bd; }
     .stock-chip.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; box-shadow: 0 0 0 2px rgba(220,152,36,.18); font-weight: 700; opacity: 1 !important; }
     .stock-chip.selected em { color: #9b6b1a; }
@@ -180,6 +182,7 @@
   <script src="zt_data.js"></script>
   <script src="stock_detail_map.js"></script>
   <script src="bid_seal_data.js"></script>
+  <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="zt_auction_change_data.js"></script>
   <script>
     (() => {
@@ -192,6 +195,8 @@
         date,
         new Set((Array.isArray(rows) ? rows : []).map(item => String(item && item.c || '').trim()).filter(Boolean))
       ]));
+      const THREE_BOARD_POOL_DATA = window.THREE_BOARD_POOL_DATA || { stocks: [] };
+      const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
       const els = {
         viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
@@ -260,6 +265,9 @@
         const codes = BID_CODES_BY_DATE.get(date);
         return Boolean(codes && codes.has(String(code || '').trim()));
       }
+      function isThreeBoardPoolStock(code) {
+        return THREE_BOARD_POOL_CODES.has(String(code || '').trim());
+      }
       function dateColumnWidths(dates) {
         const byDate = new Map(state.records.map(record => [record.date, record]));
         return dates.map(date => {
@@ -298,7 +306,9 @@
           const hit = state.query && text.includes(state.query);
           const selected = state.selectedCode === match[2];
           const bidSeal = isBidSealStock(date, match[2]);
-          html += `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${bidSeal ? ' title="09:25 竞价一字板"' : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
+          const poolStock = isThreeBoardPoolStock(match[2]);
+          const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
+          html += `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
           cursor = match.index + match[0].length;
         }
         html += escapeHtml(compact ? line.slice(cursor).replace(/[，,、；;]/g, '') : line.slice(cursor));
@@ -321,7 +331,9 @@
             const hit = state.query && `${stock.name} ${stock.code}`.toLowerCase().includes(state.query);
             const selected = state.selectedCode === stock.code;
             const bidSeal = isBidSealStock(date, stock.code);
-            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${bidSeal ? ' title="09:25 竞价一字板"' : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
+            const poolStock = isThreeBoardPoolStock(stock.code);
+            const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
+            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
           }).join('');
           groups.push(`<div class="stock-group">${group}</div>`);
         }
