@@ -87,6 +87,9 @@ background-repeat:no-repeat;background-position:10px center}
 /* 当天 09:25 仍为一字板：用淡红色与普通涨停股快速区分。 */
 .sk.bid-seal,.mb.bid-seal{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
 .sk.bid-seal:hover,.mb.bid-seal:hover{background:#ffe4e6;border-color:#fda4af;color:#881337;box-shadow:0 1px 2px rgba(159,18,57,.08),0 0 0 1px rgba(244,63,94,.12)}
+.sk.three-board-pool,.mb.three-board-pool{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;font-weight:650}
+.sk.three-board-pool:hover,.mb.three-board-pool:hover{background:#dbeafe;border-color:#60a5fa;color:#1e40af;box-shadow:0 1px 2px rgba(29,78,216,.08),0 0 0 1px rgba(37,99,235,.12)}
+.sk.bid-seal.three-board-pool,.mb.bid-seal.three-board-pool{background:linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px);border-color:#60a5fa;color:#1d4ed8}
 .sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .sk .pv,.mb .pv{font-size:10px;color:var(--muted);margin-left:3px;padding:1px 4px;background:var(--accent-soft);border-radius:3px;border:1px solid var(--border2);font-weight:500}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
@@ -491,6 +494,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="zt_time_map.js?v=20260805-2"></script>
 <script src="zt_time_detail.js?v=20260805-2"></script>
 <script src="bid_seal_data.js?v=20260804-1"></script>
+<script src="three_board_pool.js?v=20260818-2"></script>
 <script src="notes_data.js?v=20260804-1"></script>
 <script src="stock_custom_category.js?v=20260805-2"></script>
 <script>
@@ -621,6 +625,15 @@ function findStockDetail(name){
     else half+=c;
   }
   return SD[raw]||SD[full]||SD[half]||null;
+}
+const _threeBoardPoolData=window.THREE_BOARD_POOL_DATA||{stocks:[]};
+const _threeBoardPoolCodes=new Set((Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:[]).map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
+const _threeBoardPoolNames=new Set((Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:[]).map(function(item){return normalizeSearchText(item&&item.n||'').replace(/\s+/g,'');}).filter(Boolean));
+function isThreeBoardPoolStock(name,code){
+  const value=String(code||'').trim();
+  if(value&&_threeBoardPoolCodes.has(value))return true;
+  const detail=findStockDetail(name),detailCode=detail&&String(detail.c||'').trim();
+  return Boolean((detailCode&&_threeBoardPoolCodes.has(detailCode))||_threeBoardPoolNames.has(normalizeSearchText(name||'').replace(/\s+/g,'')));
 }
 function findStockDetailKey(name,detail){
   if(typeof SD==='undefined')return String(name||'');
@@ -829,7 +842,9 @@ function show(i){
   }
   function stockHtml(s,klass){
     const bidSeal=isBidSealStock(s.name);
-    return '<button type="button" class="'+klass+(bidSeal?' bid-seal':'')+'" data-n="'+esc(s.name)+'"'+(bidSeal?' title="09:25 竞价一字板"':'')+'>'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';
+    const poolStock=isThreeBoardPoolStock(s.name);
+    const notes=[];if(poolStock)notes.push('三板组股票池');if(bidSeal)notes.push('09:25 竞价一字板');
+    return '<button type="button" class="'+klass+(bidSeal?' bid-seal':'')+(poolStock?' three-board-pool':'')+'" data-n="'+esc(s.name)+'"'+(notes.length?' title="'+notes.join(' · ')+'"':'')+'>'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';
   }
   function renderBogeGroups(stocks,parent,klass){
     const groups=[],plain=[];const byLabel=new Map();
@@ -1610,9 +1625,11 @@ function renderTimelineInline(date,canvas,tooltip,idx){
   for(const item of layout.items){
     if(!item.rect)continue;
     const isMatch=searchMatches.has(item.data);
-    if(item.data.board_num>=2||isMatch){
-      ctx.fillStyle=isMatch?'#fef3c7':'#fbfbfc';
+    const isPool=isThreeBoardPoolStock(item.data.name,item.data.code);
+    if(item.data.board_num>=2||isMatch||isPool){
+      ctx.fillStyle=isMatch?'#fef3c7':isPool?'#dbeafe':'#fbfbfc';
       ctx.fillRect(item.rect.left-2,item.rect.top-2,item.rect.right-item.rect.left+4,item.rect.bottom-item.rect.top+4);
+      if(isPool&&!isMatch){ctx.strokeStyle='#60a5fa';ctx.lineWidth=1;ctx.strokeRect(item.rect.left-2,item.rect.top-2,item.rect.right-item.rect.left+4,item.rect.bottom-item.rect.top+4);}
     }
   }
   for(const item of layout.items){
@@ -1621,18 +1638,22 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     if(searchMatches.has(d)){
       ctx.beginPath();ctx.arc(item.anchorX,item.anchorY,d.board_num>=5?12:d.board_num>=2?11:10,0,2*Math.PI);
       ctx.fillStyle='rgba(245,158,11,.18)';ctx.fill();ctx.strokeStyle='#f59e0b';ctx.lineWidth=3;ctx.stroke();
+    }else if(isThreeBoardPoolStock(d.name,d.code)){
+      ctx.beginPath();ctx.arc(item.anchorX,item.anchorY,d.board_num>=5?12:d.board_num>=2?11:10,0,2*Math.PI);
+      ctx.fillStyle='rgba(37,99,235,.14)';ctx.fill();ctx.strokeStyle='#2563eb';ctx.lineWidth=2;ctx.stroke();
     }
     ctx.beginPath();ctx.arc(item.anchorX,item.anchorY,d.board_num>=5?6:d.board_num>=2?5:4,0,2*Math.PI);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
   }
   for(const item of layout.items){
     if(!item.rect)continue;
     const d=item.data,color=tlGetColor(d.concept);
+    const poolStock=isThreeBoardPoolStock(d.name,d.code);
     if(d.board_num>=2){
-      ctx.font='bold 11px sans-serif';ctx.fillStyle=searchMatches.has(d)?'#92400e':'#1f2937';ctx.textAlign=item.textAlign;ctx.fillText(d.name,item.textX,item.nameY);
+      ctx.font='bold 11px sans-serif';ctx.fillStyle=searchMatches.has(d)?'#92400e':poolStock?'#1d4ed8':'#1f2937';ctx.textAlign=item.textAlign;ctx.fillText(d.name,item.textX,item.nameY);
       if(d.concept&&d.concept!=='其他'){ctx.font='13px sans-serif';ctx.fillStyle=color;ctx.fillText(d.concept,item.textX,item.conceptY);}
       if(d.boge){ctx.font='12px sans-serif';ctx.fillStyle='#0f766e';ctx.fillText('↳ '+d.boge,item.textX,item.bogeY);}
     }else{
-      ctx.font=(searchMatches.has(d)?'bold ':'')+'14px sans-serif';ctx.textAlign='center';ctx.fillStyle=searchMatches.has(d)?'#92400e':'#4b5563';const nc=d.name.split('');
+      ctx.font=(searchMatches.has(d)||poolStock?'bold ':'')+'14px sans-serif';ctx.textAlign='center';ctx.fillStyle=searchMatches.has(d)?'#92400e':poolStock?'#1d4ed8':'#4b5563';const nc=d.name.split('');
       for(let ci=0;ci<nc.length;ci++)ctx.fillText(nc[ci],item.centerX,item.nameY+ci*20);
       const cs=(d.concept&&d.concept!=='其他'&&d.concept!=='其余形式独苗')?d.concept:'';
       if(cs){ctx.font='13px sans-serif';ctx.fillStyle=color;for(let ci=0;ci<cs.length;ci++)ctx.fillText(cs[ci],item.centerX,item.conceptY+ci*18);}
@@ -1664,7 +1685,7 @@ function renderTimelineInline(date,canvas,tooltip,idx){
     var themes=detail&&detail.t?detail.t.split(',').map(function(x){return x.trim();}).filter(Boolean).slice(0,6).join('、'):'';
     var ltStr=found.lt?'<div class="tt-time">封板：'+esc(found.time)+'</div><div class="tt-time">最后：'+esc(found.lt)+'</div>':'<div class="tt-time">⏰ '+esc(found.time)+'</div>';
     var html='<div style="font-weight:600;color:#2563eb;margin-bottom:3px;">'+esc(found.name)+(code?' <span style="font-weight:400;color:#64748b">'+esc(code)+'</span>':'')+'</div>';
-    html+='<div style="color:#7c3aed;font-size:11px;">'+esc(found.board)+'</div>';
+    html+='<div style="color:#7c3aed;font-size:11px;">'+esc(found.board)+(isThreeBoardPoolStock(found.name,code)?' · <span style="color:#1d4ed8;font-weight:700">三板组</span>':'')+'</div>';
     if(found.concept&&found.concept!=='其他')html+='<div style="color:#64748b;font-size:11px;">延边分类：'+esc(found.concept)+'</div>';
     if(found.boge)html+='<div style="color:#0f766e;font-size:11px;">博哥分类：'+esc(found.boge)+'</div>';
     if(region)html+='<div style="color:#475569;font-size:11px;">📍 '+esc(region)+'</div>';
