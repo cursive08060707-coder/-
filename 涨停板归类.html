@@ -70,6 +70,7 @@ background-repeat:no-repeat;background-position:10px center}
 
 .bl{margin-bottom:20px}
 .blh{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px;padding:4px 12px 4px 10px;border-radius:var(--radius);background:var(--accent-soft);border:1px solid var(--accent-border)}
+.blh-rate{font-size:10px;font-weight:650;color:#b42318;line-height:1;padding:4px 7px;border:1px solid #fecaca;border-radius:999px;background:#fff1f2;white-space:nowrap;letter-spacing:0}
 .sl{margin-bottom:14px}
 .sh{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:0.02em;display:flex;align-items:center;gap:6px}
 .sh::before{content:'';width:3px;height:12px;background:var(--accent2);border-radius:2px;opacity:0.5}
@@ -147,7 +148,7 @@ background-repeat:no-repeat;background-position:10px center}
 button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
 
 /* ─── stock popup ─── */
-#sp{display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:380px;min-width:280px;max-width:90vw;padding:0;font-size:13px;overflow:hidden;resize:both}
+#sp{display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:620px;min-width:280px;max-width:92vw;padding:0;font-size:13px;overflow:hidden;resize:both}
 #sp.show{display:flex;flex-direction:column;animation:spIn .18s ease-out}
 @keyframes spIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 #sp .sp-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--surface2);color:var(--fg);border-bottom:1px solid var(--border);font-weight:700;font-size:15px;flex:0 0 auto;cursor:move;user-select:none}
@@ -217,6 +218,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 .sp-top10-item .sp-tname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg);margin-right:8px}
 .sp-top10-item .sp-tratio{font-weight:600;color:var(--accent);font-family:var(--font-mono);flex-shrink:0}
 .sp-top10-item .sp-tchange{font-size:10px;color:var(--muted2);margin-left:6px;flex-shrink:0}
+.sp-top10-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sp-top10-col{min-width:0}
+.sp-top10-col h4{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.sp-top10-total{font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted2);white-space:nowrap}
+.sp-top10-col .sp-top10-list{max-height:220px}
+@media(max-width:700px){.sp-top10-columns{grid-template-columns:1fr}}
 #sp .sp-e{margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)}
 #sp .sp-e>div{margin-bottom:8px;font-size:12px;line-height:1.6;padding:6px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)}
 #sp .sp-e b{color:var(--accent);font-weight:600}
@@ -454,8 +461,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
       <div id="sp-hl"></div>
     </div>
     <div class="sp-top10" id="sp-top10-section">
-      <h4>十大股东</h4>
-      <div class="sp-top10-list" id="sp-top10-list"></div>
+      <div class="sp-top10-columns">
+        <section class="sp-top10-col"><h4>十大股东 <span class="sp-top10-total" id="sp-top10-total"></span></h4><div class="sp-top10-list" id="sp-top10-list"></div></section>
+        <section class="sp-top10-col"><h4>十大流通股东 <span class="sp-top10-total" id="sp-float-top10-total"></span></h4><div class="sp-top10-list" id="sp-float-top10-list"></div></section>
+      </div>
     </div>
     <div class="sp-e" id="sp-e"></div>
   </div>
@@ -487,13 +496,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 
 
 <script src="stock_names.js?v=20260730-1747"></script>
-<script src="stock_detail_map.js?v=20260806-0122"></script>
+<script src="stock_detail_map.js?v=20260819-float1"></script>
 <script src="zt_data.js?v=20260730-1747"></script>
 <script src="hengdan_map.js?v=20260730-1747"></script>
 <script src="fenshi_map.js?v=20260730-1747"></script>
 <script src="zt_time_map.js?v=20260805-2"></script>
 <script src="zt_time_detail.js?v=20260805-2"></script>
 <script src="bid_seal_data.js?v=20260804-1"></script>
+<script src="zt_seal_rate_data.js?v=20260819-1"></script>
 <script src="three_board_pool.js?v=20260818-2"></script>
 <script src="notes_data.js?v=20260804-1"></script>
 <script src="stock_custom_category.js?v=20260805-2"></script>
@@ -829,6 +839,15 @@ function findOriginalCategory(date,name){
   return {board:'',parent:''};
 }
 
+function boardHeadingHtml(board,date){
+  const info=(window.ZT_SEAL_RATE_DATA&&window.ZT_SEAL_RATE_DATA[date])||null;
+  const showRate=/^(首板|二板|三板)$/.test(board);
+  if(!showRate||!info||!Number.isFinite(Number(info.sealRate)))return esc(board);
+  const rate=Number(info.sealRate);
+  const title='当日封板率：'+rate.toFixed(2)+'%（封住 '+Number(info.sealed||0)+' / 触及涨停 '+Number(info.touched||0)+'）';
+  return '<span class="blh-rate" title="'+esc(title)+'">封板率 '+rate.toFixed(2)+'%</span><span>'+esc(board)+'</span>';
+}
+
 function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
   let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
@@ -887,7 +906,7 @@ function show(i){
   for(let line of lines){
     line=line.trim();if(!line){fs();continue;}
     if(/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板)$/.test(line)){
-      cl();cb=line;cs='';bo=true;h+='<div class="bl"><div class="blh">'+line+'</div>';continue;
+      cl();cb=line;cs='';bo=true;h+='<div class="bl"><div class="blh">'+boardHeadingHtml(line,p.d)+'</div>';continue;
     }
     // 分类标题不带“（拼音）六位代码”。不能只依赖 stock_names.js 判断，
     // 因为历史名称表中曾混入“有色金属”“华为汽车”等概念词。
@@ -1827,21 +1846,29 @@ function showSp(name,e,anchorRect){
     if(d.h.c)hc.innerHTML='<b>控股股东：</b>'+esc(d.h.c);
     if(d.h.t)ht.innerHTML='<b>持股比例：</b>'+d.h.t+'%';
   }
-  // 十大股东
-  const top10El=document.getElementById('sp-top10-list');
+  // 十大股东 / 十大流通股东
   const top10Section=document.getElementById('sp-top10-section');
-  if(d.h&&d.h.top10&&d.h.top10.length){
-    let th='';
-    d.h.top10.forEach(function(h,i){
-      var chg=h.c?' <span class="sp-tchange">'+esc(h.c)+'</span>':'';
-      th+='<div class="sp-top10-item"><span class="sp-tname">'+(i+1)+'. '+esc(h.n)+'</span><span class="sp-tratio">'+(h.r||0)+'%</span>'+chg+'</div>';
-    });
-    top10El.innerHTML=th;
-    top10Section.style.display='block';
-  }else{
-    top10El.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted2);font-size:11px">暂无十大股东数据</div>';
-    top10Section.style.display='block';
-  }
+  const renderHolderRows=function(list,rows,emptyText){
+    if(!list)return;
+    if(rows&&rows.length){
+      let html='';
+      rows.forEach(function(holder,i){
+        var chg=holder&&holder.c?' <span class="sp-tchange">'+esc(holder.c)+'</span>':'';
+        html+='<div class="sp-top10-item"><span class="sp-tname">'+(i+1)+'. '+esc(holder&&holder.n||'')+'</span><span class="sp-tratio">'+(holder&&holder.r!=null?holder.r:0)+'%</span>'+chg+'</div>';
+      });
+      list.innerHTML=html;
+    }else list.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted2);font-size:11px">'+emptyText+'</div>';
+  };
+  const ordinaryRows=d.h&&Array.isArray(d.h.top10)?d.h.top10:[];
+  const floatRows=d.h&&Array.isArray(d.h.floatTop10)?d.h.floatTop10:[];
+  renderHolderRows(document.getElementById('sp-top10-list'),ordinaryRows,'暂无十大股东数据');
+  renderHolderRows(document.getElementById('sp-float-top10-list'),floatRows,'暂无十大流通股东数据');
+  const sumRatios=function(rows){return rows.reduce(function(sum,row){var n=Number(row&&row.r);return Number.isFinite(n)?sum+n:sum;},0);};
+  const ordinaryTotal=sumRatios(ordinaryRows),floatTotal=d.h&&Number.isFinite(Number(d.h.floatTop10TotalRatio))?Number(d.h.floatTop10TotalRatio):sumRatios(floatRows);
+  const ordinaryTotalEl=document.getElementById('sp-top10-total'),floatTotalEl=document.getElementById('sp-float-top10-total');
+  if(ordinaryTotalEl)ordinaryTotalEl.textContent=ordinaryRows.length?'合计 '+ordinaryTotal.toFixed(2)+'%':'';
+  if(floatTotalEl){var period=d.h&&d.h.floatTop10ReportPeriod?d.h.floatTop10ReportPeriod:'';floatTotalEl.textContent=floatRows.length?'合计 '+floatTotal.toFixed(2)+'%'+(period?' · '+period:''):'';}
+  top10Section.style.display='block';
   // 买一量曲线图
   const chartEl=document.getElementById('sp-chart');
   if(ai>=0&&d.c&&typeof HD!=='undefined'){
