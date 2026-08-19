@@ -108,6 +108,11 @@
     .top10-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .top10-ratio { color: #49658e; text-align: right; }
     .top10-change { color: var(--muted); text-align: right; }
+    .shareholder-columns { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 9px; }
+    .shareholder-column { min-width: 0; }
+    .shareholder-column h4 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 7px 0; color: #58729a; font-size: 12px; }
+    .shareholder-total { color: var(--muted); font-size: 10px; font-weight: 400; white-space: nowrap; }
+    .shareholder-column .top10-list { margin-top: 0; }
     .empty-detail { color: var(--muted); font-size: 12px; }
     @media (max-width: 1200px) {
       .control-panel { flex-wrap: wrap; align-items: center; }
@@ -116,6 +121,7 @@
       .viewport { height: calc(100vh - 155px); }
     }
     @media (max-width: 720px) {
+      .shareholder-columns { grid-template-columns: 1fr; }
       body { padding: 12px; }
       .control-panel { align-items: flex-start; gap: 6px 10px; }
       .topbar { align-items: center; flex-direction: row; gap: 8px; }
@@ -180,7 +186,7 @@
   </div>
 
   <script src="zt_data.js"></script>
-  <script src="stock_detail_map.js"></script>
+  <script src="stock_detail_map.js?v=20260819-float1"></script>
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="zt_auction_change_data.js"></script>
@@ -436,9 +442,16 @@
         ];
         let shareholders = `<div class="share-grid">${shareCards.map(item => `<div class="summary-item"><small>${escapeHtml(item[0])}</small><strong>${escapeHtml(String(item[1]))}</strong></div>`).join('')}</div>`;
         const top10 = Array.isArray(h.top10) ? h.top10 : [];
-        if (top10.length) {
-          shareholders += `<div class="top10-list">${top10.map((holder, index) => `<div class="top10-item"><span class="top10-name">${index + 1}. ${escapeHtml(holder.n || '')}</span><span class="top10-ratio">${holder.r || 0}%</span><span class="top10-change">${escapeHtml(holder.c || '')}</span></div>`).join('')}</div>`;
-        }
+        const floatTop10 = Array.isArray(h.floatTop10) ? h.floatTop10 : [];
+        const ratioTotal = rows => rows.reduce((sum, holder) => {
+          const value = Number(holder && holder.r);
+          return Number.isFinite(value) ? sum + value : sum;
+        }, 0);
+        const holderColumn = (title, rows, total, period) => {
+          const list = rows.length ? `<div class="top10-list">${rows.map((holder, index) => `<div class="top10-item"><span class="top10-name">${index + 1}. ${escapeHtml(holder.n || '')}</span><span class="top10-ratio">${holder.r || 0}%</span><span class="top10-change">${escapeHtml(holder.c || '')}</span></div>`).join('')}</div>` : '<div class="empty-detail">暂无数据</div>';
+          return `<div class="shareholder-column"><h4>${title}<span class="shareholder-total">${rows.length ? `合计 ${total.toFixed(2)}%${period ? ` · ${escapeHtml(period)}` : ''}` : ''}</span></h4>${list}</div>`;
+        };
+        shareholders += `<div class="shareholder-columns">${holderColumn('十大股东', top10, ratioTotal(top10), '')}${holderColumn('十大流通股东', floatTop10, Number.isFinite(Number(h.floatTop10TotalRatio)) ? Number(h.floatTop10TotalRatio) : ratioTotal(floatTop10), h.floatTop10ReportPeriod || '')}</div>`;
         els.detailShareholders.innerHTML = shareholders;
       }
       function jumpToDate(value) {
