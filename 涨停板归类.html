@@ -299,8 +299,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #post-modal .pm-h{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--surface2);color:var(--fg);border-bottom:1px solid var(--border);font-weight:700;font-size:14px;flex:0 0 auto}
 #post-modal .pm-h .pm-x{cursor:pointer;font-size:20px;opacity:.65;background:transparent;color:inherit;border:0}
 #post-modal .pm-h .pm-x:hover{opacity:1}
+#post-modal .pm-tabs{display:flex;align-items:center;gap:4px;padding:7px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex:0 0 auto}
+#post-modal .pm-tab{border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:999px;padding:5px 13px;font:inherit;font-size:12px;cursor:pointer;transition:all var(--tr)}
+#post-modal .pm-tab:hover{border-color:var(--accent-border);color:var(--accent)}
+#post-modal .pm-tab.active{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
 #post-modal .pm-b{padding:18px 24px;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.8;color:var(--fg)}
 #post-modal .pm-b a{color:#3a3a3c}
+#post-modal .pm-source-title{font-weight:700;font-size:15px;line-height:1.5;margin-bottom:8px}
+#post-modal .pm-source-link{font-size:12px;display:inline-block;margin-bottom:12px;color:var(--accent)!important}
+#post-modal .pm-section+.pm-section{border-top:1px solid var(--border);margin-top:22px;padding-top:20px}
+#post-modal .pm-empty,#post-modal .pm-loading,#post-modal .pm-error{text-align:center;padding:40px;color:var(--muted)}
+#post-modal .pm-error{color:#b42318}
 /* ─── image preview ─── */
 #img-preview{display:none;position:fixed;inset:0;z-index:10050;background:rgba(15,23,42,.86);padding:18px;box-sizing:border-box;align-items:center;justify-content:center}
 #img-preview.show{display:flex}
@@ -509,19 +518,32 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="stock_custom_category.js?v=20260805-2"></script>
 <script>
 // 延迟加载帖子原文数据
-let _postsPromise=null;
+let _postsPromise=null,_repliesPromise=null;
 function loadPosts(cb){
-  if(window.ZP){cb(null);return;}
+  if(window.ZT_POSTS){cb(null);return;}
   if(!_postsPromise){
     _postsPromise=new Promise(function(resolve,reject){
       var s=document.createElement('script');
-      s.src='zt_posts.js?v=20260730-1747';
+      s.src='zt_posts.js?v=20260821-discussion1';
       s.onload=resolve;
       s.onerror=function(){reject(new Error('主帖数据加载失败'));};
       document.head.appendChild(s);
     });
   }
   _postsPromise.then(function(){cb(null);}).catch(function(err){_postsPromise=null;cb(err);});
+}
+function loadReplies(cb){
+  if(window.ZT_REPLIES){cb(null);return;}
+  if(!_repliesPromise){
+    _repliesPromise=new Promise(function(resolve,reject){
+      var s=document.createElement('script');
+      s.src='zt_replies.js?v=20260821-discussion1';
+      s.onload=resolve;
+      s.onerror=function(){reject(new Error('跟帖数据加载失败'));};
+      document.head.appendChild(s);
+    });
+  }
+  _repliesPromise.then(function(){cb(null);}).catch(function(err){_repliesPromise=null;cb(err);});
 }
 </script>
 <script>
@@ -851,7 +873,7 @@ function boardHeadingHtml(board,date){
 
 function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
-  let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
+  let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn reply-trigger" data-date="'+p.d+'">💬 跟帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
   let cb='',cs='',sb=[],bo=false;
   const bidRows=typeof BID!=='undefined'&&Array.isArray(BID[p.d])?BID[p.d]:[];
   const bidCodes=new Set(bidRows.map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
@@ -2053,8 +2075,10 @@ document.getElementById('ct').addEventListener('click',function(e){
   if(notesBtn){showNotes(notesBtn.getAttribute('data-date'));return;}
   var sumBtn=e.target.closest('.sum-trigger');
   if(sumBtn){showSummary();return;}
-  var postBtn=e.target.closest('.bh-btn');
+  var postBtn=e.target.closest('.post-trigger');
   if(postBtn){showPost(postBtn.getAttribute('data-date'));return;}
+  var replyBtn=e.target.closest('.reply-trigger');
+  if(replyBtn){showReplies(replyBtn.getAttribute('data-date'));return;}
   var sk=e.target.closest('.sk,.mb');
   if(sk&&sk.dataset.n){showSp(sk.dataset.n,e);}
 });
@@ -2133,10 +2157,14 @@ document.getElementById('bid-modal').addEventListener('click',function(e){
 });
 </script>
 
-<!-- 主帖弹窗 -->
+<!-- 主帖 / 跟帖弹窗 -->
 <div id="post-modal" role="dialog" aria-modal="true" aria-labelledby="pm-title" aria-hidden="true">
   <div class="pm-box">
-    <div class="pm-h"><span id="pm-title"></span><button type="button" class="pm-x" onclick="closePost()" aria-label="关闭主帖">&times;</button></div>
+    <div class="pm-h"><span id="pm-title"></span><button type="button" class="pm-x" onclick="closePost()" aria-label="关闭帖子弹窗">&times;</button></div>
+    <div class="pm-tabs" role="tablist" aria-label="帖子作者">
+      <button type="button" class="pm-tab active" data-author="yanbian" role="tab" aria-selected="true">延边刺客</button>
+      <button type="button" class="pm-tab" data-author="shunshi" role="tab" aria-selected="false">顺shi而为</button>
+    </div>
     <div class="pm-b" id="pm-body"></div>
   </div>
 </div>
@@ -2173,32 +2201,55 @@ document.getElementById('bid-modal').addEventListener('click',function(e){
 })();
 </script>
 <script>
-function showPost(date){
+var _discussionState={date:'',kind:'posts',author:'yanbian'};
+function discussionLabel(kind){return kind==='replies'?'跟帖':'主帖';}
+function updateDiscussionTabs(){
+  document.querySelectorAll('#post-modal .pm-tab').forEach(function(tab){
+    var active=tab.getAttribute('data-author')===_discussionState.author;
+    tab.classList.toggle('active',active);
+    tab.setAttribute('aria-selected',active?'true':'false');
+  });
+}
+function renderDiscussion(){
   var modal=document.getElementById('post-modal');
   var title=document.getElementById('pm-title');
   var body=document.getElementById('pm-body');
-  title.textContent=date+' 主帖';body.innerHTML='<div style="color:#86868b;text-align:center;padding:40px">主帖加载中…</div>';
+  var date=_discussionState.date,kind=_discussionState.kind,author=_discussionState.author,label=discussionLabel(kind);
+  var loader=kind==='replies'?loadReplies:loadPosts;
+  title.textContent=date+' '+label;
+  body.innerHTML='<div class="pm-loading">'+label+'加载中…</div>';
+  updateDiscussionTabs();
   modal.classList.add('show');modal.setAttribute('aria-hidden','false');
-  loadPosts(function(err){
-    if(err){title.textContent=date+' 主帖';body.innerHTML='<div style="color:#b42318;text-align:center;padding:40px">主帖加载失败，请稍后重试</div>';return;}
-    if(!window.ZP||!window.ZP[date]){
-      title.textContent=date+' 无主帖数据';
-      body.innerHTML='<div style="color:#999;text-align:center;padding:40px">该日期无帖子原文</div>';
+  loader(function(err){
+    if(date!==_discussionState.date||kind!==_discussionState.kind||author!==_discussionState.author)return;
+    if(err){body.innerHTML='<div class="pm-error">'+label+'加载失败，请稍后重试</div>';return;}
+    var source=kind==='replies'?window.ZT_REPLIES:window.ZT_POSTS;
+    var items=source&&source[author]&&source[author][date];
+    var wd=wk[new Date(date).getDay()];
+    title.textContent=date+' 周'+wd+' · '+label;
+    if(!items||!items.length){
+      body.innerHTML='<div class="pm-empty">该日期暂无'+(author==='yanbian'?'延边刺客':'顺shi而为')+label+'数据</div>';
       return;
     }
-    var posts=window.ZP[date];
-    var wd=wk[new Date(date).getDay()];
-    title.textContent=date+' 周'+wd+' 主帖';
     var h='';
-    posts.forEach(function(p){
-      if(p.link)h+='<a href="'+esc(p.link)+'" target="_blank" rel="noopener noreferrer" style="font-size:12px;display:inline-block;margin-bottom:8px">查看原文-&gt;</a>\n\n';
-      h+=esc(p.text);
+    items.forEach(function(item){
+      h+='<section class="pm-section">';
+      if(item.title)h+='<div class="pm-source-title">'+esc(item.title)+'</div>';
+      if(kind==='posts'&&item.link&&item.link!=='https://www.tgb.cn/a/')h+='<a class="pm-source-link" href="'+esc(item.link)+'" target="_blank" rel="noopener noreferrer">查看原文 →</a>';
+      if(item.text)h+='<div>'+esc(item.text)+'</div>';
+      else h+='<div class="pm-empty">标题已采集，正文暂未采集</div>';
+      h+='</section>';
     });
     body.innerHTML=h;
   });
 }
+function showPost(date){_discussionState.date=date;_discussionState.kind='posts';_discussionState.author='yanbian';renderDiscussion();}
+function showReplies(date){_discussionState.date=date;_discussionState.kind='replies';_discussionState.author='yanbian';renderDiscussion();}
 function closePost(){const modal=document.getElementById('post-modal');modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
 document.getElementById('post-modal').addEventListener('click',function(e){if(e.target===this)closePost();});
+document.querySelectorAll('#post-modal .pm-tab').forEach(function(tab){
+  tab.addEventListener('click',function(){_discussionState.author=this.getAttribute('data-author');renderDiscussion();});
+});
 </script>
 
 <!-- 笔记弹窗 -->
