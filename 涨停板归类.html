@@ -503,7 +503,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="zt_time_map.js?v=20260805-2"></script>
 <script src="zt_time_detail.js?v=20260805-2"></script>
 <script src="bid_seal_data.js?v=20260804-1"></script>
-<script src="zt_seal_rate_data.js?v=20260819-1"></script>
+<script src="zt_seal_rate_data.js?v=20260819-2"></script>
 <script src="three_board_pool.js?v=20260818-2"></script>
 <script src="notes_data.js?v=20260804-1"></script>
 <script src="stock_custom_category.js?v=20260805-2"></script>
@@ -842,9 +842,10 @@ function findOriginalCategory(date,name){
 function boardHeadingHtml(board,date){
   const info=(window.ZT_SEAL_RATE_DATA&&window.ZT_SEAL_RATE_DATA[date])||null;
   const showRate=/^(首板|二板|三板)$/.test(board);
-  if(!showRate||!info||!Number.isFinite(Number(info.sealRate)))return esc(board);
-  const rate=Number(info.sealRate);
-  const title='当日封板率：'+rate.toFixed(2)+'%（封住 '+Number(info.sealed||0)+' / 触及涨停 '+Number(info.touched||0)+'）';
+  const boardInfo=showRate&&info&&info.boards?info.boards[board]:null;
+  if(!boardInfo||!Number.isFinite(Number(boardInfo.sealRate)))return esc(board);
+  const rate=Number(boardInfo.sealRate);
+  const title=board+'封板率：'+rate.toFixed(2)+'%（封住 '+Number(boardInfo.sealed||0)+' / 触及涨停 '+Number(boardInfo.touched||0)+'）';
   return '<span class="blh-rate" title="'+esc(title)+'">封板率 '+rate.toFixed(2)+'%</span><span>'+esc(board)+'</span>';
 }
 
