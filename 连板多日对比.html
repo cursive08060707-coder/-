@@ -45,6 +45,7 @@
     .legend .empty-mark { background: #fafbfe; border: 1px dashed #dce3ef; }
     .hint { flex: 0 1 210px; min-width: 0; margin: 0; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
     .viewport { position: relative; height: calc(100vh - 105px); min-height: 500px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 8px 28px rgba(45,68,104,.07); overscroll-behavior: contain; scrollbar-color: #bdc8d9 #f3f6fa; }
+    .viewport.is-scrolling .stock-chip { pointer-events: none; transition: none; }
     .matrix { min-width: calc(var(--label-width) + var(--cell-width)); }
     .matrix-header, .board-row { display: grid; width: max-content; }
     .board-row { grid-template-columns: var(--date-template); }
@@ -53,6 +54,8 @@
     .corner { display: flex; align-items: center; padding: 0 12px; border-right: 1px solid var(--line-strong); color: var(--muted); font-size: 12px; }
     .date-head { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; border-right: 1px solid var(--line); color: var(--text); font-size: 12px; }
     .date-head small { color: var(--muted); font-size: 10px; }
+    .virtual-spacer { min-width: 0; pointer-events: none; background: #fff; }
+    .matrix-header > .virtual-spacer { background: rgba(255,255,255,.97); }
     .board-row { border-bottom: 1px solid var(--line-strong); }
     .board-label { display: flex; align-items: flex-start; justify-content: center; padding-top: 18px; border-right: 1px solid var(--line-strong); color: #58729a; font-size: 15px; font-weight: 700; }
     .board-label.high { color: var(--up); }
@@ -92,6 +95,19 @@
     .history-item time { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
     .history-item strong { font-size: 14px; }
     .history-item.recent { border-color: #b9d4fb; background: #f2f7ff; }
+    .search-history-modal { width: min(560px,100%); }
+    .search-stock-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(170px,1fr)); gap: 8px; }
+    .search-stock-choice, .history-jump { height: auto; min-height: 48px; padding: 8px 10px; text-align: left; }
+    .search-stock-choice { display: flex; align-items: center; justify-content: space-between; gap: 9px; background: #fbfcff; }
+    .search-stock-choice strong { font-size: 13px; }
+    .search-stock-choice span { color: var(--muted); font: 10px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .search-stock-choice small { color: #58729a; font-size: 10px; white-space: nowrap; }
+    .search-history-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(135px,1fr)); gap: 8px; }
+    .history-jump { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-color: #d7e2f4; background: #f8faff; }
+    .history-jump:hover { border-color: #8eafea; background: var(--accent-soft); }
+    .history-jump time { color: #506887; font-size: 11px; }
+    .history-jump strong { color: var(--up); font-size: 13px; }
+    .search-empty { padding: 25px 8px; color: var(--muted); text-align: center; font-size: 12px; }
     .detail-summary { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 7px; margin-bottom: 14px; }
     .summary-item { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcff; }
     .summary-item small { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
@@ -145,23 +161,23 @@
       </header>
       <section class="toolbar">
         <label for="search">搜索股票</label>
-        <input id="search" type="search" placeholder="名称或代码，匹配后高亮">
+        <input id="search" type="search" placeholder="名称或代码，回车查看日期">
+        <button id="searchBtn">查看日期</button>
         <label for="dateSearch">按日期</label>
         <input id="dateSearch" type="search" placeholder="如 2026-08-07" aria-label="按日期定位">
         <button id="dateSearchBtn">定位日期</button>
-        <label for="initialDays">初始天数</label>
+        <label for="initialDays">渲染窗口</label>
         <select id="initialDays">
-          <option value="12">12天</option>
-          <option value="24" selected>24天</option>
-          <option value="40">40天</option>
-          <option value="80">80天</option>
-          <option value="all">全部</option>
+          <option value="18">18天</option>
+          <option value="30" selected>30天</option>
+          <option value="42">42天</option>
+          <option value="60">60天</option>
         </select>
         <button class="primary" id="todayBtn">回到最近</button>
         <button id="clearSelection">取消股票高亮</button>
         <button id="reloadBtn">重新读取</button>
       </section>
-      <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动到最右侧会自动加载更早日期。</div>
+      <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动可连续浏览全部日期。</div>
     </div>
     <section class="viewport" id="viewport" aria-label="连板多日对比矩阵">
       <div class="matrix" id="matrix">
@@ -185,15 +201,24 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="searchHistoryBackdrop">
+    <div class="modal search-history-modal" role="dialog" aria-modal="true" aria-labelledby="searchHistoryTitle">
+      <div class="modal-head">
+        <div><h2 id="searchHistoryTitle">选择股票</h2><div class="code" id="searchHistorySubtitle"></div></div>
+        <button class="close" id="searchHistoryClose" aria-label="关闭">×</button>
+      </div>
+      <div id="searchHistoryBody"></div>
+    </div>
+  </div>
+
   <script src="zt_data.js"></script>
-  <script src="stock_detail_map.js?v=20260819-float1"></script>
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="zt_auction_change_data.js"></script>
   <script>
     (() => {
       'use strict';
-      const LABEL_WIDTH = 112, CELL_WIDTH = 290, BATCH_SIZE = 24;
+      const LABEL_WIDTH = 112, CELL_WIDTH = 290, WINDOW_OVERSCAN = 5, SCROLL_IDLE_MS = 90;
       const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
       const BID_DATA = typeof BID !== 'undefined' && BID ? BID : {};
@@ -205,26 +230,36 @@
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
       const els = {
         viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
-        status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
-        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose')
+        status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
+        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
+        searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
       };
-      const state = { records: [], dates: [], stockHistory: new Map(), maxBoard: 1, visibleCount: 24, query: '', selectedCode: '' };
+      const state = {
+        records: [], dates: [], recordByDate: new Map(), dateIndex: new Map(), stockHistory: new Map(),
+        maxBoard: 1, windowSize: 30, windowStart: 0, windowEnd: 0,
+        columnWidths: [], columnOffsets: [0], totalDateWidth: 0,
+        query: '', selectedCode: '', scrollTimer: 0, searchTimer: 0
+      };
+      let detailDataPromise = null;
 
       function boardNumber(value) {
         const text = String(value || '').trim();
         return BOARD_TEXT[text] || 0;
       }
-      function stockMatches(line) { return /([^，,、；;\s]+?)（[^）]*）(\d{6})/g.test(line); }
       function parseRecord(item) {
         const sections = new Map();
+        const stockCounts = new Map();
         let board = 0;
         for (const raw of String(item.t || '').split(/\r?\n/)) {
           const line = raw.trim();
           const next = boardNumber(line);
-          if (next) { board = next; sections.set(board, []); continue; }
-          if (board && line) sections.get(board).push(line);
+          if (next) { board = next; sections.set(board, []); stockCounts.set(board, 0); continue; }
+          if (board && line) {
+            sections.get(board).push(line);
+            stockCounts.set(board, stockCounts.get(board) + [...line.matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)].length);
+          }
         }
-        return { date: item.d, sections };
+        return { date: item.d, sections, stockCounts };
       }
       function buildStockHistory() {
         state.stockHistory = new Map();
@@ -244,20 +279,21 @@
         const list = (typeof P !== 'undefined' && Array.isArray(P)) ? P : [];
         state.records = list.map(parseRecord).filter(record => record.date).sort((a, b) => b.date.localeCompare(a.date));
         state.dates = state.records.map(record => record.date);
+        state.recordByDate = new Map(state.records.map(record => [record.date, record]));
+        state.dateIndex = new Map(state.dates.map((date, index) => [date, index]));
         state.maxBoard = Math.max(1, ...state.records.flatMap(record => [...record.sections.keys()]));
         buildStockHistory();
-        const requested = els.initialDays.value === 'all' ? state.dates.length : Number(els.initialDays.value) || 24;
-        state.visibleCount = Math.min(requested, state.dates.length);
-        render();
+        state.windowSize = Math.max(12, Number(els.initialDays.value) || 30);
+        buildLayoutIndex();
+        els.viewport.scrollLeft = 0;
+        state.windowStart = 0;
+        state.windowEnd = Math.min(state.dates.length, state.windowSize);
+        renderWindow(true);
       }
       function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
       function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
-      function dateLabel(date) { const p = date.split('-'); return `${p[1]}/${p[2]}`; }
+      function dateLabel(date) { return String(date || '').replace(/-/g, '/'); }
       function weekday(date) { return ['日','一','二','三','四','五','六'][new Date(`${date}T00:00:00`).getDay()]; }
-      function activeDates() { return state.dates.slice(0, state.visibleCount); }
-      function stockCount(lines) {
-        return lines.reduce((total, line) => total + [...line.matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)].length, 0);
-      }
       function auctionPctMarkup(date, code) {
         const day = AUCTION_DATA.dates && AUCTION_DATA.dates[date];
         const value = day && day.values ? Number(day.values[code]) : NaN;
@@ -274,32 +310,36 @@
       function isThreeBoardPoolStock(code) {
         return THREE_BOARD_POOL_CODES.has(String(code || '').trim());
       }
-      function dateColumnWidths(dates) {
-        const byDate = new Map(state.records.map(record => [record.date, record]));
-        return dates.map(date => {
-          const record = byDate.get(date);
-          let groups = 1;
-          if (record) {
-            for (const [board, lines] of record.sections) {
-              if (board >= 2) groups = Math.max(groups, Math.ceil(stockCount(lines) / 30));
-            }
+      function columnWidth(record) {
+        let groups = 1;
+        if (record) {
+          for (const [board, count] of record.stockCounts) {
+            if (board >= 2) groups = Math.max(groups, Math.ceil(count / 30));
           }
-          // 二板及以上按每组 3 列、每列最多 10 行排列；首板保持普通列宽并纵向展开。
-          // 股票按钮现在还显示 9:25 竞价涨幅，给每列预留足够宽度避免被单元格裁切。
-          // 190px 可容纳较长名称、6位代码和最高至 +30.00% 的竞价涨幅。
-          return Math.max(CELL_WIDTH, groups * 3 * 190 + 28);
-        });
+        }
+        // 二板及以上按每组 3 列、每列最多 10 行排列；190px 可容纳名称、代码和竞价涨幅。
+        return Math.max(CELL_WIDTH, groups * 3 * 190 + 28);
       }
-      function setGridColumns(dates) {
-        const widths = dateColumnWidths(dates);
-        const template = `${LABEL_WIDTH}px ${widths.map(width => `${width}px`).join(' ')}`;
+      function buildLayoutIndex() {
+        state.columnWidths = state.records.map(columnWidth);
+        state.columnOffsets = [0];
+        for (const width of state.columnWidths) state.columnOffsets.push(state.columnOffsets[state.columnOffsets.length - 1] + width);
+        state.totalDateWidth = state.columnOffsets[state.columnOffsets.length - 1] || 0;
+        els.matrix.style.width = `${LABEL_WIDTH + state.totalDateWidth}px`;
+      }
+      function setGridColumns(start, end) {
+        const left = state.columnOffsets[start] || 0;
+        const right = Math.max(0, state.totalDateWidth - (state.columnOffsets[end] || state.totalDateWidth));
+        const widths = state.columnWidths.slice(start, end);
+        const template = `${LABEL_WIDTH}px ${left}px ${widths.map(width => `${width}px`).join(' ')} ${right}px`;
         els.header.style.gridTemplateColumns = template;
-        els.body.style.setProperty('--date-count', dates.length);
         els.body.style.setProperty('--date-template', template);
-        els.matrix.style.width = `${LABEL_WIDTH + widths.reduce((sum, width) => sum + width, 0)}px`;
       }
-      function renderHeader(dates) {
-        els.header.innerHTML = '<div class="corner">连板层级 / 日期（近 → 远）</div>' + dates.map((date, index) => `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small></div>`).join('');
+      function renderHeader(dates, start) {
+        els.header.innerHTML = '<div class="corner">连板层级 / 日期（近 → 远）</div><div class="virtual-spacer" aria-hidden="true"></div>' + dates.map((date, localIndex) => {
+          const index = start + localIndex;
+          return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small></div>`;
+        }).join('') + '<div class="virtual-spacer" aria-hidden="true"></div>';
       }
       function renderLine(line, compact, date) {
         const pattern = /([^，,、；;\s]+?)（[^）]*）(\d{6})/g;
@@ -356,38 +396,135 @@
         return `<div class="board-cell has-content${hasMatch ? ' cell-match' : ''}${dim ? ' cell-dim' : ''}${selected ? ' selected-cell' : ''}" data-date="${date}" data-board="${board}" data-text="${escapeAttr(text)}">${content}</div>`;
       }
       function renderRows(dates) {
-        const byDate = new Map(state.records.map(record => [record.date, record]));
         const rows = [];
         for (let board = state.maxBoard; board >= 1; board--) {
           const high = board >= 3 ? ' high' : '';
-          rows.push(`<div class="board-row"><div class="board-label${high}">${board === 1 ? '首板' : `${board}板`}</div>${dates.map(date => renderCell(byDate.get(date), board, date)).join('')}</div>`);
+          rows.push(`<div class="board-row"><div class="board-label${high}">${board === 1 ? '首板' : `${board}板`}</div><div class="virtual-spacer" aria-hidden="true"></div>${dates.map(date => renderCell(state.recordByDate.get(date), board, date)).join('')}<div class="virtual-spacer" aria-hidden="true"></div></div>`);
         }
         els.body.innerHTML = rows.join('') || '<div class="no-data">暂无涨停数据</div>';
-        els.body.querySelectorAll('.stock-chip').forEach(chip => {
-          chip.addEventListener('click', event => { event.stopPropagation(); selectStock(chip.dataset.code); });
-          chip.addEventListener('dblclick', event => { event.preventDefault(); event.stopPropagation(); showHistory(chip.dataset.code, chip.dataset.name); });
-        });
       }
-      function render() {
-        const dates = activeDates();
-        setGridColumns(dates);
-        renderHeader(dates);
-        renderRows(dates);
-        const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(state.query)).length : 0;
+      function updateStatus() {
         const selectedName = state.selectedCode ? (state.stockHistory.get(state.selectedCode)?.name || state.selectedCode) : '';
-        els.status.textContent = `${state.records.length} 个交易日 · 已加载 ${dates.length} 天 · 最高 ${state.maxBoard} 板${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
-        els.hint.textContent = state.visibleCount < state.dates.length ? `单击高亮，双击打开详情；横向滚动到最右侧会自动加载更早日期（已加载 ${state.visibleCount}/${state.dates.length} 天）。` : `单击高亮，双击打开详情；已加载全部 ${state.dates.length} 个交易日。`;
+        const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(state.query)).length : 0;
+        const shown = Math.max(0, state.windowEnd - state.windowStart);
+        els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
+        const first = state.dates[state.windowStart] || '';
+        const last = state.dates[Math.max(state.windowStart, state.windowEnd - 1)] || '';
+        els.hint.textContent = first && last ? `当前窗口 ${first} 至 ${last}；全部 ${state.dates.length} 个交易日均可直接滚动或按日期定位。` : '暂无涨停数据。';
       }
-      function appendOlder() {
-        if (state.visibleCount >= state.dates.length) return;
+      function renderWindow(force) {
+        if (!force && state.windowEnd <= state.windowStart) return;
+        // DOM 中只保留当前窗口；左右空白列承担完整历史宽度，滚动条仍代表全部日期。
+        const dates = state.dates.slice(state.windowStart, state.windowEnd);
         const left = els.viewport.scrollLeft;
-        state.visibleCount = Math.min(state.visibleCount + BATCH_SIZE, state.dates.length);
-        render();
+        setGridColumns(state.windowStart, state.windowEnd);
+        renderHeader(dates, state.windowStart);
+        renderRows(dates);
         els.viewport.scrollLeft = left;
+        updateStatus();
+      }
+      function offsetIndex(offset) {
+        let low = 0, high = state.columnWidths.length;
+        while (low < high) {
+          const mid = (low + high) >> 1;
+          if (state.columnOffsets[mid + 1] <= offset) low = mid + 1;
+          else high = mid;
+        }
+        return Math.min(low, Math.max(0, state.dates.length - 1));
+      }
+      function visibleIndexes(scrollLeft) {
+        if (!state.dates.length) return [0, 0];
+        const dateOffset = Math.max(0, scrollLeft);
+        const firstVisible = offsetIndex(dateOffset);
+        const lastVisible = offsetIndex(dateOffset + Math.max(1, els.viewport.clientWidth - LABEL_WIDTH));
+        return [firstVisible, lastVisible];
+      }
+      function desiredWindow(scrollLeft) {
+        if (!state.dates.length) return [0, 0];
+        const [firstVisible, lastVisible] = visibleIndexes(scrollLeft);
+        const minimumSize = Math.max(state.windowSize, lastVisible - firstVisible + 1 + WINDOW_OVERSCAN * 2);
+        let start = Math.max(0, firstVisible - WINDOW_OVERSCAN);
+        let end = Math.min(state.dates.length, start + minimumSize);
+        start = Math.max(0, end - minimumSize);
+        return [start, end];
+      }
+      function syncVirtualWindow(force) {
+        const [firstVisible, lastVisible] = visibleIndexes(els.viewport.scrollLeft);
+        const safeStart = state.windowStart === 0 ? 0 : state.windowStart + WINDOW_OVERSCAN;
+        const safeEnd = state.windowEnd === state.dates.length ? state.dates.length - 1 : state.windowEnd - WINDOW_OVERSCAN - 1;
+        if (!force && firstVisible >= safeStart && lastVisible <= safeEnd) return;
+        const [start, end] = desiredWindow(els.viewport.scrollLeft);
+        if (force || start !== state.windowStart || end !== state.windowEnd) {
+          state.windowStart = start;
+          state.windowEnd = end;
+          renderWindow(true);
+        }
+      }
+      function scheduleVirtualWindow() {
+        els.viewport.classList.add('is-scrolling');
+        clearTimeout(state.scrollTimer);
+        state.scrollTimer = setTimeout(() => {
+          state.scrollTimer = 0;
+          els.viewport.classList.remove('is-scrolling');
+          syncVirtualWindow(false);
+        }, SCROLL_IDLE_MS);
       }
       function selectStock(code) {
-        state.selectedCode = code;
-        render();
+        state.selectedCode = String(code || '');
+        els.body.querySelectorAll('.stock-chip.selected').forEach(chip => chip.classList.remove('selected'));
+        els.body.querySelectorAll('.board-cell.selected-cell').forEach(cell => cell.classList.remove('selected-cell'));
+        if (state.selectedCode) {
+          els.body.querySelectorAll(`.stock-chip[data-code="${state.selectedCode}"]`).forEach(chip => {
+            chip.classList.add('selected');
+            const cell = chip.closest('.board-cell');
+            if (cell) cell.classList.add('selected-cell');
+          });
+        }
+        updateStatus();
+      }
+      function matchingStocks(value) {
+        const query = String(value || '').trim().toLowerCase();
+        if (!query) return [];
+        return [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(query)).sort((a, b) => {
+          const aExact = a.code === query || a.name.toLowerCase() === query;
+          const bExact = b.code === query || b.name.toLowerCase() === query;
+          if (aExact !== bExact) return aExact ? -1 : 1;
+          return (b.days[0]?.date || '').localeCompare(a.days[0]?.date || '') || a.name.localeCompare(b.name, 'zh-CN');
+        });
+      }
+      function showStockDateChoices(stock) {
+        if (!stock) return;
+        els.searchHistoryTitle.textContent = `${stock.name} 的涨停记录`;
+        els.searchHistorySubtitle.textContent = `${stock.code} · 共 ${stock.days.length} 个交易日`;
+        els.searchHistoryBody.innerHTML = stock.days.length ? `<div class="search-history-list">${stock.days.map(item => {
+          const board = item.board === 1 ? '首板' : `${item.board}板`;
+          return `<button type="button" class="history-jump" data-jump-date="${escapeAttr(item.date)}" data-jump-code="${escapeAttr(stock.code)}"><time>${escapeHtml(item.date)}</time><strong>${board}</strong></button>`;
+        }).join('')}</div>` : '<div class="search-empty">没有找到涨停记录</div>';
+        els.searchHistoryModal.classList.add('open');
+      }
+      function openSearchHistory(value) {
+        const query = String(value || '').trim();
+        if (!query) {
+          els.hint.textContent = '请先输入股票名称或六位代码。';
+          els.search.focus();
+          return;
+        }
+        const matches = matchingStocks(query);
+        if (matches.length === 1 || (matches[0] && (matches[0].code === query || matches[0].name.toLowerCase() === query.toLowerCase()))) {
+          showStockDateChoices(matches[0]);
+          return;
+        }
+        els.searchHistoryTitle.textContent = matches.length ? '选择股票' : '没有找到股票';
+        els.searchHistorySubtitle.textContent = matches.length ? `“${query}”匹配到 ${matches.length} 只股票` : `“${query}”没有涨停记录`;
+        els.searchHistoryBody.innerHTML = matches.length ? `<div class="search-stock-list">${matches.slice(0, 60).map(stock => `<button type="button" class="search-stock-choice" data-search-code="${escapeAttr(stock.code)}"><span><strong>${escapeHtml(stock.name)}</strong><br><span>${escapeHtml(stock.code)}</span></span><small>${stock.days.length}次 · 最近${escapeHtml(stock.days[0]?.date || '')}</small></button>`).join('')}</div>` : '<div class="search-empty">请尝试输入完整股票名称或六位代码</div>';
+        els.searchHistoryModal.classList.add('open');
+      }
+      function jumpToStockDate(code, date) {
+        els.searchHistoryModal.classList.remove('open');
+        jumpToDate(date);
+        selectStock(code);
+        const stock = state.stockHistory.get(code);
+        els.hint.textContent = `已定位到 ${date} 的${stock ? stock.name : code}，并同步高亮当前窗口内的全部历史位置。`;
       }
       function findStockDetail(code, name) {
         if (typeof SD === 'undefined' || !SD) return null;
@@ -396,6 +533,19 @@
           if (value && String(value.c || '') === String(code)) return { name: key, data: value };
         }
         return null;
+      }
+      function ensureStockDetailData() {
+        if (typeof SD !== 'undefined' && SD) return Promise.resolve();
+        if (!detailDataPromise) {
+          detailDataPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'stock_detail_map.js?v=20260819-float2';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('股票详情数据加载失败'));
+            document.head.appendChild(script);
+          });
+        }
+        return detailDataPromise;
       }
       function formatMarketCap(value) {
         const number = Number(value);
@@ -458,7 +608,8 @@
         const query = String(value || '').trim();
         if (!query) return;
         const digits = query.replace(/\D/g, '');
-        const index = state.dates.findIndex(date => {
+        const exactIndex = state.dateIndex.get(query);
+        const index = Number.isInteger(exactIndex) ? exactIndex : state.dates.findIndex(date => {
           const normalized = date.replace(/\D/g, '');
           return date === query || normalized === digits || (digits.length >= 4 && normalized.endsWith(digits));
         });
@@ -466,10 +617,8 @@
           els.hint.textContent = `没有找到日期“${query}”，可输入完整日期，例如 2026-08-07。`;
           return;
         }
-        state.visibleCount = Math.min(Math.max(state.visibleCount, Math.ceil((index + 1) / BATCH_SIZE) * BATCH_SIZE), state.dates.length);
-        render();
-        const widths = dateColumnWidths(activeDates());
-        els.viewport.scrollLeft = Math.max(0, LABEL_WIDTH + widths.slice(0, index).reduce((sum, width) => sum + width, 0) - 20);
+        els.viewport.scrollLeft = Math.max(0, state.columnOffsets[index] - 12);
+        syncVirtualWindow(true);
         els.hint.textContent = `已定位到 ${state.dates[index]}；横向滚动可继续查看相邻日期。`;
       }
       function showHistory(code, name) {
@@ -477,24 +626,78 @@
         const titleName = stock.name || name || code;
         els.modalTitle.textContent = titleName;
         els.modalCode.textContent = code;
-        state.selectedCode = code;
-        render();
-        renderStockDetail(titleName, code);
+        selectStock(code);
+        els.detailSummary.innerHTML = '<div class="empty-detail">正在加载股票详情…</div>';
+        els.detailConcepts.innerHTML = '';
+        els.detailShareholders.innerHTML = '';
         els.history.innerHTML = stock.days.map((item, index) => `<div class="history-item ${index === 0 ? 'recent' : ''}"><time>${item.date}</time><strong>${item.board}板</strong></div>`).join('');
         els.modal.classList.add('open');
+        ensureStockDetailData().then(() => renderStockDetail(titleName, code)).catch(error => {
+          els.detailSummary.innerHTML = `<div class="empty-detail">${escapeHtml(error.message || '股票详情数据加载失败')}</div>`;
+          els.detailConcepts.innerHTML = '<div class="empty-detail">请检查 stock_detail_map.js 是否与网页位于同一目录。</div>';
+          els.detailShareholders.innerHTML = '';
+        });
       }
-      els.viewport.addEventListener('scroll', () => { if (els.viewport.scrollLeft + els.viewport.clientWidth > els.viewport.scrollWidth - 650) appendOlder(); });
+      els.body.addEventListener('click', event => {
+        const chip = event.target.closest('.stock-chip');
+        if (!chip || !els.body.contains(chip)) return;
+        event.stopPropagation();
+        selectStock(chip.dataset.code);
+      });
+      els.body.addEventListener('dblclick', event => {
+        const chip = event.target.closest('.stock-chip');
+        if (!chip || !els.body.contains(chip)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        showHistory(chip.dataset.code, chip.dataset.name);
+      });
+      els.viewport.addEventListener('scroll', scheduleVirtualWindow, { passive: true });
       els.viewport.addEventListener('wheel', event => { if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) { event.preventDefault(); els.viewport.scrollLeft += event.deltaY; } }, { passive: false });
-      els.search.addEventListener('input', () => { state.query = els.search.value.trim().toLowerCase(); render(); });
+      els.search.addEventListener('input', () => {
+        clearTimeout(state.searchTimer);
+        state.searchTimer = setTimeout(() => {
+          state.query = els.search.value.trim().toLowerCase();
+          renderWindow(true);
+          const exact = matchingStocks(state.query).find(stock => stock.code === state.query || stock.name.toLowerCase() === state.query);
+          if (exact) showStockDateChoices(exact);
+        }, 120);
+      });
+      els.search.addEventListener('keydown', event => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        clearTimeout(state.searchTimer);
+        state.query = els.search.value.trim().toLowerCase();
+        renderWindow(true);
+        openSearchHistory(els.search.value);
+      });
+      els.searchBtn.addEventListener('click', () => openSearchHistory(els.search.value));
+      els.searchHistoryBody.addEventListener('click', event => {
+        const stockButton = event.target.closest('[data-search-code]');
+        if (stockButton) {
+          showStockDateChoices(state.stockHistory.get(stockButton.dataset.searchCode));
+          return;
+        }
+        const dateButton = event.target.closest('[data-jump-date]');
+        if (dateButton) jumpToStockDate(dateButton.dataset.jumpCode, dateButton.dataset.jumpDate);
+      });
       els.dateSearchBtn.addEventListener('click', () => jumpToDate(els.dateSearch.value));
       els.dateSearch.addEventListener('keydown', event => { if (event.key === 'Enter') jumpToDate(els.dateSearch.value); });
-      els.initialDays.addEventListener('change', loadData);
-      els.todayBtn.addEventListener('click', () => { els.viewport.scrollLeft = 0; });
-      els.clearSelection.addEventListener('click', () => { state.selectedCode = ''; render(); });
+      els.initialDays.addEventListener('change', () => {
+        state.windowSize = Math.max(12, Number(els.initialDays.value) || 30);
+        syncVirtualWindow(true);
+      });
+      els.todayBtn.addEventListener('click', () => { els.viewport.scrollLeft = 0; syncVirtualWindow(true); });
+      els.clearSelection.addEventListener('click', () => selectStock(''));
       els.reloadBtn.addEventListener('click', loadData);
       els.modalClose.addEventListener('click', () => els.modal.classList.remove('open'));
       els.modal.addEventListener('click', event => { if (event.target === els.modal) els.modal.classList.remove('open'); });
-      document.addEventListener('keydown', event => { if (event.key === 'Escape') els.modal.classList.remove('open'); });
+      els.searchHistoryClose.addEventListener('click', () => els.searchHistoryModal.classList.remove('open'));
+      els.searchHistoryModal.addEventListener('click', event => { if (event.target === els.searchHistoryModal) els.searchHistoryModal.classList.remove('open'); });
+      document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        els.modal.classList.remove('open');
+        els.searchHistoryModal.classList.remove('open');
+      });
       loadData();
     })();
   </script>
