@@ -44,6 +44,8 @@
     .legend .stock-mark { background: var(--accent-soft); border: 1px solid #bdd0f7; }
     .legend .empty-mark { background: #fafbfe; border: 1px dashed #dce3ef; }
     .hint { flex: 0 1 210px; min-width: 0; margin: 0; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+    .zoom-step { width: 30px; padding: 0; font-size: 17px; line-height: 30px; }
+    #zoomSelect { width: 72px; padding: 0 5px; text-align: center; }
     .viewport { position: relative; height: calc(100vh - 105px); min-height: 500px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 8px 28px rgba(45,68,104,.07); overscroll-behavior: contain; scrollbar-color: #bdc8d9 #f3f6fa; }
     .viewport.is-scrolling .stock-chip { pointer-events: none; transition: none; }
     .matrix { min-width: calc(var(--label-width) + var(--cell-width)); }
@@ -173,11 +175,27 @@
           <option value="42">42天</option>
           <option value="60">60天</option>
         </select>
+        <label for="zoomSelect">整体缩放</label>
+        <button class="zoom-step" id="zoomOut" type="button" title="缩小显示">−</button>
+        <select id="zoomSelect" aria-label="整体缩放比例">
+          <option value="0.6">60%</option>
+          <option value="0.7">70%</option>
+          <option value="0.8">80%</option>
+          <option value="0.9">90%</option>
+          <option value="1" selected>100%</option>
+          <option value="1.1">110%</option>
+          <option value="1.2">120%</option>
+          <option value="1.25">125%</option>
+          <option value="1.3">130%</option>
+          <option value="1.4">140%</option>
+          <option value="1.5">150%</option>
+        </select>
+        <button class="zoom-step" id="zoomIn" type="button" title="放大显示">＋</button>
         <button class="primary" id="todayBtn">回到最近</button>
         <button id="clearSelection">取消股票高亮</button>
         <button id="reloadBtn">重新读取</button>
       </section>
-      <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动可连续浏览全部日期。</div>
+      <div class="hint" id="hint">单击股票按钮同步高亮全部历史位置，双击打开详情；横向滚动可连续浏览全部日期；可用整体缩放或 Cmd/Ctrl +/- 调整显示。</div>
     </div>
     <section class="viewport" id="viewport" aria-label="连板多日对比矩阵">
       <div class="matrix" id="matrix">
@@ -230,7 +248,7 @@
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
       const els = {
         viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
-        status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
+        status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
         modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
         searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
       };
@@ -238,9 +256,30 @@
         records: [], dates: [], recordByDate: new Map(), dateIndex: new Map(), stockHistory: new Map(),
         maxBoard: 1, windowSize: 30, windowStart: 0, windowEnd: 0,
         columnWidths: [], columnOffsets: [0], totalDateWidth: 0,
-        query: '', selectedCode: '', scrollTimer: 0, searchTimer: 0
+        query: '', selectedCode: '', scrollTimer: 0, searchTimer: 0, zoom: 1
       };
       let detailDataPromise = null;
+
+      function clampZoom(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return 1;
+        return Math.max(0.6, Math.min(1.5, Math.round(number * 100) / 100));
+      }
+      function readStoredZoom() {
+        try { return clampZoom(localStorage.getItem('zt-multi-day-zoom') || 1); } catch (_) { return 1; }
+      }
+      function applyZoom(value, preservePosition = true, refresh = true) {
+        const next = clampZoom(value);
+        const previous = state.zoom || 1;
+        const logicalLeft = preservePosition ? els.viewport.scrollLeft / previous : 0;
+        state.zoom = next;
+        els.matrix.style.zoom = String(next);
+        els.zoomSelect.value = String(next);
+        els.viewport.scrollLeft = Math.max(0, logicalLeft * next);
+        try { localStorage.setItem('zt-multi-day-zoom', String(next)); } catch (_) {}
+        if (refresh) syncVirtualWindow(true);
+        updateStatus();
+      }
 
       function boardNumber(value) {
         const text = String(value || '').trim();
@@ -285,6 +324,7 @@
         buildStockHistory();
         state.windowSize = Math.max(12, Number(els.initialDays.value) || 30);
         buildLayoutIndex();
+        applyZoom(state.zoom, false, false);
         els.viewport.scrollLeft = 0;
         state.windowStart = 0;
         state.windowEnd = Math.min(state.dates.length, state.windowSize);
@@ -341,36 +381,40 @@
           return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small></div>`;
         }).join('') + '<div class="virtual-spacer" aria-hidden="true"></div>';
       }
-      function renderLine(line, compact, date) {
-        const pattern = /([^，,、；;\s]+?)（[^）]*）(\d{6})/g;
-        let html = '', cursor = 0, found = false;
-        for (const match of line.matchAll(pattern)) {
-          found = true;
-          const separator = line.slice(cursor, match.index);
-          html += escapeHtml(compact ? separator.replace(/[，,、；;]/g, '') : separator);
-          const text = `${match[1]} ${match[2]}`.toLowerCase();
-          const hit = state.query && text.includes(state.query);
-          const selected = state.selectedCode === match[2];
-          const bidSeal = isBidSealStock(date, match[2]);
-          const poolStock = isThreeBoardPoolStock(match[2]);
-          const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-          html += `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
-          cursor = match.index + match[0].length;
-        }
-        html += escapeHtml(compact ? line.slice(cursor).replace(/[，,、；;]/g, '') : line.slice(cursor));
-        return found ? `<div class="content-line">${html}</div>` : `<div class="theme-line">${escapeHtml(line)}</div>`;
+      function stockMatches(line) {
+        return [...String(line || '').matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)];
+      }
+      function isThemeHeading(lines, index) {
+        const line = String(lines[index] || '').trim();
+        if (!line || line === '——') return false;
+        if (/^(首封时间|首板总结|二板总结|三板总结|今日总结|观察计划|高标情绪|竞价最优解|气质股|思考题|今日买卖|明日计划|周五计划|周末计划|题材风口|一字板预期|鄙视)/.test(line)) return false;
+        return Boolean(lines[index + 1] && stockMatches(lines[index + 1]).length);
+      }
+      function renderStockChip(match, date) {
+        const text = `${match[1]} ${match[2]}`.toLowerCase();
+        const hit = state.query && text.includes(state.query);
+        const selected = state.selectedCode === match[2];
+        const bidSeal = isBidSealStock(date, match[2]);
+        const poolStock = isThreeBoardPoolStock(match[2]);
+        const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
+        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
+      }
+      function renderLine(line, compact, date, lines = [line], lineIndex = 0) {
+        const matches = stockMatches(line);
+        if (!matches.length) return isThemeHeading(lines, lineIndex) ? `<div class="theme-line">${escapeHtml(line)}</div>` : '';
+        return `<div class="content-line">${matches.map(match => renderStockChip(match, date)).join('')}</div>`;
       }
       function renderLimitedContent(lines, date) {
         const themes = [];
         const stocks = [];
-        for (const line of lines) {
-          const matches = [...line.matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)];
+        lines.forEach((line, lineIndex) => {
+          const matches = stockMatches(line);
           if (!matches.length) {
-            themes.push(`<div class="theme-line">${escapeHtml(line)}</div>`);
-            continue;
+            if (isThemeHeading(lines, lineIndex)) themes.push(`<div class="theme-line">${escapeHtml(line)}</div>`);
+            return;
           }
           matches.forEach(match => stocks.push({ name: match[1], code: match[2] }));
-        }
+        });
         const groups = [];
         for (let i = 0; i < stocks.length; i += 30) {
           const group = stocks.slice(i, i + 30).map(stock => {
@@ -388,11 +432,14 @@
       function renderCell(record, board, date) {
         const lines = record && record.sections.get(board);
         if (!lines || !lines.length) return '<div class="board-cell"><div class="cell-empty">—</div></div>';
-        const text = lines.join(' ').toLowerCase();
+        const text = lines.map((line, index) => {
+          const matches = stockMatches(line);
+          return matches.length ? matches.map(match => `${match[1]} ${match[2]}`).join(' ') : (isThemeHeading(lines, index) ? line : '');
+        }).join(' ').toLowerCase();
         const hasMatch = state.query && text.includes(state.query);
         const dim = state.query && !hasMatch;
         const selected = state.selectedCode && lines.some(line => line.includes(state.selectedCode));
-        const content = board === 1 ? lines.map(line => renderLine(line, true, date)).join('') : renderLimitedContent(lines, date);
+        const content = board === 1 ? lines.map((line, index) => renderLine(line, true, date, lines, index)).join('') : renderLimitedContent(lines, date);
         return `<div class="board-cell has-content${hasMatch ? ' cell-match' : ''}${dim ? ' cell-dim' : ''}${selected ? ' selected-cell' : ''}" data-date="${date}" data-board="${board}" data-text="${escapeAttr(text)}">${content}</div>`;
       }
       function renderRows(dates) {
@@ -407,7 +454,7 @@
         const selectedName = state.selectedCode ? (state.stockHistory.get(state.selectedCode)?.name || state.selectedCode) : '';
         const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(state.query)).length : 0;
         const shown = Math.max(0, state.windowEnd - state.windowStart);
-        els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
+        els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板 · 缩放 ${Math.round(state.zoom * 100)}%${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
         const first = state.dates[state.windowStart] || '';
         const last = state.dates[Math.max(state.windowStart, state.windowEnd - 1)] || '';
         els.hint.textContent = first && last ? `当前窗口 ${first} 至 ${last}；全部 ${state.dates.length} 个交易日均可直接滚动或按日期定位。` : '暂无涨停数据。';
@@ -434,9 +481,10 @@
       }
       function visibleIndexes(scrollLeft) {
         if (!state.dates.length) return [0, 0];
-        const dateOffset = Math.max(0, scrollLeft);
+        const zoom = state.zoom || 1;
+        const dateOffset = Math.max(0, scrollLeft / zoom);
         const firstVisible = offsetIndex(dateOffset);
-        const lastVisible = offsetIndex(dateOffset + Math.max(1, els.viewport.clientWidth - LABEL_WIDTH));
+        const lastVisible = offsetIndex(dateOffset + Math.max(1, els.viewport.clientWidth / zoom - LABEL_WIDTH));
         return [firstVisible, lastVisible];
       }
       function desiredWindow(scrollLeft) {
@@ -617,7 +665,7 @@
           els.hint.textContent = `没有找到日期“${query}”，可输入完整日期，例如 2026-08-07。`;
           return;
         }
-        els.viewport.scrollLeft = Math.max(0, state.columnOffsets[index] - 12);
+        els.viewport.scrollLeft = Math.max(0, (state.columnOffsets[index] - 12) * (state.zoom || 1));
         syncVirtualWindow(true);
         els.hint.textContent = `已定位到 ${state.dates[index]}；横向滚动可继续查看相邻日期。`;
       }
@@ -682,6 +730,9 @@
       });
       els.dateSearchBtn.addEventListener('click', () => jumpToDate(els.dateSearch.value));
       els.dateSearch.addEventListener('keydown', event => { if (event.key === 'Enter') jumpToDate(els.dateSearch.value); });
+      els.zoomSelect.addEventListener('change', () => applyZoom(els.zoomSelect.value));
+      els.zoomOut.addEventListener('click', () => applyZoom((state.zoom || 1) - 0.1));
+      els.zoomIn.addEventListener('click', () => applyZoom((state.zoom || 1) + 0.1));
       els.initialDays.addEventListener('change', () => {
         state.windowSize = Math.max(12, Number(els.initialDays.value) || 30);
         syncVirtualWindow(true);
@@ -694,10 +745,16 @@
       els.searchHistoryClose.addEventListener('click', () => els.searchHistoryModal.classList.remove('open'));
       els.searchHistoryModal.addEventListener('click', event => { if (event.target === els.searchHistoryModal) els.searchHistoryModal.classList.remove('open'); });
       document.addEventListener('keydown', event => {
+        if ((event.metaKey || event.ctrlKey) && !event.altKey) {
+          if (event.key === '+' || event.key === '=') { event.preventDefault(); applyZoom((state.zoom || 1) + 0.1); return; }
+          if (event.key === '-') { event.preventDefault(); applyZoom((state.zoom || 1) - 0.1); return; }
+          if (event.key === '0') { event.preventDefault(); applyZoom(1); return; }
+        }
         if (event.key !== 'Escape') return;
         els.modal.classList.remove('open');
         els.searchHistoryModal.classList.remove('open');
       });
+      state.zoom = readStoredZoom();
       loadData();
     })();
   </script>
