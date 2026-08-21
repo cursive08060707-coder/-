@@ -163,7 +163,7 @@
       </header>
       <section class="toolbar">
         <label for="search">搜索股票</label>
-        <input id="search" type="search" placeholder="名称或代码，回车查看日期">
+        <input id="search" type="search" placeholder="名称、代码或拼音首字母">
         <button id="searchBtn">查看日期</button>
         <label for="dateSearch">按日期</label>
         <input id="dateSearch" type="search" placeholder="如 2026-08-07" aria-label="按日期定位">
@@ -306,8 +306,8 @@
           for (const [board, lines] of record.sections) {
             for (const line of lines) {
               for (const match of line.matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)) {
-                const name = match[1], code = match[2];
-                if (!state.stockHistory.has(code)) state.stockHistory.set(code, { name, code, days: [] });
+                const name = match[1], code = match[2], initials = stockInitials(match);
+                if (!state.stockHistory.has(code)) state.stockHistory.set(code, { name, code, initials, searchText: stockSearchText(name, code, initials), days: [] });
                 state.stockHistory.get(code).days.push({ date: record.date, board });
               }
             }
@@ -384,6 +384,26 @@
       function stockMatches(line) {
         return [...String(line || '').matchAll(/([^，,、；;\s]+?)（[^）]*）(\d{6})/g)];
       }
+      function stockInitials(match) {
+        const found = String(match && match[0] || '').match(/（([^）]*)）\d{6}$/);
+        return found ? found[1].trim().toLowerCase() : '';
+      }
+      function stockSearchText(name, code, initials) {
+        return `${name || ''} ${code || ''} ${initials || ''}`.toLowerCase();
+      }
+      function stockMatchesQuery(stock, query = state.query) {
+        return Boolean(query && stock && (stock.searchText || stockSearchText(stock.name, stock.code, stock.initials)).includes(query));
+      }
+      function stockExactMatch(stock, query) {
+        const value = String(query || '').trim().toLowerCase();
+        return Boolean(stock && value && (stock.code === value || stock.name.toLowerCase() === value || stock.initials === value));
+      }
+      function stockMatchRank(stock, query) {
+        if (stockExactMatch(stock, query)) return 0;
+        if (stock.initials && stock.initials.startsWith(query)) return 1;
+        if (stock.name.toLowerCase().startsWith(query) || stock.code.startsWith(query)) return 2;
+        return 3;
+      }
       function isThemeHeading(lines, index) {
         const line = String(lines[index] || '').trim();
         if (!line || line === '——') return false;
@@ -391,8 +411,8 @@
         return Boolean(lines[index + 1] && stockMatches(lines[index + 1]).length);
       }
       function renderStockChip(match, date) {
-        const text = `${match[1]} ${match[2]}`.toLowerCase();
-        const hit = state.query && text.includes(state.query);
+        const initials = stockInitials(match);
+        const hit = state.query && stockSearchText(match[1], match[2], initials).includes(state.query);
         const selected = state.selectedCode === match[2];
         const bidSeal = isBidSealStock(date, match[2]);
         const poolStock = isThreeBoardPoolStock(match[2]);
@@ -413,12 +433,12 @@
             if (isThemeHeading(lines, lineIndex)) themes.push(`<div class="theme-line">${escapeHtml(line)}</div>`);
             return;
           }
-          matches.forEach(match => stocks.push({ name: match[1], code: match[2] }));
+          matches.forEach(match => stocks.push({ name: match[1], code: match[2], initials: stockInitials(match) }));
         });
         const groups = [];
         for (let i = 0; i < stocks.length; i += 30) {
           const group = stocks.slice(i, i + 30).map(stock => {
-            const hit = state.query && `${stock.name} ${stock.code}`.toLowerCase().includes(state.query);
+            const hit = state.query && stockSearchText(stock.name, stock.code, stock.initials).includes(state.query);
             const selected = state.selectedCode === stock.code;
             const bidSeal = isBidSealStock(date, stock.code);
             const poolStock = isThreeBoardPoolStock(stock.code);
@@ -434,7 +454,7 @@
         if (!lines || !lines.length) return '<div class="board-cell"><div class="cell-empty">—</div></div>';
         const text = lines.map((line, index) => {
           const matches = stockMatches(line);
-          return matches.length ? matches.map(match => `${match[1]} ${match[2]}`).join(' ') : (isThemeHeading(lines, index) ? line : '');
+          return matches.length ? matches.map(match => stockSearchText(match[1], match[2], stockInitials(match))).join(' ') : (isThemeHeading(lines, index) ? line : '');
         }).join(' ').toLowerCase();
         const hasMatch = state.query && text.includes(state.query);
         const dim = state.query && !hasMatch;
@@ -452,7 +472,7 @@
       }
       function updateStatus() {
         const selectedName = state.selectedCode ? (state.stockHistory.get(state.selectedCode)?.name || state.selectedCode) : '';
-        const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(state.query)).length : 0;
+        const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => stockMatchesQuery(stock)).length : 0;
         const shown = Math.max(0, state.windowEnd - state.windowStart);
         els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板 · 缩放 ${Math.round(state.zoom * 100)}%${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
         const first = state.dates[state.windowStart] || '';
@@ -533,10 +553,9 @@
       function matchingStocks(value) {
         const query = String(value || '').trim().toLowerCase();
         if (!query) return [];
-        return [...state.stockHistory.values()].filter(stock => `${stock.name} ${stock.code}`.toLowerCase().includes(query)).sort((a, b) => {
-          const aExact = a.code === query || a.name.toLowerCase() === query;
-          const bExact = b.code === query || b.name.toLowerCase() === query;
-          if (aExact !== bExact) return aExact ? -1 : 1;
+        return [...state.stockHistory.values()].filter(stock => stockMatchesQuery(stock, query)).sort((a, b) => {
+          const rankDiff = stockMatchRank(a, query) - stockMatchRank(b, query);
+          if (rankDiff) return rankDiff;
           return (b.days[0]?.date || '').localeCompare(a.days[0]?.date || '') || a.name.localeCompare(b.name, 'zh-CN');
         });
       }
@@ -553,18 +572,18 @@
       function openSearchHistory(value) {
         const query = String(value || '').trim();
         if (!query) {
-          els.hint.textContent = '请先输入股票名称或六位代码。';
+          els.hint.textContent = '请先输入股票名称、六位代码或拼音首字母。';
           els.search.focus();
           return;
         }
         const matches = matchingStocks(query);
-        if (matches.length === 1 || (matches[0] && (matches[0].code === query || matches[0].name.toLowerCase() === query.toLowerCase()))) {
+        if (matches.length === 1 || stockExactMatch(matches[0], query)) {
           showStockDateChoices(matches[0]);
           return;
         }
         els.searchHistoryTitle.textContent = matches.length ? '选择股票' : '没有找到股票';
         els.searchHistorySubtitle.textContent = matches.length ? `“${query}”匹配到 ${matches.length} 只股票` : `“${query}”没有涨停记录`;
-        els.searchHistoryBody.innerHTML = matches.length ? `<div class="search-stock-list">${matches.slice(0, 60).map(stock => `<button type="button" class="search-stock-choice" data-search-code="${escapeAttr(stock.code)}"><span><strong>${escapeHtml(stock.name)}</strong><br><span>${escapeHtml(stock.code)}</span></span><small>${stock.days.length}次 · 最近${escapeHtml(stock.days[0]?.date || '')}</small></button>`).join('')}</div>` : '<div class="search-empty">请尝试输入完整股票名称或六位代码</div>';
+        els.searchHistoryBody.innerHTML = matches.length ? `<div class="search-stock-list">${matches.slice(0, 60).map(stock => `<button type="button" class="search-stock-choice" data-search-code="${escapeAttr(stock.code)}"><span><strong>${escapeHtml(stock.name)}</strong><br><span>${escapeHtml(stock.code)}${stock.initials ? ` · ${escapeHtml(stock.initials)}` : ''}</span></span><small>${stock.days.length}次 · 最近${escapeHtml(stock.days[0]?.date || '')}</small></button>`).join('')}</div>` : '<div class="search-empty">请尝试输入股票名称、六位代码或拼音首字母</div>';
         els.searchHistoryModal.classList.add('open');
       }
       function jumpToStockDate(code, date) {
@@ -706,7 +725,7 @@
         state.searchTimer = setTimeout(() => {
           state.query = els.search.value.trim().toLowerCase();
           renderWindow(true);
-          const exact = matchingStocks(state.query).find(stock => stock.code === state.query || stock.name.toLowerCase() === state.query);
+          const exact = matchingStocks(state.query).find(stock => stockExactMatch(stock, state.query));
           if (exact) showStockDateChoices(exact);
         }, 120);
       });
