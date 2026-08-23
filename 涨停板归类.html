@@ -373,16 +373,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #stats-modal .stats-card h3 small{margin-left:6px;font-size:10px;font-weight:400;color:var(--muted2)}
 #stats-modal .stats-tags{display:flex;flex-wrap:wrap;gap:6px}
 #stats-modal .stats-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border2);border-radius:999px;background:var(--surface2);font-size:11px;color:var(--fg)}
-#stats-modal .stats-tag.stats-priority-pair{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
 #stats-modal .stats-tag b{font:700 11px var(--font-mono);color:var(--accent)}
-#stats-modal .stats-tag.stats-priority-pair b{color:#be123c}
 #stats-modal .stats-pair{letter-spacing:.06em;text-transform:uppercase}
 #stats-modal .stats-list{display:grid;gap:6px}
 #stats-modal .stats-row{display:grid;grid-template-columns:24px minmax(90px,.7fr) minmax(0,1.3fr) 58px;gap:7px;align-items:center;padding:6px 7px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);font-size:11px}
-#stats-modal .stats-row.stats-priority{background:#fff1f2;border-color:#fecdd3}
 #stats-modal .stats-rank{font:10px var(--font-mono);text-align:center;color:var(--muted2)}
 #stats-modal .stats-stock{font-weight:650;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#stats-modal .stats-priority-badge{display:inline-block;margin-left:5px;padding:1px 4px;border-radius:999px;background:#ffe4e6;color:#9f1239;font-size:9px;font-weight:650;vertical-align:1px}
 #stats-modal .stats-evidence{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #stats-modal .stats-score{font:700 11px var(--font-mono);text-align:right;color:var(--accent);white-space:nowrap}
 #stats-modal .stats-empty{padding:24px;text-align:center;color:var(--muted2);font-size:12px}
@@ -2233,30 +2229,26 @@ function statsFeatureRows(stocks,key){
   });
   return Array.from(map.values()).sort(function(a,b){return b.count-a.count||a.key.localeCompare(b.key);});
 }
-function statsIntersectionRows(stocks,features,key,bidPairOwners){
+function statsIntersectionRows(stocks,features,key,coverageOnly){
   var counts=new Map(features.map(function(row){return [row.key,row.count];}));
   return stocks.map(function(stock){
     var evidence=stock[key].filter(function(value){return (counts.get(value)||0)>1;}).sort(function(a,b){return (counts.get(b)||0)-(counts.get(a)||0)||a.localeCompare(b);});
-    var score=evidence.reduce(function(sum,value){return sum+(counts.get(value)-1);},0);
-    var bidEvidence=bidPairOwners?evidence.filter(function(value){return bidPairOwners.has(value);}):[];
-    var bidNames=[];bidEvidence.forEach(function(value){(bidPairOwners.get(value)||[]).forEach(function(name){if(!bidNames.includes(name))bidNames.push(name);});});
-    return {name:stock.name,score:score,evidence:evidence.map(function(value){return value.toUpperCase()+'×'+counts.get(value);}),bidPriority:bidEvidence.length,bidNames:bidNames};
-  }).filter(function(row){return row.score>0;}).sort(function(a,b){return b.bidPriority-a.bidPriority||b.score-a.score||b.evidence.length-a.evidence.length||a.name.localeCompare(b.name,'zh-CN');}).slice(0,20);
+    var score=coverageOnly?evidence.length:evidence.reduce(function(sum,value){return sum+(counts.get(value)-1);},0);
+    return {name:stock.name,score:score,unit:coverageOnly?'组':'次',evidence:evidence.map(function(value){return value.toUpperCase()+(coverageOnly?'':'×'+counts.get(value));})};
+  }).filter(function(row){return row.score>0;}).sort(function(a,b){return b.score-a.score||b.evidence.length-a.evidence.length||a.name.localeCompare(b.name,'zh-CN');}).slice(0,20);
 }
 function statsTagsHtml(rows,limit,pair){
   if(!rows.length)return '<div class="stats-empty">暂无可统计数据</div>';
   return '<div class="stats-tags">'+rows.slice(0,limit).map(function(row){
     var tip=row.stocks&&row.stocks.length?row.stocks.join('、'):'';
-    if(row.bidPriority&&row.bidNames&&row.bidNames.length)tip='一字板：'+row.bidNames.join('、')+'；全部：'+tip;
     var title=tip?' title="'+esc(tip)+'"':'';
-    return '<span class="stats-tag'+(pair?' stats-pair':'')+(row.bidPriority?' stats-priority-pair':'')+'"'+title+'>'+esc(pair?row.key.toUpperCase():row.key)+'<b>'+row.count+'</b></span>';
+    return '<span class="stats-tag'+(pair?' stats-pair':'')+'"'+title+'>'+esc(pair?row.key.toUpperCase():row.key)+'<b>'+row.count+'</b></span>';
   }).join('')+'</div>';
 }
 function statsRankHtml(rows){
   if(!rows.length)return '<div class="stats-empty">当天股票之间没有重复交集</div>';
   return '<div class="stats-list">'+rows.map(function(row,index){
-    var priority=row.bidPriority>0,priorityTitle=priority?' title="与一字板 '+esc(row.bidNames.join('、'))+' 存在双字母重复"':'';
-    return '<div class="stats-row'+(priority?' stats-priority':'')+'"'+priorityTitle+'><span class="stats-rank">'+(index+1)+'</span><span class="stats-stock">'+esc(row.name)+(priority?'<small class="stats-priority-badge">一字板交集</small>':'')+'</span><span class="stats-evidence" title="'+esc(row.evidence.join(' · '))+'">'+esc(row.evidence.join(' · '))+'</span><span class="stats-score">'+row.score+'次</span></div>';
+    return '<div class="stats-row"><span class="stats-rank">'+(index+1)+'</span><span class="stats-stock">'+esc(row.name)+'</span><span class="stats-evidence" title="'+esc(row.evidence.join(' · '))+'">'+esc(row.evidence.join(' · '))+'</span><span class="stats-score">'+row.score+(row.unit||'次')+'</span></div>';
   }).join('')+'</div>';
 }
 function showStats(index){
@@ -2264,16 +2256,8 @@ function showStats(index){
   var stocks=collectStatsStocks(index),regions=new Map();
   stocks.forEach(function(stock){regions.set(stock.region,(regions.get(stock.region)||0)+1);});
   var regionRows=Array.from(regions,function(row){return {key:row[0],count:row[1],stocks:[]};}).sort(function(a,b){return b.count-a.count||a.key.localeCompare(b.key,'zh-CN');});
-  var bidRows=typeof BID!=='undefined'&&Array.isArray(BID[P[index].d])?BID[P[index].d]:[];
-  var bidCodes=new Set(bidRows.map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
-  var bidNames=new Set(bidRows.map(function(item){return normalizeSearchText(item&&item.n||'').replace(/\s+/g,'');}).filter(Boolean));
-  stocks.forEach(function(stock){stock.isBid=bidCodes.has(stock.code)||bidNames.has(normalizeSearchText(stock.name).replace(/\s+/g,''));});
-  var bidPairOwners=new Map();
-  stocks.filter(function(stock){return stock.isBid;}).forEach(function(stock){stock.pairs.forEach(function(pair){var owners=bidPairOwners.get(pair);if(!owners){owners=[];bidPairOwners.set(pair,owners);}if(!owners.includes(stock.name))owners.push(stock.name);});});
   var singles=statsFeatureRows(stocks,'letters'),pairs=statsFeatureRows(stocks,'pairs');
-  pairs.forEach(function(row){row.bidPriority=row.count>1&&bidPairOwners.has(row.key);row.bidNames=bidPairOwners.get(row.key)||[];});
-  pairs.sort(function(a,b){return Number(b.bidPriority)-Number(a.bidPriority)||b.count-a.count||a.key.localeCompare(b.key);});
-  var singleRanks=statsIntersectionRows(stocks,singles,'letters'),pairRanks=statsIntersectionRows(stocks,pairs,'pairs',bidPairOwners);
+  var singleRanks=statsIntersectionRows(stocks,singles,'letters',false),pairRanks=statsIntersectionRows(stocks,pairs,'pairs',true);
   document.getElementById('stats-title').innerHTML='📈 当日涨停统计<small>'+esc(P[index].d)+'</small>';
   document.getElementById('stats-meta').textContent='涨停 '+stocks.length+'只 · 地域 '+regions.size+'个 · 已剥离股份、科技等惯常后缀；同股字母去重，双字母不区分顺序';
   document.getElementById('stats-body').innerHTML=
@@ -2281,7 +2265,7 @@ function showStats(index){
     '<section class="stats-card"><h3>单字母出现频率<small>覆盖股票数</small></h3>'+statsTagsHtml(singles,26,false)+'</section>'+ 
     '<section class="stats-card"><h3>双字母出现频率<small>已剥离惯常后缀字母</small></h3>'+statsTagsHtml(pairs,30,true)+'</section>'+ 
     '<section class="stats-card"><h3>单字母交集最大股票<small>与其他股票重叠次数</small></h3>'+statsRankHtml(singleRanks)+'</section>'+ 
-    '<section class="stats-card"><h3>双字母交集最大股票<small>一字板交集强制优先</small></h3>'+statsRankHtml(pairRanks)+'</section>';
+    '<section class="stats-card"><h3>双字母交集最大股票<small>按重复字母对覆盖数量</small></h3>'+statsRankHtml(pairRanks)+'</section>';
   var modal=document.getElementById('stats-modal');modal.classList.add('show');modal.setAttribute('aria-hidden','false');
   setTimeout(function(){var close=modal.querySelector('.stats-x');if(close)close.focus();},0);
 }
