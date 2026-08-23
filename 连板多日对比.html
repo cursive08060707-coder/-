@@ -84,6 +84,16 @@
     .auction-pct.positive { color: #d95c45; }
     .auction-pct.negative { color: #2b9c73; }
     .auction-pct.flat { color: #8b9bb3; }
+    .promotion-failures { clear: both; margin-top: 7px; border: 1px solid #bbf7d0; border-radius: 7px; background: #f7fff9; }
+    .promotion-failures > summary { display: inline-flex; align-items: center; gap: 4px; margin: 5px; padding: 3px 7px; border: 1px solid #86efac; border-radius: 5px; background: #ecfdf5; color: #15803d; cursor: pointer; font-size: 10px; font-weight: 700; list-style: none; user-select: none; }
+    .promotion-failures > summary::-webkit-details-marker { display: none; }
+    .promotion-failures > summary::before { content: '▸'; transition: transform .15s ease; }
+    .promotion-failures[open] > summary::before { transform: rotate(90deg); }
+    .promotion-failure-list { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 5px 6px; }
+    .stock-chip.promotion-failure { border-color: #86efac; background: #ecfdf5; color: #166534; }
+    .stock-chip.promotion-failure:hover, .stock-chip.promotion-failure.match { border-color: #4ade80; background: #dcfce7; color: #14532d; }
+    .stock-chip.promotion-failure.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; }
+    .stock-chip.promotion-failure .promotion-metric { color: #16825d; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .no-data { padding: 50px; color: var(--muted); text-align: center; font-size: 13px; }
     .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(31,43,61,.24); backdrop-filter: blur(3px); }
     .modal-backdrop.open { display: flex; }
@@ -233,12 +243,14 @@
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="zt_auction_change_data.js"></script>
+  <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
   <script>
     (() => {
       'use strict';
       const LABEL_WIDTH = 112, CELL_WIDTH = 290, WINDOW_OVERSCAN = 5, SCROLL_IDLE_MS = 90;
       const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
+      const PROMOTION_FAILURE_DATA = window.ZT_PROMOTION_FAILURE_DATA || { dates: {} };
       const BID_DATA = typeof BID !== 'undefined' && BID ? BID : {};
       const BID_CODES_BY_DATE = new Map(Object.entries(BID_DATA).map(([date, rows]) => [
         date,
@@ -320,7 +332,8 @@
         state.dates = state.records.map(record => record.date);
         state.recordByDate = new Map(state.records.map(record => [record.date, record]));
         state.dateIndex = new Map(state.dates.map((date, index) => [date, index]));
-        state.maxBoard = Math.max(1, ...state.records.flatMap(record => [...record.sections.keys()]));
+        const failureBoards = Object.values(PROMOTION_FAILURE_DATA.dates || {}).flatMap(day => Object.keys(day && day.boards || {}).map(Number).filter(Number.isFinite));
+        state.maxBoard = Math.max(1, ...state.records.flatMap(record => [...record.sections.keys()]), ...failureBoards);
         buildStockHistory();
         state.windowSize = Math.max(12, Number(els.initialDays.value) || 30);
         buildLayoutIndex();
@@ -342,6 +355,38 @@
         const cls = value > 0 ? 'positive' : value < 0 ? 'negative' : 'flat';
         const sourceDate = day.sourceDate && day.sourceDate !== date ? `，数据日 ${day.sourceDate}` : '';
         return `<span class="auction-pct ${cls}" title="9:25竞价涨幅${sourceDate}">竞${sign}${value.toFixed(2)}%</span>`;
+      }
+      function promotionFailureRows(date, board) {
+        if (board < 2) return [];
+        const day = PROMOTION_FAILURE_DATA.dates && PROMOTION_FAILURE_DATA.dates[date];
+        const rows = day && day.boards && day.boards[String(board)];
+        return Array.isArray(rows) ? rows : [];
+      }
+      function promotionMetricMarkup(row) {
+        const auction = Number(row && row.auction), opening = Number(row && row.open), amplitude = Number(row && row.amplitude);
+        const hasAuction = row && row.auction !== null && row.auction !== undefined && Number.isFinite(auction);
+        const hasOpen = row && row.open !== null && row.open !== undefined && Number.isFinite(opening);
+        const hasAmplitude = row && row.amplitude !== null && row.amplitude !== undefined && Number.isFinite(amplitude);
+        const price = hasAuction ? `竞${auction > 0 ? '+' : ''}${auction.toFixed(2)}%` : (hasOpen ? `开${opening > 0 ? '+' : ''}${opening.toFixed(2)}%` : '');
+        const metrics = [price, hasAmplitude ? `振${amplitude.toFixed(2)}%` : ''].filter(Boolean);
+        return `<span class="promotion-metric">${metrics.length ? metrics.join(' · ') : '无交易数据'}</span>`;
+      }
+      function renderPromotionFailureChips(date, board) {
+        const rows = promotionFailureRows(date, board);
+        const day = PROMOTION_FAILURE_DATA.dates && PROMOTION_FAILURE_DATA.dates[date];
+        const source = day && day.previousDate ? `来自 ${day.previousDate} 的上一梯队` : '上一交易日晋级失败';
+        return rows.map(row => {
+          const code = String(row.c || ''), name = String(row.n || code), initials = '';
+          const hit = state.query && stockSearchText(name, code, initials).includes(state.query);
+          const selected = state.selectedCode === code;
+          return `<span class="stock-chip promotion-failure${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(source)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}</span>`;
+        }).join('');
+      }
+      function renderPromotionFailures(date, board, rows) {
+        if (!rows.length) return '';
+        const day = PROMOTION_FAILURE_DATA.dates && PROMOTION_FAILURE_DATA.dates[date];
+        const source = day && day.previousDate ? `来自 ${day.previousDate} 的上一梯队` : '上一交易日晋级失败';
+        return `<details class="promotion-failures" data-date="${escapeAttr(date)}" data-board="${board}"><summary title="${escapeAttr(source)}">晋级失败 ${rows.length}</summary><div class="promotion-failure-list"></div></details>`;
       }
       function isBidSealStock(date, code) {
         const codes = BID_CODES_BY_DATE.get(date);
@@ -450,16 +495,20 @@
         return `${themes.join('')}<div class="stock-grid">${groups.join('')}</div>`;
       }
       function renderCell(record, board, date) {
-        const lines = record && record.sections.get(board);
-        if (!lines || !lines.length) return '<div class="board-cell"><div class="cell-empty">—</div></div>';
-        const text = lines.map((line, index) => {
+        const lines = record && record.sections.get(board) || [];
+        const failures = promotionFailureRows(date, board);
+        if (!lines.length && !failures.length) return '<div class="board-cell"><div class="cell-empty">—</div></div>';
+        const successText = lines.map((line, index) => {
           const matches = stockMatches(line);
           return matches.length ? matches.map(match => stockSearchText(match[1], match[2], stockInitials(match))).join(' ') : (isThemeHeading(lines, index) ? line : '');
         }).join(' ').toLowerCase();
+        const failureText = failures.map(row => stockSearchText(row.n, row.c, '')).join(' ');
+        const text = `${successText} ${failureText}`.trim();
         const hasMatch = state.query && text.includes(state.query);
         const dim = state.query && !hasMatch;
-        const selected = state.selectedCode && lines.some(line => line.includes(state.selectedCode));
-        const content = board === 1 ? lines.map((line, index) => renderLine(line, true, date, lines, index)).join('') : renderLimitedContent(lines, date);
+        const selected = state.selectedCode && (lines.some(line => line.includes(state.selectedCode)) || failures.some(row => row.c === state.selectedCode));
+        const successContent = !lines.length ? '' : (board === 1 ? lines.map((line, index) => renderLine(line, true, date, lines, index)).join('') : renderLimitedContent(lines, date));
+        const content = successContent + renderPromotionFailures(date, board, failures);
         return `<div class="board-cell has-content${hasMatch ? ' cell-match' : ''}${dim ? ' cell-dim' : ''}${selected ? ' selected-cell' : ''}" data-date="${date}" data-board="${board}" data-text="${escapeAttr(text)}">${content}</div>`;
       }
       function renderRows(dates) {
@@ -711,6 +760,13 @@
         event.stopPropagation();
         selectStock(chip.dataset.code);
       });
+      els.body.addEventListener('toggle', event => {
+        const details = event.target.closest && event.target.closest('.promotion-failures');
+        if (!details || !details.open || details.dataset.loaded === '1') return;
+        const list = details.querySelector('.promotion-failure-list');
+        if (list) list.innerHTML = renderPromotionFailureChips(details.dataset.date, Number(details.dataset.board));
+        details.dataset.loaded = '1';
+      }, true);
       els.body.addEventListener('dblclick', event => {
         const chip = event.target.closest('.stock-chip');
         if (!chip || !els.body.contains(chip)) return;
