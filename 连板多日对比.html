@@ -81,6 +81,7 @@
     .stock-grid .stock-chip { margin: 0; }
     .stock-chip em { color: #8b9bb3; font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; font-style: normal; }
     .stock-chip .auction-pct { margin-left: 2px; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stock-chip .first-limit-time { margin-left: 2px; color: #b4533f; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .auction-pct.positive { color: #d95c45; }
     .auction-pct.negative { color: #2b9c73; }
     .auction-pct.flat { color: #8b9bb3; }
@@ -240,6 +241,7 @@
   </div>
 
   <script src="zt_data.js"></script>
+  <script src="zt_time_detail.js"></script>
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="zt_auction_change_data.js"></script>
@@ -249,6 +251,7 @@
       'use strict';
       const LABEL_WIDTH = 112, CELL_WIDTH = 290, WINDOW_OVERSCAN = 5, SCROLL_IDLE_MS = 90;
       const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
+      const LIMIT_TIME_DATA = typeof ZTD !== 'undefined' && ZTD ? ZTD : {};
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
       const PROMOTION_FAILURE_DATA = window.ZT_PROMOTION_FAILURE_DATA || { dates: {} };
       const BID_DATA = typeof BID !== 'undefined' && BID ? BID : {};
@@ -356,6 +359,12 @@
         const sourceDate = day.sourceDate && day.sourceDate !== date ? `，数据日 ${day.sourceDate}` : '';
         return `<span class="auction-pct ${cls}" title="9:25竞价涨幅${sourceDate}">竞${sign}${value.toFixed(2)}%</span>`;
       }
+      function firstLimitTimeMarkup(date, code) {
+        const row = LIMIT_TIME_DATA[date] && LIMIT_TIME_DATA[date][String(code || '').trim()];
+        const fullTime = String(row && row.ft || '').trim();
+        if (!/^\d{2}:\d{2}(?::\d{2})?$/.test(fullTime)) return '';
+        return `<span class="first-limit-time" title="首次涨停时间 ${escapeAttr(fullTime)}">首${escapeHtml(fullTime.slice(0, 5))}</span>`;
+      }
       function promotionFailureRows(date, board) {
         if (board < 2) return [];
         const day = PROMOTION_FAILURE_DATA.dates && PROMOTION_FAILURE_DATA.dates[date];
@@ -462,7 +471,7 @@
         const bidSeal = isBidSealStock(date, match[2]);
         const poolStock = isThreeBoardPoolStock(match[2]);
         const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${auctionPctMarkup(date, match[2])}</span>`;
+        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
       }
       function renderLine(line, compact, date, lines = [line], lineIndex = 0) {
         const matches = stockMatches(line);
