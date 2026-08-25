@@ -44,6 +44,7 @@
     .legend .stock-mark { background: var(--accent-soft); border: 1px solid #bdd0f7; }
     .legend .empty-mark { background: #fafbfe; border: 1px dashed #dce3ef; }
     .hint { flex: 0 1 210px; min-width: 0; margin: 0; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+    .mobile-panel-toggle { display: none; flex: 0 0 auto; height: 30px; padding: 0 9px; border-color: #cfd9e8; color: #49658e; font-size: 11px; white-space: nowrap; }
     .zoom-step { width: 30px; padding: 0; font-size: 17px; line-height: 30px; }
     #zoomSelect { width: 72px; padding: 0 5px; text-align: center; }
     .viewport { position: relative; height: calc(100vh - 105px); min-height: 500px; overflow: auto; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); box-shadow: 0 8px 28px rgba(45,68,104,.07); overscroll-behavior: contain; scrollbar-color: #bdc8d9 #f3f6fa; }
@@ -154,12 +155,18 @@
       .shareholder-columns { grid-template-columns: 1fr; }
       body { padding: 12px; }
       .control-panel { align-items: flex-start; gap: 6px 10px; }
-      .topbar { align-items: center; flex-direction: row; gap: 8px; }
+      .topbar { width: 100%; align-items: center; flex-direction: row; gap: 8px; }
+      .mobile-panel-toggle { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; }
       .status { text-align: left; }
       .toolbar { flex-wrap: wrap; row-gap: 6px; }
       .hint { flex-basis: 100%; }
       .viewport { height: calc(100vh - 175px); min-height: 430px; }
       input { width: 160px; }
+      .control-panel.mobile-collapsed { min-height: 40px; margin-bottom: 6px; padding: 4px 7px; overflow: hidden; flex-wrap: nowrap; align-items: center; }
+      .control-panel.mobile-collapsed .toolbar,.control-panel.mobile-collapsed .hint { display: none; }
+      .control-panel.mobile-collapsed h1 { font-size: 15px; line-height: 30px; }
+      .control-panel.mobile-collapsed .status { flex: 1 1 auto; max-width: none; font-size: 10px; }
+      .control-panel.mobile-collapsed + .viewport { height: calc(100vh - 70px); height: calc(100dvh - 70px); min-height: 0; }
     }
   </style>
 </head>
@@ -172,8 +179,9 @@
           <div class="subtitle">纵轴：连板层级　·　横轴：交易日期（近 → 远）　·　按钮显示当日 9:25 竞价涨幅　·　单击高亮，双击查看历史涨停和股票详情</div>
         </div>
         <div class="status" id="status">正在读取涨停数据…</div>
+        <button class="mobile-panel-toggle" id="mobilePanelToggle" type="button" aria-controls="mobileToolbar" aria-expanded="true">收起工具</button>
       </header>
-      <section class="toolbar">
+      <section class="toolbar" id="mobileToolbar">
         <label for="search">搜索股票</label>
         <input id="search" type="search" placeholder="名称、代码或拼音首字母">
         <button id="searchBtn">查看日期</button>
@@ -264,7 +272,7 @@
       const THREE_BOARD_POOL_DATA = window.THREE_BOARD_POOL_DATA || { stocks: [] };
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
       const els = {
-        viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
+        controlPanel: document.querySelector('.control-panel'), mobilePanelToggle: document.getElementById('mobilePanelToggle'), viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
         modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
         searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
@@ -276,6 +284,26 @@
         query: '', selectedCode: '', detailCode: '', detailDate: '', scrollTimer: 0, searchTimer: 0, zoom: 1
       };
       let detailDataPromise = null, limitReasonDataPromise = null;
+
+      function readMobilePanelCollapsed() {
+        try {
+          const saved = localStorage.getItem('zt-multi-day-mobile-panel-collapsed');
+          return saved === null ? true : saved === '1';
+        } catch (_) { return true; }
+      }
+      let mobilePanelCollapsed = readMobilePanelCollapsed();
+      function syncMobilePanel() {
+        const mobile = window.matchMedia('(max-width: 720px)').matches;
+        const collapsed = mobile && mobilePanelCollapsed;
+        els.controlPanel.classList.toggle('mobile-collapsed', collapsed);
+        els.mobilePanelToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        els.mobilePanelToggle.textContent = collapsed ? '展开工具' : '收起工具';
+      }
+      function toggleMobilePanel() {
+        mobilePanelCollapsed = !mobilePanelCollapsed;
+        try { localStorage.setItem('zt-multi-day-mobile-panel-collapsed', mobilePanelCollapsed ? '1' : '0'); } catch (_) {}
+        syncMobilePanel();
+      }
 
       function clampZoom(value) {
         const number = Number(value);
@@ -856,6 +884,8 @@
       els.todayBtn.addEventListener('click', () => { els.viewport.scrollLeft = 0; syncVirtualWindow(true); });
       els.clearSelection.addEventListener('click', () => selectStock(''));
       els.reloadBtn.addEventListener('click', loadData);
+      els.mobilePanelToggle.addEventListener('click', toggleMobilePanel);
+      window.addEventListener('resize', syncMobilePanel, { passive: true });
       els.modalClose.addEventListener('click', () => els.modal.classList.remove('open'));
       els.modal.addEventListener('click', event => { if (event.target === els.modal) els.modal.classList.remove('open'); });
       els.searchHistoryClose.addEventListener('click', () => els.searchHistoryModal.classList.remove('open'));
@@ -871,6 +901,7 @@
         els.searchHistoryModal.classList.remove('open');
       });
       state.zoom = readStoredZoom();
+      syncMobilePanel();
       loadData();
     })();
   </script>
