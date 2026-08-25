@@ -846,7 +846,7 @@ function saveConceptData(){
     .catch(function(err){if(status)status.textContent='保存失败：请确认笔记服务已启动';console.error('股票概念保存失败',err);})
     .finally(function(){if(btn){btn.disabled=false;btn.textContent='保存';}});
 }
-function lkTag(n){var d=findStockDetail(n);if(d&&d.h&&d.h.top10&&d.h.top10.length){var s=0;for(var i=0;i<d.h.top10.length;i++){if(d.h.top10[i].r>=5)s+=d.h.top10[i].r}if(s>0)return ' <small class="lk">'+s.toFixed(1)+'%</small>'}return ''}
+function lkTag(n){var d=findStockDetail(n),rows=d&&d.h&&Array.isArray(d.h.floatTop10)?d.h.floatTop10:[];if(rows.length){var s=0;for(var i=0;i<rows.length;i++){var r=Number(rows[i]&&rows[i].r);if(Number.isFinite(r)&&r>=5)s+=r}if(s>0)return ' <small class="lk" title="十大流通股东中持有流通股比例≥5%的合计">'+s.toFixed(1)+'%</small>'}return ''}
 function provTag(n){var d=findStockDetail(n);if(d&&d.r){var p=d.r.split(' / ')[0];if(p&&p.length<=4)return ' <small class="pv">'+esc(p)+'</small>'}return ''}
 
 // 题材名覆盖：这些词在首板中应作为题材名，即使也是股票名
