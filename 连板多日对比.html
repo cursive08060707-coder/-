@@ -127,6 +127,7 @@
     .summary-item strong { font-size: 13px; font-weight: 650; }
     .detail-section { margin-top: 14px; }
     .detail-section h3 { margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .limit-reason-detail { padding: 9px 11px; border: 1px solid #fed7aa; border-radius: 8px; background: #fff7ed; color: #7c2d12; font-size: 12px; line-height: 1.65; }
     .concept-pills { display: flex; flex-wrap: wrap; gap: 5px; }
     .concept-pill { padding: 3px 7px; border: 1px solid #d7e2f4; border-radius: 5px; background: #f7faff; color: #49658e; font-size: 11px; }
     .concept-explanation { margin-top: 8px; padding: 8px 10px; border-left: 3px solid #c8d7f2; background: #fafcff; color: #59677c; font-size: 12px; line-height: 1.65; }
@@ -223,6 +224,7 @@
         <button class="close" id="modalClose" aria-label="关闭">×</button>
       </div>
       <div class="detail-summary" id="detailSummary"></div>
+      <section class="detail-section"><h3 id="detailLimitReasonTitle">当日涨停原因</h3><div class="limit-reason-detail" id="detailLimitReason">正在加载…</div></section>
       <section class="detail-section"><h3>题材概念</h3><div id="detailConcepts"></div></section>
       <section class="detail-section"><h3>股东与股本信息</h3><div id="detailShareholders"></div></section>
       <section class="detail-section"><h3>历史涨停</h3></section>
@@ -264,16 +266,16 @@
       const els = {
         viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
-        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
+        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
         searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
       };
       const state = {
         records: [], dates: [], recordByDate: new Map(), dateIndex: new Map(), stockHistory: new Map(),
         maxBoard: 1, windowSize: 30, windowStart: 0, windowEnd: 0,
         columnWidths: [], columnOffsets: [0], totalDateWidth: 0,
-        query: '', selectedCode: '', scrollTimer: 0, searchTimer: 0, zoom: 1
+        query: '', selectedCode: '', detailCode: '', detailDate: '', scrollTimer: 0, searchTimer: 0, zoom: 1
       };
-      let detailDataPromise = null;
+      let detailDataPromise = null, limitReasonDataPromise = null;
 
       function clampZoom(value) {
         const number = Number(value);
@@ -672,6 +674,31 @@
         }
         return detailDataPromise;
       }
+      function renderLimitReason(date, code) {
+        const reason = typeof ZLR !== 'undefined' && ZLR && ZLR[date] ? String(ZLR[date][code] || '').trim() : '';
+        els.detailLimitReasonTitle.textContent = `${date} 涨停原因`;
+        els.detailLimitReason.innerHTML = reason ? escapeHtml(reason) : '<span class="empty-detail">暂无数据</span>';
+      }
+      function ensureLimitReasonData(date, code) {
+        els.detailLimitReasonTitle.textContent = `${date} 涨停原因`;
+        if (typeof ZLR !== 'undefined' && ZLR) { renderLimitReason(date, code); return Promise.resolve(); }
+        els.detailLimitReason.innerHTML = '<span class="empty-detail">正在加载…</span>';
+        if (!limitReasonDataPromise) {
+          limitReasonDataPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'zt_limit_reason_data.js?v=20260825-1';
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => { limitReasonDataPromise = null; reject(new Error('涨停原因数据加载失败')); };
+            document.head.appendChild(script);
+          });
+        }
+        return limitReasonDataPromise.then(() => {
+          if (state.detailCode === code && state.detailDate === date) renderLimitReason(date, code);
+        }).catch(error => {
+          if (state.detailCode === code && state.detailDate === date) els.detailLimitReason.innerHTML = `<span style="color:#b42318">${escapeHtml(error.message)}</span>`;
+        });
+      }
       function formatMarketCap(value) {
         const number = Number(value);
         if (!Number.isFinite(number) || number <= 0) return '';
@@ -746,17 +773,21 @@
         syncVirtualWindow(true);
         els.hint.textContent = `已定位到 ${state.dates[index]}；横向滚动可继续查看相邻日期。`;
       }
-      function showHistory(code, name) {
+      function showHistory(code, name, selectedDate) {
         const stock = state.stockHistory.get(code); if (!stock) return;
         const titleName = stock.name || name || code;
+        const reasonDate = selectedDate || stock.days[0]?.date || '';
+        state.detailCode = code;
+        state.detailDate = reasonDate;
         els.modalTitle.textContent = titleName;
-        els.modalCode.textContent = code;
+        els.modalCode.textContent = `${code}${reasonDate ? ` · ${reasonDate}` : ''}`;
         selectStock(code);
         els.detailSummary.innerHTML = '<div class="empty-detail">正在加载股票详情…</div>';
         els.detailConcepts.innerHTML = '';
         els.detailShareholders.innerHTML = '';
-        els.history.innerHTML = stock.days.map((item, index) => `<div class="history-item ${index === 0 ? 'recent' : ''}"><time>${item.date}</time><strong>${item.board}板</strong></div>`).join('');
+        els.history.innerHTML = stock.days.map(item => `<div class="history-item ${item.date === reasonDate ? 'recent' : ''}"><time>${item.date}</time><strong>${item.board}板</strong></div>`).join('');
         els.modal.classList.add('open');
+        ensureLimitReasonData(reasonDate, code);
         ensureStockDetailData().then(() => renderStockDetail(titleName, code)).catch(error => {
           els.detailSummary.innerHTML = `<div class="empty-detail">${escapeHtml(error.message || '股票详情数据加载失败')}</div>`;
           els.detailConcepts.innerHTML = '<div class="empty-detail">请检查 stock_detail_map.js 是否与网页位于同一目录。</div>';
@@ -781,7 +812,8 @@
         if (!chip || !els.body.contains(chip)) return;
         event.preventDefault();
         event.stopPropagation();
-        showHistory(chip.dataset.code, chip.dataset.name);
+        const cell = chip.closest('.board-cell');
+        showHistory(chip.dataset.code, chip.dataset.name, cell && cell.dataset.date || '');
       });
       els.viewport.addEventListener('scroll', scheduleVirtualWindow, { passive: true });
       els.viewport.addEventListener('wheel', event => { if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) { event.preventDefault(); els.viewport.scrollLeft += event.deltaY; } }, { passive: false });
