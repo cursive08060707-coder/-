@@ -176,6 +176,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 
 .sp-rg{color:#555;font-size:12px;margin-bottom:8px;padding:6px 10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);display:flex;align-items:center;gap:6px}
 .sp-rg b{color:var(--accent)}
+.sp-limit-reason{color:#7c2d12;font-size:12px;line-height:1.65;margin-bottom:8px;padding:7px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius)}
+.sp-limit-reason b{color:#c2410c;margin-right:5px}
 #sp .sp-r{color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5}
 #sp .sp-concept-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 5px;padding-top:2px}
 #sp .sp-concept-head h4{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin:0}
@@ -491,6 +493,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
     <div class="sp-chart" id="sp-chart"></div>
     <div class="sp-rg" id="sp-rg"></div>
     <div class="sp-rg" id="sp-mv"></div>
+    <div class="sp-limit-reason" id="sp-limit-reason" style="display:none"></div>
     <div class="sp-r" id="sp-r"></div>
     <div class="sp-concept-head"><h4>题材概念</h4><button type="button" class="sp-concept-edit-btn" id="sp-concept-edit" onclick="toggleConceptEditor()">编辑</button></div>
     <div class="sp-t" id="sp-t"></div>
@@ -1846,8 +1849,31 @@ rebuildBogeSearchText();render();show(0);loadBogeCategories();
 </script>
 <script>
 // === 股票弹窗逻辑 ===
-let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0,_tvCurrentCode='';
+let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0,_tvCurrentCode='',_limitReasonPromise=null;
 let _bogeCurDate='',_bogeParent='';
+function renderLimitReason(date,code){
+  const el=document.getElementById('sp-limit-reason');if(!el)return;
+  const reason=(typeof ZLR!=='undefined'&&date&&ZLR[date]&&code)?ZLR[date][String(code)]||'':'';
+  el.innerHTML='<b>当日涨停原因：</b>'+(reason?esc(reason):'<span style="color:var(--muted2)">暂无数据</span>');
+  el.style.display='block';
+}
+function loadLimitReasons(date,code){
+  const el=document.getElementById('sp-limit-reason');
+  if(typeof ZLR!=='undefined'){renderLimitReason(date,code);return;}
+  if(el){el.innerHTML='<b>当日涨停原因：</b><span style="color:var(--muted2)">加载中…</span>';el.style.display='block';}
+  if(!_limitReasonPromise){
+    _limitReasonPromise=new Promise(function(resolve,reject){
+      const script=document.createElement('script');script.src='zt_limit_reason_data.js?v=20260825-1';script.async=true;
+      script.onload=resolve;script.onerror=function(){_limitReasonPromise=null;reject(new Error('涨停原因数据加载失败'));};document.head.appendChild(script);
+    });
+  }
+  _limitReasonPromise.then(function(){
+    const currentDate=ai>=0&&P[ai]?P[ai].d:'';
+    if(spCode===code&&currentDate===date)renderLimitReason(date,code);
+  }).catch(function(){
+    if(el&&spCode===code){el.innerHTML='<b>当日涨停原因：</b><span style="color:#b42318">数据加载失败</span>';}
+  });
+}
 function formatMarketCap(value){
   const n=Number(value);if(!Number.isFinite(n)||n<=0)return '';
   const trim=function(s){return s.replace(/\.?(0+)$/,'').replace(/\.$/,'');};
@@ -1933,6 +1959,8 @@ function showSp(name,e,anchorRect){
   const mvEl=document.getElementById('sp-mv');
   const mvText=formatMarketCap(d.mv);
   if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
+  const reasonDate=ai>=0&&P[ai]?P[ai].d:'';
+  loadLimitReasons(reasonDate,spCode);
   renderConceptView(d);toggleConceptEditor(false);
   renderBogeCard();
   document.getElementById('sp-hc').innerHTML='';
