@@ -72,8 +72,12 @@
     .theme-line { margin: 1px 0 4px; color: #5d79a1; font-size: 11px; font-weight: 700; }
     .stock-chip { display: inline-flex; align-items: baseline; gap: 4px; margin: 0 4px 4px 0; padding: 3px 6px; border: 1px solid #d6e1f4; border-radius: 5px; background: #f7faff; color: #344f79; cursor: pointer; line-height: 1.2; white-space: nowrap; transition: .15s ease; }
     .stock-chip.bid-seal { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
+    .stock-chip.old-dragon { border-color: #dfc57a; background: #fff8df; color: #76520b; font-weight: 700; box-shadow: inset 0 0 0 1px rgba(181,138,32,.05); }
+    .stock-chip.bid-seal.old-dragon { background: linear-gradient(90deg,#fff1f2 0 6px,#fff8df 6px); border-color: #dfc57a; color: #76520b; }
     .stock-chip.three-board-pool { border-color: #60a5fa; background: #eff6ff; color: #1d4ed8; font-weight: 700; box-shadow: 0 0 0 1px rgba(37,99,235,.10); }
     .stock-chip.bid-seal.three-board-pool { background: linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px); }
+    .stock-chip.three-board-pool.old-dragon { background: linear-gradient(90deg,#eff6ff 0 6px,#fff8df 6px); border-color: #cfae4d; color: #76520b; }
+    .stock-chip.bid-seal.three-board-pool.old-dragon { background: linear-gradient(90deg,#fff1f2 0 5px,#eff6ff 5px 10px,#fff8df 10px); }
     .stock-chip:hover, .stock-chip.match { border-color: #8eafea; background: var(--accent-soft); color: #2458bd; }
     .stock-chip.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; box-shadow: 0 0 0 2px rgba(220,152,36,.18); font-weight: 700; opacity: 1 !important; }
     .stock-chip.selected em { color: #9b6b1a; }
@@ -96,6 +100,7 @@
     .stock-chip.promotion-failure:hover, .stock-chip.promotion-failure.match { border-color: #4ade80; background: #dcfce7; color: #14532d; }
     .stock-chip.promotion-failure.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; }
     .stock-chip.promotion-failure .promotion-metric { color: #16825d; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stock-chip.promotion-failure.old-dragon { border-color: #cfae4d; background: linear-gradient(90deg,#ecfdf5 0 6px,#fff8df 6px); color: #76520b; }
     .no-data { padding: 50px; color: var(--muted); text-align: center; font-size: 13px; }
     .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(31,43,61,.24); backdrop-filter: blur(3px); }
     .modal-backdrop.open { display: flex; }
@@ -129,6 +134,8 @@
     .detail-section { margin-top: 14px; }
     .detail-section h3 { margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 13px; }
     .limit-reason-detail { padding: 9px 11px; border: 1px solid #fed7aa; border-radius: 8px; background: #fff7ed; color: #7c2d12; font-size: 12px; line-height: 1.65; }
+    .old-dragon-detail { margin: -5px 0 14px; padding: 9px 11px; border: 1px solid #dfc57a; border-radius: 8px; background: #fff8df; color: #76520b; font-size: 12px; line-height: 1.65; }
+    .old-dragon-detail strong { color: #9a6b08; }
     .concept-pills { display: flex; flex-wrap: wrap; gap: 5px; }
     .concept-pill { padding: 3px 7px; border: 1px solid #d7e2f4; border-radius: 5px; background: #f7faff; color: #49658e; font-size: 11px; }
     .concept-explanation { margin-top: 8px; padding: 8px 10px; border-left: 3px solid #c8d7f2; background: #fafcff; color: #59677c; font-size: 12px; line-height: 1.65; }
@@ -232,6 +239,7 @@
         <button class="close" id="modalClose" aria-label="关闭">×</button>
       </div>
       <div class="detail-summary" id="detailSummary"></div>
+      <div class="old-dragon-detail" id="detailOldDragon" hidden></div>
       <section class="detail-section"><h3 id="detailLimitReasonTitle">当日涨停原因</h3><div class="limit-reason-detail" id="detailLimitReason">正在加载…</div></section>
       <section class="detail-section"><h3>题材概念</h3><div id="detailConcepts"></div></section>
       <section class="detail-section"><h3>股东与股本信息</h3><div id="detailShareholders"></div></section>
@@ -254,6 +262,7 @@
   <script src="zt_time_detail.js"></script>
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
+  <script src="old_dragon_pool.js?v=20260826-1"></script>
   <script src="zt_auction_change_data.js"></script>
   <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
   <script>
@@ -271,10 +280,12 @@
       ]));
       const THREE_BOARD_POOL_DATA = window.THREE_BOARD_POOL_DATA || { stocks: [] };
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
+      const OLD_DRAGON_DATA = window.OLD_DRAGON_DATA || { stocks: {} };
+      const OLD_DRAGON_STOCKS = OLD_DRAGON_DATA.stocks && typeof OLD_DRAGON_DATA.stocks === 'object' ? OLD_DRAGON_DATA.stocks : {};
       const els = {
         controlPanel: document.querySelector('.control-panel'), mobilePanelToggle: document.getElementById('mobilePanelToggle'), viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
-        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
+        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailOldDragon: document.getElementById('detailOldDragon'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
         searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
       };
       const state = {
@@ -418,7 +429,9 @@
           const code = String(row.c || ''), name = String(row.n || code), initials = '';
           const hit = state.query && stockSearchText(name, code, initials).includes(state.query);
           const selected = state.selectedCode === code;
-          return `<span class="stock-chip promotion-failure${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(source)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}</span>`;
+          const dragon = oldDragonInfo(code);
+          const notes = [source, dragon ? `老龙：${oldDragonText(dragon)}` : ''].filter(Boolean).join(' · ');
+          return `<span class="stock-chip promotion-failure${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(notes)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}</span>`;
         }).join('');
       }
       function renderPromotionFailures(date, board, rows) {
@@ -433,6 +446,18 @@
       }
       function isThreeBoardPoolStock(code) {
         return THREE_BOARD_POOL_CODES.has(String(code || '').trim());
+      }
+      function oldDragonInfo(code) {
+        return OLD_DRAGON_STOCKS[String(code || '').trim()] || null;
+      }
+      function oldDragonText(info) {
+        if (!info) return '';
+        const parts = [];
+        if (info.s) parts.push(`${info.s.n}连板，记录日 ${info.s.d}${info.s.src ? `（${info.s.src}）` : ''}`);
+        else parts.push('未记录五连板，因严重异动入池');
+        if (Array.isArray(info.d10) && info.d10.length) parts.push(`10日100% ${info.d10.join('、')}`);
+        if (Array.isArray(info.d30) && info.d30.length) parts.push(`30日200% ${info.d30.join('、')}`);
+        return parts.join(' · ');
       }
       function columnWidth(record) {
         let groups = 1;
@@ -500,8 +525,9 @@
         const selected = state.selectedCode === match[2];
         const bidSeal = isBidSealStock(date, match[2]);
         const poolStock = isThreeBoardPoolStock(match[2]);
-        const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
+        const dragon = oldDragonInfo(match[2]);
+        const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
+        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
       }
       function renderLine(line, compact, date, lines = [line], lineIndex = 0) {
         const matches = stockMatches(line);
@@ -526,8 +552,9 @@
             const selected = state.selectedCode === stock.code;
             const bidSeal = isBidSealStock(date, stock.code);
             const poolStock = isThreeBoardPoolStock(stock.code);
-            const notes = [poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${notes}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
+            const dragon = oldDragonInfo(stock.code);
+            const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
+            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
           }).join('');
           groups.push(`<div class="stock-group">${group}</div>`);
         }
@@ -811,6 +838,9 @@
         els.modalCode.textContent = `${code}${reasonDate ? ` · ${reasonDate}` : ''}`;
         selectStock(code);
         els.detailSummary.innerHTML = '<div class="empty-detail">正在加载股票详情…</div>';
+        const dragon = oldDragonInfo(code);
+        els.detailOldDragon.hidden = !dragon;
+        els.detailOldDragon.innerHTML = dragon ? `<strong>老龙：</strong>${escapeHtml(oldDragonText(dragon))}` : '';
         els.detailConcepts.innerHTML = '';
         els.detailShareholders.innerHTML = '';
         els.history.innerHTML = stock.days.map(item => `<div class="history-item ${item.date === reasonDate ? 'recent' : ''}"><time>${item.date}</time><strong>${item.board}板</strong></div>`).join('');
