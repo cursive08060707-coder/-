@@ -88,9 +88,14 @@ background-repeat:no-repeat;background-position:10px center}
 /* 当天 09:25 仍为一字板：用淡红色与普通涨停股快速区分。 */
 .sk.bid-seal,.mb.bid-seal{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
 .sk.bid-seal:hover,.mb.bid-seal:hover{background:#ffe4e6;border-color:#fda4af;color:#881337;box-shadow:0 1px 2px rgba(159,18,57,.08),0 0 0 1px rgba(244,63,94,.12)}
+.sk.old-dragon,.mb.old-dragon{background:#fff8df;border-color:#dfc57a;color:#76520b;font-weight:650;box-shadow:inset 0 0 0 1px rgba(181,138,32,.05)}
+.sk.old-dragon:hover,.mb.old-dragon:hover{background:#fff1c2;border-color:#cfae4d;color:#604106;box-shadow:0 1px 2px rgba(118,82,11,.08),0 0 0 1px rgba(207,174,77,.14)}
+.sk.bid-seal.old-dragon,.mb.bid-seal.old-dragon{background:linear-gradient(90deg,#fff1f2 0 6px,#fff8df 6px);border-color:#dfc57a;color:#76520b}
 .sk.three-board-pool,.mb.three-board-pool{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;font-weight:650}
 .sk.three-board-pool:hover,.mb.three-board-pool:hover{background:#dbeafe;border-color:#60a5fa;color:#1e40af;box-shadow:0 1px 2px rgba(29,78,216,.08),0 0 0 1px rgba(37,99,235,.12)}
 .sk.bid-seal.three-board-pool,.mb.bid-seal.three-board-pool{background:linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px);border-color:#60a5fa;color:#1d4ed8}
+.sk.three-board-pool.old-dragon,.mb.three-board-pool.old-dragon{background:linear-gradient(90deg,#eff6ff 0 6px,#fff8df 6px);border-color:#cfae4d;color:#76520b}
+.sk.bid-seal.three-board-pool.old-dragon,.mb.bid-seal.three-board-pool.old-dragon{background:linear-gradient(90deg,#fff1f2 0 5px,#eff6ff 5px 10px,#fff8df 10px);border-color:#cfae4d;color:#76520b}
 .promotion-failures{margin:7px 0 10px;padding:0;border:1px solid #bbf7d0;border-radius:8px;background:#f7fff9}
 .promotion-failures>summary{display:inline-flex;align-items:center;gap:5px;margin:6px;padding:4px 9px;border:1px solid #86efac;border-radius:6px;background:#ecfdf5;color:#15803d;font-size:11px;font-weight:700;cursor:pointer;list-style:none;user-select:none}
 .promotion-failures>summary::-webkit-details-marker{display:none}
@@ -99,6 +104,7 @@ background-repeat:no-repeat;background-position:10px center}
 .promotion-failure-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 7px 8px}
 .sk.promotion-failure,.mb.promotion-failure{border-color:#86efac;background:#ecfdf5;color:#166534}
 .sk.promotion-failure:hover,.mb.promotion-failure:hover{border-color:#4ade80;background:#dcfce7;color:#14532d;box-shadow:0 1px 2px rgba(22,101,52,.08),0 0 0 1px rgba(34,197,94,.12)}
+.sk.promotion-failure.old-dragon,.mb.promotion-failure.old-dragon{border-color:#cfae4d;background:linear-gradient(90deg,#ecfdf5 0 6px,#fff8df 6px);color:#76520b}
 .promotion-metric{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;color:#16825d}
 .sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .sk .pv,.mb .pv{font-size:10px;color:var(--muted);margin-left:3px;padding:1px 4px;background:var(--accent-soft);border-radius:3px;border:1px solid var(--border2);font-weight:500}
@@ -183,6 +189,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 .sp-rg b{color:var(--accent)}
 .sp-limit-reason{color:#7c2d12;font-size:12px;line-height:1.65;margin-bottom:8px;padding:7px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius)}
 .sp-limit-reason b{color:#c2410c;margin-right:5px}
+.sp-old-dragon{color:#76520b;font-size:12px;line-height:1.6;margin-bottom:8px;padding:7px 10px;background:#fff8df;border:1px solid #dfc57a;border-radius:var(--radius)}
+.sp-old-dragon b{color:#9a6b08;margin-right:5px}
 #sp .sp-r{color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5}
 #sp .sp-concept-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 5px;padding-top:2px}
 #sp .sp-concept-head h4{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin:0}
@@ -498,6 +506,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
     <div class="sp-chart" id="sp-chart"></div>
     <div class="sp-rg" id="sp-rg"></div>
     <div class="sp-rg" id="sp-mv"></div>
+    <div class="sp-old-dragon" id="sp-old-dragon" style="display:none"></div>
     <div class="sp-limit-reason" id="sp-limit-reason" style="display:none"></div>
     <div class="sp-r" id="sp-r"></div>
     <div class="sp-concept-head"><h4>题材概念</h4><button type="button" class="sp-concept-edit-btn" id="sp-concept-edit" onclick="toggleConceptEditor()">编辑</button></div>
@@ -568,6 +577,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="zt_seal_rate_data.js?v=20260819-2"></script>
 <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
 <script src="three_board_pool.js?v=20260818-2"></script>
+<script src="old_dragon_pool.js?v=20260826-1"></script>
 <script src="notes_data.js?v=20260804-1"></script>
 <script src="stock_custom_category.js?v=20260805-2"></script>
 <script>
@@ -715,6 +725,22 @@ function findStockDetail(name){
 const _threeBoardPoolData=window.THREE_BOARD_POOL_DATA||{stocks:[]};
 const _threeBoardPoolCodes=new Set((Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:[]).map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
 const _threeBoardPoolNames=new Set((Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:[]).map(function(item){return normalizeSearchText(item&&item.n||'').replace(/\s+/g,'');}).filter(Boolean));
+const _oldDragonData=window.OLD_DRAGON_DATA||{stocks:{}};
+const _oldDragonStocks=_oldDragonData.stocks&&typeof _oldDragonData.stocks==='object'?_oldDragonData.stocks:{};
+function oldDragonInfo(name,code){
+  let value=String(code||'').trim();
+  if(!value){const detail=findStockDetail(name);value=detail&&String(detail.c||'').trim();}
+  return value&&_oldDragonStocks[value]?_oldDragonStocks[value]:null;
+}
+function oldDragonText(info){
+  if(!info)return '';
+  const parts=[];
+  if(info.s)parts.push(String(info.s.n)+'连板，记录日 '+info.s.d+(info.s.src?'（'+info.s.src+'）':''));
+  else parts.push('未记录五连板，因严重异动入池');
+  if(Array.isArray(info.d10)&&info.d10.length)parts.push('10日100% '+info.d10.join('、'));
+  if(Array.isArray(info.d30)&&info.d30.length)parts.push('30日200% '+info.d30.join('、'));
+  return parts.join(' · ');
+}
 function isThreeBoardPoolStock(name,code){
   const value=String(code||'').trim();
   if(value&&_threeBoardPoolCodes.has(value))return true;
@@ -939,7 +965,8 @@ function promotionFailureHtml(date,board){
     const priceText=hasAuction?'竞'+(auction>0?'+':'')+auction.toFixed(2)+'%':(hasOpen?'开'+(opening>0?'+':'')+opening.toFixed(2)+'%':'');
     const amplitudeText=hasAmplitude?'振'+amplitude.toFixed(2)+'%':'';
     const metricText=[priceText,amplitudeText].filter(Boolean).join(' · ')||'无交易数据';
-    out+='<button type="button" class="mb promotion-failure" data-n="'+esc(row.n)+'" title="'+esc(source)+'"><span>'+esc(row.n)+'</span><span class="promotion-metric">'+metricText+'</span></button>';
+    const dragon=oldDragonInfo(row.n,row.c);
+    out+='<button type="button" class="mb promotion-failure'+(dragon?' old-dragon':'')+'" data-n="'+esc(row.n)+'" title="'+esc([source,dragon?'老龙：'+oldDragonText(dragon):''].filter(Boolean).join(' · '))+'"><span>'+esc(row.n)+'</span><span class="promotion-metric">'+metricText+'</span></button>';
   });
   return out+'</div></details>';
 }
@@ -957,9 +984,10 @@ function show(i){
   }
   function stockHtml(s,klass){
     const bidSeal=isBidSealStock(s.name);
-    const poolStock=isThreeBoardPoolStock(s.name);
-    const notes=[];if(poolStock)notes.push('三板组股票池');if(bidSeal)notes.push('09:25 竞价一字板');
-    return '<button type="button" class="'+klass+(bidSeal?' bid-seal':'')+(poolStock?' three-board-pool':'')+'" data-n="'+esc(s.name)+'"'+(notes.length?' title="'+notes.join(' · ')+'"':'')+'>'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';
+    const detail=findStockDetail(s.name),code=detail&&detail.c?String(detail.c).trim():'';
+    const poolStock=isThreeBoardPoolStock(s.name,code),dragon=oldDragonInfo(s.name,code);
+    const notes=[];if(dragon)notes.push('老龙：'+oldDragonText(dragon));if(poolStock)notes.push('三板组股票池');if(bidSeal)notes.push('09:25 竞价一字板');
+    return '<button type="button" class="'+klass+(bidSeal?' bid-seal':'')+(poolStock?' three-board-pool':'')+(dragon?' old-dragon':'')+'" data-n="'+esc(s.name)+'"'+(notes.length?' title="'+notes.join(' · ')+'"':'')+'>'+esc(s.disp)+provTag(s.name)+lkTag(s.name)+'</button>';
   }
   function renderBogeGroups(stocks,parent,klass){
     const groups=[],plain=[];const byLabel=new Map();
@@ -1964,6 +1992,8 @@ function showSp(name,e,anchorRect){
   const mvEl=document.getElementById('sp-mv');
   const mvText=formatMarketCap(d.mv);
   if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
+  const dragonEl=document.getElementById('sp-old-dragon'),dragon=oldDragonInfo(name,spCode);
+  if(dragon){dragonEl.innerHTML='<b>老龙：</b>'+esc(oldDragonText(dragon));dragonEl.style.display='block';}else{dragonEl.innerHTML='';dragonEl.style.display='none';}
   const reasonDate=ai>=0&&P[ai]?P[ai].d:'';
   loadLimitReasons(reasonDate,spCode);
   renderConceptView(d);toggleConceptEditor(false);
