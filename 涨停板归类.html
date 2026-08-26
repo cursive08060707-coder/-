@@ -128,11 +128,16 @@ background-repeat:no-repeat;background-position:10px center}
 #ft.collapsed #ft-h .ft-title{display:none}
 #ft.collapsed #ft-h{justify-content:center;padding:8px 0}
 #ft-content{flex:1;min-height:0;display:grid;grid-template-rows:minmax(280px,46%) minmax(0,54%);overflow:hidden}
-#ft-kline{min-height:0;display:flex;flex-direction:column;border-bottom:1px solid var(--border);background:var(--surface)}
+#ft-kline{min-height:0;display:flex;flex-direction:column;overflow:hidden;border-bottom:1px solid var(--border);background:var(--surface)}
 #ft-kline-head{display:flex;align-items:center;gap:6px;min-height:32px;padding:6px 10px;border-bottom:1px solid var(--border2);background:var(--surface);font-size:11px;color:var(--muted);flex:0 0 auto}
 #ft-kline-head b{color:var(--fg);font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ft-kline-code{margin-left:auto;color:var(--muted2);font:10px var(--font-mono);white-space:nowrap}
-#ft-kbox{flex:1;min-height:0;width:100%;background:var(--surface)}
+#ft-kline-refresh{width:25px;height:24px;flex:0 0 25px;padding:0;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--muted);font-size:14px;line-height:22px;cursor:pointer}
+#ft-kline-refresh:hover{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent)}
+#ft-kline-refresh:disabled{cursor:default;opacity:.4}
+#ft-kbox{position:relative;flex:1;min-height:0;width:100%;overflow:hidden;contain:layout paint;background:var(--surface)}
+#ft-kbox>div:not(.ft-kempty){width:100%!important;height:100%!important;max-width:100%;max-height:100%;overflow:hidden}
+#ft-kbox iframe{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;border:0!important}
 #ft-kbox .ft-kempty{height:100%;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;color:var(--muted2);font-size:11px;background:var(--surface2)}
 #ft-body{min-height:0;overflow-y:auto;padding:6px 8px}
 #ft.collapsed #ft-content{display:none}
@@ -544,7 +549,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
   <div id="ft-h"><span class="ft-title">📊 K线 / 分时图 / 买一量</span><button type="button" class="ft-toggle" onclick="toggleFt()" aria-controls="ft-content" aria-expanded="true" aria-label="折叠图表区">▶</button></div>
   <div id="ft-content">
     <section id="ft-kline" aria-label="股票日K线">
-      <div id="ft-kline-head"><span>日K</span><b id="ft-kline-name">点击股票查看K线</b><span id="ft-kline-code"></span></div>
+      <div id="ft-kline-head"><span>日K</span><b id="ft-kline-name">点击股票查看K线</b><span id="ft-kline-code"></span><button type="button" id="ft-kline-refresh" onclick="refreshSidebarKline()" title="刷新当前K线" aria-label="刷新当前K线" disabled>↻</button></div>
       <div id="ft-kbox"><div class="ft-kempty">点击任意股票按钮，上方自动加载日K线</div></div>
     </section>
     <div id="ft-body"><div id="ft-empty">选择日期后显示分时图</div></div>
@@ -1849,7 +1854,7 @@ rebuildBogeSearchText();render();show(0);loadBogeCategories();
 </script>
 <script>
 // === 股票弹窗逻辑 ===
-let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0,_tvCurrentCode='',_limitReasonPromise=null;
+let spCode='',spName='',_tvLibPromise=null,_tvRenderToken=0,_tvCurrentCode='',_tvCurrentName='',_tvWidget=null,_limitReasonPromise=null;
 let _bogeCurDate='',_bogeParent='';
 function renderLimitReason(date,code){
   const el=document.getElementById('sp-limit-reason');if(!el)return;
@@ -2051,21 +2056,38 @@ function loadTVLib(cb){
   }
   _tvLibPromise.then(function(){cb(null);}).catch(function(err){_tvLibPromise=null;cb(err);});
 }
-function renderSidebarKline(name,code){
+function disposeSidebarKline(){
+  if(_tvWidget&&typeof _tvWidget.remove==='function'){
+    try{_tvWidget.remove();}catch(_err){}
+  }
+  _tvWidget=null;
+}
+function refreshSidebarKline(){
+  if(!/^\d{6}$/.test(String(_tvCurrentCode||'')))return;
+  renderSidebarKline(_tvCurrentName,_tvCurrentCode,true);
+}
+function renderSidebarKline(name,code,force){
   const box=document.getElementById('ft-kbox');
   const nameEl=document.getElementById('ft-kline-name');
   const codeEl=document.getElementById('ft-kline-code');
+  const refreshBtn=document.getElementById('ft-kline-refresh');
   if(!box)return;
   nameEl.textContent=name||'点击股票查看K线';
   codeEl.textContent=code||'';
   if(!/^\d{6}$/.test(String(code||''))){
+    disposeSidebarKline();
     _tvCurrentCode='';
+    _tvCurrentName='';
     _tvRenderToken++;
+    if(refreshBtn)refreshBtn.disabled=true;
     box.innerHTML='<div class="ft-kempty">该股票缺少有效代码，无法加载K线</div>';
     return;
   }
-  if(_tvCurrentCode===code&&box.querySelector('iframe'))return;
+  if(!force&&_tvCurrentCode===code&&box.querySelector('iframe'))return;
+  disposeSidebarKline();
   _tvCurrentCode=code;
+  _tvCurrentName=name||'';
+  if(refreshBtn)refreshBtn.disabled=false;
   const token=++_tvRenderToken;
   box.innerHTML='<div class="ft-kempty">K线加载中…</div>';
   const sym=(code.startsWith('6')||code.startsWith('68')?'SSE:':code.startsWith('4')||code.startsWith('8')||code.startsWith('92')?'BSE:':'SZSE:')+code;
@@ -2073,9 +2095,9 @@ function renderSidebarKline(name,code){
     if(token!==_tvRenderToken||_tvCurrentCode!==code)return;
     if(err){box.innerHTML='<div class="ft-kempty">K线加载失败，请检查网络后重试</div>';return;}
     box.innerHTML='';
-    const chart=document.createElement('div');chart.id='ft-tv-kchart';chart.style.height='100%';chart.style.width='100%';box.appendChild(chart);
+    const chart=document.createElement('div');chart.id='ft-tv-kchart-'+token;chart.style.height='100%';chart.style.width='100%';box.appendChild(chart);
     try{
-      new TradingView.widget({container_id:'ft-tv-kchart',autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});
+      _tvWidget=new TradingView.widget({container_id:chart.id,autosize:true,symbol:sym,interval:'D',timezone:'Asia/Shanghai',theme:'light',style:'1',locale:'zh_CN',allow_symbol_change:false,hide_side_toolbar:false,studies:[]});
     }catch(error){box.innerHTML='<div class="ft-kempty">K线初始化失败</div>';}
   });
 }
