@@ -90,12 +90,12 @@ background-repeat:no-repeat;background-position:10px center}
 .sk.bid-seal:hover,.mb.bid-seal:hover{background:#ffe4e6;border-color:#fda4af;color:#881337;box-shadow:0 1px 2px rgba(159,18,57,.08),0 0 0 1px rgba(244,63,94,.12)}
 .sk.old-dragon,.mb.old-dragon{background:#fff8df;border-color:#dfc57a;color:#76520b;font-weight:650;box-shadow:inset 0 0 0 1px rgba(181,138,32,.05)}
 .sk.old-dragon:hover,.mb.old-dragon:hover{background:#fff1c2;border-color:#cfae4d;color:#604106;box-shadow:0 1px 2px rgba(118,82,11,.08),0 0 0 1px rgba(207,174,77,.14)}
-.sk.bid-seal.old-dragon,.mb.bid-seal.old-dragon{background:linear-gradient(90deg,#fff1f2 0 6px,#fff8df 6px);border-color:#dfc57a;color:#76520b}
+.sk.bid-seal.old-dragon,.mb.bid-seal.old-dragon{background:linear-gradient(90deg,#fff1f2 0 50%,#fff8df 50% 100%);border-color:#dfc57a;color:#76520b}
 .sk.three-board-pool,.mb.three-board-pool{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;font-weight:650}
 .sk.three-board-pool:hover,.mb.three-board-pool:hover{background:#dbeafe;border-color:#60a5fa;color:#1e40af;box-shadow:0 1px 2px rgba(29,78,216,.08),0 0 0 1px rgba(37,99,235,.12)}
-.sk.bid-seal.three-board-pool,.mb.bid-seal.three-board-pool{background:linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px);border-color:#60a5fa;color:#1d4ed8}
-.sk.three-board-pool.old-dragon,.mb.three-board-pool.old-dragon{background:linear-gradient(90deg,#eff6ff 0 6px,#fff8df 6px);border-color:#cfae4d;color:#76520b}
-.sk.bid-seal.three-board-pool.old-dragon,.mb.bid-seal.three-board-pool.old-dragon{background:linear-gradient(90deg,#fff1f2 0 5px,#eff6ff 5px 10px,#fff8df 10px);border-color:#cfae4d;color:#76520b}
+.sk.bid-seal.three-board-pool,.mb.bid-seal.three-board-pool{background:linear-gradient(90deg,#fff1f2 0 50%,#eff6ff 50% 100%);border-color:#60a5fa;color:#1d4ed8}
+.sk.three-board-pool.old-dragon,.mb.three-board-pool.old-dragon{background:linear-gradient(90deg,#fff8df 0 50%,#eff6ff 50% 100%);border-color:#cfae4d;color:#76520b}
+.sk.bid-seal.three-board-pool.old-dragon,.mb.bid-seal.three-board-pool.old-dragon{background:linear-gradient(90deg,#fff1f2 0 33.333%,#fff8df 33.333% 66.666%,#eff6ff 66.666% 100%);border-color:#cfae4d;color:#76520b}
 .promotion-failures{margin:7px 0 10px;padding:0;border:1px solid #bbf7d0;border-radius:8px;background:#f7fff9}
 .promotion-failures>summary{display:inline-flex;align-items:center;gap:5px;margin:6px;padding:4px 9px;border:1px solid #86efac;border-radius:6px;background:#ecfdf5;color:#15803d;font-size:11px;font-weight:700;cursor:pointer;list-style:none;user-select:none}
 .promotion-failures>summary::-webkit-details-marker{display:none}
@@ -104,8 +104,9 @@ background-repeat:no-repeat;background-position:10px center}
 .promotion-failure-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 7px 8px}
 .sk.promotion-failure,.mb.promotion-failure{border-color:#86efac;background:#ecfdf5;color:#166534}
 .sk.promotion-failure:hover,.mb.promotion-failure:hover{border-color:#4ade80;background:#dcfce7;color:#14532d;box-shadow:0 1px 2px rgba(22,101,52,.08),0 0 0 1px rgba(34,197,94,.12)}
-.sk.promotion-failure.old-dragon,.mb.promotion-failure.old-dragon{border-color:#cfae4d;background:linear-gradient(90deg,#ecfdf5 0 6px,#fff8df 6px);color:#76520b}
+.sk.promotion-failure.old-dragon,.mb.promotion-failure.old-dragon{border-color:#cfae4d;background:linear-gradient(90deg,#ecfdf5 0 50%,#fff8df 50% 100%);color:#76520b}
 .promotion-metric{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;color:#16825d}
+.promotion-broken{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border:1px solid #fb923c;border-radius:4px;background:#fff7ed;color:#c2410c;font-size:9px;font-weight:800;line-height:1}
 .sk .lk,.mb .lk{font-size:11px;color:var(--fg);font-weight:600;margin-left:3px;font-family:var(--font-mono);opacity:.75}
 .sk .pv,.mb .pv{font-size:10px;color:var(--muted);margin-left:3px;padding:1px 4px;background:var(--accent-soft);border-radius:3px;border:1px solid var(--border2);font-weight:500}
 .hl{background:#000;padding:0 2px;border-radius:2px;color:#fff;font-weight:600}
@@ -189,9 +190,32 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 .sp-rg b{color:var(--accent)}
 .sp-limit-reason{color:#7c2d12;font-size:12px;line-height:1.65;margin-bottom:8px;padding:7px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius)}
 .sp-limit-reason b{color:#c2410c;margin-right:5px}
-.sp-old-dragon{color:#76520b;font-size:12px;line-height:1.6;margin-bottom:8px;padding:7px 10px;background:#fff8df;border:1px solid #dfc57a;border-radius:var(--radius)}
+.sp-old-dragon-control{display:flex;align-items:center;gap:7px;margin-bottom:8px;padding:7px 10px;background:#fff8df;border:1px solid #dfc57a;border-radius:var(--radius);color:#76520b}
+.sp-old-dragon{flex:1;min-width:0;color:#76520b;font-size:12px;line-height:1.6}
+.sp-old-dragon.inactive{color:#8a7d5d}
 .sp-old-dragon b{color:#9a6b08;margin-right:5px}
+.sp-old-dragon-control small{color:#8a7d5d;font-size:10px;white-space:nowrap}
+.sp-old-dragon-toggle{border:1px solid #d3ad42;border-radius:4px;background:#fff;color:#8a630d;padding:3px 8px;font:inherit;font-size:10px;cursor:pointer;white-space:nowrap}
+.sp-old-dragon-toggle.active{background:#d7ad3a;color:#fff}.sp-old-dragon-toggle:disabled{opacity:.55;cursor:wait}
+.sp-pool-control{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:7px 10px;border:1px solid #bfdbfe;border-radius:var(--radius);background:#eff6ff;color:#1d4ed8;font-size:11px}
+.sp-pool-control span:first-child{font-weight:700}.sp-pool-control small{margin-left:auto;color:#64748b}
+.sp-pool-toggle{border:1px solid #60a5fa;border-radius:4px;background:#fff;color:#1d4ed8;padding:3px 8px;font:inherit;font-size:10px;cursor:pointer}
+.sp-pool-toggle.active{background:#2563eb;color:#fff}.sp-pool-toggle:disabled{opacity:.55;cursor:wait}
 #sp .sp-r{color:var(--muted);font-size:11px;margin-bottom:8px;line-height:1.5}
+.sp-model{margin:8px 0 12px;padding:9px 10px;border:1px solid #c4b5fd;border-radius:var(--radius);background:#faf5ff}
+.sp-model-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.sp-model-head h4{margin:0;color:#6d28d9;font-size:11px;font-weight:700;letter-spacing:.04em}
+.sp-model-edit-btn{border:1px solid #c4b5fd;background:#fff;color:#6d28d9;border-radius:4px;padding:2px 7px;font:inherit;font-size:10px;cursor:pointer}
+.sp-model-edit-btn:hover{background:#ede9fe;border-color:#a78bfa}
+.sp-model-value{color:#4c1d95;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.sp-model-empty{color:var(--muted2);font-size:11px}
+.sp-model-editor[hidden]{display:none}
+.sp-model-editor textarea{display:block;width:100%;min-height:86px;box-sizing:border-box;border:1px solid #c4b5fd;border-radius:5px;background:#fff;color:var(--fg);font:inherit;font-size:12px;line-height:1.6;padding:7px 8px;resize:vertical;outline:none}
+.sp-model-editor textarea:focus{border-color:#7c3aed;box-shadow:0 0 0 2px #ede9fe}
+.sp-model-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:7px}
+.sp-model-actions button{border:1px solid #c4b5fd;border-radius:4px;padding:4px 9px;font:inherit;font-size:10px;cursor:pointer}
+.sp-model-save{background:#7c3aed!important;border-color:#7c3aed!important;color:#fff}.sp-model-cancel{background:#fff;color:#6d28d9}
+.sp-model-status{min-height:14px;margin-top:5px;color:var(--muted);font-size:10px}
 #sp .sp-concept-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 5px;padding-top:2px}
 #sp .sp-concept-head h4{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin:0}
 .sp-concept-edit-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:4px;padding:2px 7px;font:inherit;font-size:10px;cursor:pointer}
@@ -506,9 +530,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
     <div class="sp-chart" id="sp-chart"></div>
     <div class="sp-rg" id="sp-rg"></div>
     <div class="sp-rg" id="sp-mv"></div>
-    <div class="sp-old-dragon" id="sp-old-dragon" style="display:none"></div>
+    <div class="sp-old-dragon-control"><div class="sp-old-dragon" id="sp-old-dragon"></div><small id="sp-old-dragon-status"></small><button type="button" class="sp-old-dragon-toggle" id="sp-old-dragon-toggle" onclick="toggleOldDragonPool()">加入老龙</button></div>
+    <div class="sp-pool-control"><span>三板组标记</span><small id="sp-pool-status"></small><button type="button" class="sp-pool-toggle" id="sp-pool-toggle" onclick="toggleThreeBoardPool()">加入三板组</button></div>
     <div class="sp-limit-reason" id="sp-limit-reason" style="display:none"></div>
     <div class="sp-r" id="sp-r"></div>
+    <div class="sp-model">
+      <div class="sp-model-head"><h4>模型制作</h4><button type="button" class="sp-model-edit-btn" id="sp-model-edit" onclick="toggleModelEditor()">编辑</button></div>
+      <div class="sp-model-value" id="sp-model-value"></div>
+      <div class="sp-model-editor" id="sp-model-editor" hidden>
+        <textarea id="sp-model-input" maxlength="5000" placeholder="在这里填写该股票的模型制作内容…"></textarea>
+        <div class="sp-model-actions"><button type="button" class="sp-model-cancel" onclick="toggleModelEditor(false)">取消</button><button type="button" class="sp-model-save" id="sp-model-save" onclick="saveModelData()">保存</button></div>
+        <div class="sp-model-status" id="sp-model-status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
     <div class="sp-concept-head"><h4>题材概念</h4><button type="button" class="sp-concept-edit-btn" id="sp-concept-edit" onclick="toggleConceptEditor()">编辑</button></div>
     <div class="sp-t" id="sp-t"></div>
     <div class="sp-concept-editor" id="sp-concept-editor" hidden>
@@ -736,6 +770,7 @@ function oldDragonText(info){
   if(!info)return '';
   const parts=[];
   if(info.s)parts.push(String(info.s.n)+'连板，记录日 '+info.s.d+(info.s.src?'（'+info.s.src+'）':''));
+  else if(info.manual)parts.push('手工加入'+(info.manualAt?'（'+info.manualAt+'）':''));
   else parts.push('未记录五连板，因严重异动入池');
   if(Array.isArray(info.d10)&&info.d10.length)parts.push('10日100% '+info.d10.join('、'));
   if(Array.isArray(info.d30)&&info.d30.length)parts.push('30日200% '+info.d30.join('、'));
@@ -746,6 +781,58 @@ function isThreeBoardPoolStock(name,code){
   if(value&&_threeBoardPoolCodes.has(value))return true;
   const detail=findStockDetail(name),detailCode=detail&&String(detail.c||'').trim();
   return Boolean((detailCode&&_threeBoardPoolCodes.has(detailCode))||_threeBoardPoolNames.has(normalizeSearchText(name||'').replace(/\s+/g,'')));
+}
+function rebuildThreeBoardPoolSets(){
+  _threeBoardPoolCodes.clear();_threeBoardPoolNames.clear();
+  (Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:[]).forEach(function(item){
+    const code=String(item&&item.c||'').trim(),name=normalizeSearchText(item&&item.n||'').replace(/\s+/g,'');
+    if(code)_threeBoardPoolCodes.add(code);if(name)_threeBoardPoolNames.add(name);
+  });
+}
+function renderThreeBoardPoolControl(){
+  const btn=document.getElementById('sp-pool-toggle'),status=document.getElementById('sp-pool-status');if(!btn)return;
+  const active=isThreeBoardPoolStock(spName,spCode);btn.classList.toggle('active',active);btn.textContent=active?'移出三板组':'加入三板组';btn.dataset.active=active?'1':'0';if(status)status.textContent=active?'已标记':'';
+}
+function refreshThreeBoardPoolDisplay(){
+  document.querySelectorAll('#ct .sk,#ct .mb').forEach(function(button){
+    const name=button.getAttribute('data-n')||'';button.classList.toggle('three-board-pool',isThreeBoardPoolStock(name,''));
+  });
+  if(ai>=0&&P[ai]&&typeof renderTimelineInline==='function'){
+    const canvas=document.getElementById('tl-canvas-'+ai),tooltip=document.getElementById('tl-tooltip-'+ai);if(canvas&&tooltip)renderTimelineInline(P[ai].d,canvas,tooltip,ai);
+  }
+}
+function toggleThreeBoardPool(){
+  const btn=document.getElementById('sp-pool-toggle'),status=document.getElementById('sp-pool-status');if(!btn||!spCode)return;
+  const active=btn.dataset.active!=='1';btn.disabled=true;btn.textContent='保存中';if(status)status.textContent='正在写入 JS…';
+  fetch(THREE_BOARD_POOL_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:spName,code:spCode,active:active})})
+    .then(function(r){return r.json();}).then(function(result){
+      if(!result||!result.ok)throw new Error(result&&result.error||'服务未确认保存');
+      const stocks=Array.isArray(_threeBoardPoolData.stocks)?_threeBoardPoolData.stocks:(_threeBoardPoolData.stocks=[]);
+      for(let i=stocks.length-1;i>=0;i--)if(String(stocks[i]&&stocks[i].c||'')===String(spCode))stocks.splice(i,1);
+      if(active)stocks.push({n:spName,c:String(spCode)});rebuildThreeBoardPoolSets();renderThreeBoardPoolControl();refreshThreeBoardPoolDisplay();if(status)status.textContent='已保存 ✓';
+    }).catch(function(err){if(status)status.textContent='保存失败：请确认笔记服务已启动';console.error('三板组标记保存失败',err);})
+    .finally(function(){const message=status&&status.textContent||'';btn.disabled=false;renderThreeBoardPoolControl();if(status&&/^(?:已保存|保存失败)/.test(message))status.textContent=message;});
+}
+function renderOldDragonPoolControl(){
+  const box=document.getElementById('sp-old-dragon'),btn=document.getElementById('sp-old-dragon-toggle'),status=document.getElementById('sp-old-dragon-status');if(!box||!btn)return;
+  const info=oldDragonInfo(spName,spCode),active=Boolean(info);box.classList.toggle('inactive',!active);box.innerHTML=active?'<b>老龙：</b>'+esc(oldDragonText(info)):'当前未标记为老龙';
+  btn.classList.toggle('active',active);btn.dataset.active=active?'1':'0';btn.textContent=active?'移出老龙':'加入老龙';if(status&&!btn.disabled)status.textContent='';
+}
+function refreshOldDragonDisplay(){
+  document.querySelectorAll('#ct .sk,#ct .mb').forEach(function(button){const name=button.getAttribute('data-n')||'';button.classList.toggle('old-dragon',Boolean(oldDragonInfo(name,'')));});
+  if(ai>=0&&P[ai]&&typeof renderTimelineInline==='function'){const canvas=document.getElementById('tl-canvas-'+ai),tooltip=document.getElementById('tl-tooltip-'+ai);if(canvas&&tooltip)renderTimelineInline(P[ai].d,canvas,tooltip,ai);}
+}
+function toggleOldDragonPool(){
+  const btn=document.getElementById('sp-old-dragon-toggle'),status=document.getElementById('sp-old-dragon-status');if(!btn||!spCode)return;
+  const active=btn.dataset.active!=='1';btn.disabled=true;btn.textContent='保存中';if(status)status.textContent='正在写入 JS…';
+  fetch(OLD_DRAGON_POOL_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:spName,code:spCode,active:active})})
+    .then(function(r){return r.json();}).then(function(result){
+      if(!result||!result.ok)throw new Error(result&&result.error||'服务未确认保存');
+      if(active){_oldDragonStocks[String(spCode)]={n:spName,b:String(spCode).indexOf('30')===0?'创业板':'主板',s:null,d10:[],d30:[],manual:true,manualAt:new Date().toISOString().slice(0,10)};if(_oldDragonData.manualExcluded)delete _oldDragonData.manualExcluded[String(spCode)];}
+      else{delete _oldDragonStocks[String(spCode)];const excluded=_oldDragonData.manualExcluded||(_oldDragonData.manualExcluded={});excluded[String(spCode)]={n:spName,at:new Date().toISOString().slice(0,10)};}
+      renderOldDragonPoolControl();refreshOldDragonDisplay();if(status)status.textContent='已保存 ✓';
+    }).catch(function(err){if(status)status.textContent='保存失败：请确认笔记服务已启动';console.error('老龙标记保存失败',err);})
+    .finally(function(){const message=status&&status.textContent||'';btn.disabled=false;renderOldDragonPoolControl();if(status&&/^(?:已保存|保存失败)/.test(message))status.textContent=message;});
 }
 function findStockDetailKey(name,detail){
   if(typeof SD==='undefined')return String(name||'');
@@ -769,6 +856,8 @@ function findStockDetailKey(name,detail){
 // 按日期、原始分类和股票代码保存。网页可在没有本地服务时直接读取这个文件。
 const BOGE_CATEGORY_API='http://localhost:8765/boge-categories';
 const STOCK_DETAIL_API='http://localhost:8765/stock-details';
+const THREE_BOARD_POOL_API='http://localhost:8765/three-board-pool';
+const OLD_DRAGON_POOL_API='http://localhost:8765/old-dragon-pool';
 function normalizeBogeData(data){
   const out={version:1,dates:{}};
   if(data&&typeof data==='object'&&data.dates&&typeof data.dates==='object')out.dates=data.dates;
@@ -800,6 +889,35 @@ function loadBogeCategories(){
   return _bogeLoadPromise;
 }
 let _conceptEditName='',_conceptRows=[];
+function renderModelView(detail){
+  const value=document.getElementById('sp-model-value');if(!value)return;
+  const text=detail&&typeof detail.model==='string'?detail.model.trim():'';
+  value.textContent=text||'暂未填写';value.classList.toggle('sp-model-empty',!text);
+}
+function toggleModelEditor(force){
+  const editor=document.getElementById('sp-model-editor'),input=document.getElementById('sp-model-input'),btn=document.getElementById('sp-model-edit');if(!editor||!input)return;
+  const open=typeof force==='boolean'?force:editor.hidden;
+  if(open){
+    const detail=SD&&SD[_conceptEditName]?SD[_conceptEditName]:findStockDetail(spName);
+    input.value=detail&&typeof detail.model==='string'?detail.model:'';editor.hidden=false;if(btn)btn.textContent='收起';
+    const status=document.getElementById('sp-model-status');if(status)status.textContent='';setTimeout(function(){input.focus();},0);
+  }else{editor.hidden=true;if(btn)btn.textContent='编辑';}
+}
+function saveModelData(){
+  const status=document.getElementById('sp-model-status'),btn=document.getElementById('sp-model-save'),input=document.getElementById('sp-model-input');
+  if(!_conceptEditName){if(status)status.textContent='缺少股票名称，无法保存';return;}
+  const payload={name:_conceptEditName,model:String(input&&input.value||'').trim()};
+  if(btn){btn.disabled=true;btn.textContent='保存中';}if(status)status.textContent='正在写入 stock_detail_map.js…';
+  fetch(STOCK_DETAIL_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json();})
+    .then(function(result){
+      if(!result||!result.ok)throw new Error(result&&result.error||'服务未确认保存');
+      const detail=SD[_conceptEditName];if(payload.model)detail.model=payload.model;else delete detail.model;
+      renderModelView(detail);toggleModelEditor(false);if(status)status.textContent='已保存 ✓';
+    })
+    .catch(function(err){if(status)status.textContent='保存失败：请确认笔记服务已启动';console.error('模型制作保存失败',err);})
+    .finally(function(){if(btn){btn.disabled=false;btn.textContent='保存';}});
+}
 function conceptRowsFromDetail(detail){
   const rows=[],seen=new Set();
   function add(concept,reason){
@@ -960,13 +1078,12 @@ function promotionFailureHtml(date,board){
   const source=day.previousDate?'来自 '+day.previousDate+' 的上一梯队':'';
   let out='<details class="promotion-failures"><summary title="'+esc(source)+'">晋级失败 '+rows.length+'</summary><div class="promotion-failure-list">';
   rows.forEach(function(row){
-    const auction=Number(row.auction),opening=Number(row.open),amplitude=Number(row.amplitude);
-    const hasAuction=row.auction!==null&&row.auction!==undefined&&Number.isFinite(auction),hasOpen=row.open!==null&&row.open!==undefined&&Number.isFinite(opening),hasAmplitude=row.amplitude!==null&&row.amplitude!==undefined&&Number.isFinite(amplitude);
+    const auction=Number(row.auction),opening=Number(row.open);
+    const hasAuction=row.auction!==null&&row.auction!==undefined&&Number.isFinite(auction),hasOpen=row.open!==null&&row.open!==undefined&&Number.isFinite(opening);
     const priceText=hasAuction?'竞'+(auction>0?'+':'')+auction.toFixed(2)+'%':(hasOpen?'开'+(opening>0?'+':'')+opening.toFixed(2)+'%':'');
-    const amplitudeText=hasAmplitude?'振'+amplitude.toFixed(2)+'%':'';
-    const metricText=[priceText,amplitudeText].filter(Boolean).join(' · ')||'无交易数据';
+    const metricText=priceText||'无交易数据';
     const dragon=oldDragonInfo(row.n,row.c);
-    out+='<button type="button" class="mb promotion-failure'+(dragon?' old-dragon':'')+'" data-n="'+esc(row.n)+'" title="'+esc([source,dragon?'老龙：'+oldDragonText(dragon):''].filter(Boolean).join(' · '))+'"><span>'+esc(row.n)+'</span><span class="promotion-metric">'+metricText+'</span></button>';
+    out+='<button type="button" class="mb promotion-failure'+(dragon?' old-dragon':'')+'" data-n="'+esc(row.n)+'" title="'+esc([source,row.broken===true?'盘中触及涨停后炸板':'',dragon?'老龙：'+oldDragonText(dragon):''].filter(Boolean).join(' · '))+'"><span>'+esc(row.n)+'</span><span class="promotion-metric">'+metricText+'</span>'+(row.broken===true?'<span class="promotion-broken">炸</span>':'')+'</button>';
   });
   return out+'</div></details>';
 }
@@ -1992,11 +2109,11 @@ function showSp(name,e,anchorRect){
   const mvEl=document.getElementById('sp-mv');
   const mvText=formatMarketCap(d.mv);
   if(mvText){const mvDate=(typeof SD_META!=='undefined'&&SD_META.marketCapDate)?'（截至 '+esc(SD_META.marketCapDate)+'）':'';mvEl.innerHTML='<b>总市值：</b>'+mvText+mvDate;mvEl.style.display='block';}else{mvEl.innerHTML='';mvEl.style.display='none';}
-  const dragonEl=document.getElementById('sp-old-dragon'),dragon=oldDragonInfo(name,spCode);
-  if(dragon){dragonEl.innerHTML='<b>老龙：</b>'+esc(oldDragonText(dragon));dragonEl.style.display='block';}else{dragonEl.innerHTML='';dragonEl.style.display='none';}
+  renderOldDragonPoolControl();
+  renderThreeBoardPoolControl();
   const reasonDate=ai>=0&&P[ai]?P[ai].d:'';
   loadLimitReasons(reasonDate,spCode);
-  renderConceptView(d);toggleConceptEditor(false);
+  renderModelView(d);toggleModelEditor(false);renderConceptView(d);toggleConceptEditor(false);
   renderBogeCard();
   document.getElementById('sp-hc').innerHTML='';
   document.getElementById('sp-ht').innerHTML='';
