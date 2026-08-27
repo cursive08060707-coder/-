@@ -52,41 +52,58 @@
     .matrix { min-width: calc(var(--label-width) + var(--cell-width)); }
     .matrix-header, .board-row { display: grid; width: max-content; }
     .board-row { grid-template-columns: var(--date-template); }
-    .matrix-header { position: sticky; top: 0; z-index: 10; height: 59px; background: rgba(255,255,255,.97); border-bottom: 1px solid var(--line-strong); }
+    .matrix-header { position: sticky; top: 0; z-index: 10; height: 82px; background: rgba(255,255,255,.97); border-bottom: 1px solid var(--line-strong); }
     .corner, .board-label { position: sticky; left: 0; z-index: 4; background: #fff; }
     .corner { display: flex; align-items: center; padding: 0 12px; border-right: 1px solid var(--line-strong); color: var(--muted); font-size: 12px; }
     .date-head { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; border-right: 1px solid var(--line); color: var(--text); font-size: 12px; }
     .date-head small { color: var(--muted); font-size: 10px; }
+    .date-actions { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 2px; }
+    .date-action { height: 22px; padding: 0 7px; border-radius: 5px; border-color: #d7e2f4; color: #49658e; font-size: 10px; line-height: 20px; }
+    .date-action:hover { background: var(--accent-soft); }
     .virtual-spacer { min-width: 0; pointer-events: none; background: #fff; }
     .matrix-header > .virtual-spacer { background: rgba(255,255,255,.97); }
     .board-row { border-bottom: 1px solid var(--line-strong); }
     .board-label { display: flex; align-items: flex-start; justify-content: center; padding-top: 18px; border-right: 1px solid var(--line-strong); color: #58729a; font-size: 15px; font-weight: 700; }
     .board-label.high { color: var(--up); }
+    .high-board-divider { display: grid; grid-template-columns: var(--date-template); width: max-content; height: 38px; border-top: 2px solid #e5b458; border-bottom: 1px solid #ecd7ad; background: #fffbf2; }
+    .high-board-divider-label { position: sticky; left: 0; z-index: 5; display: flex; align-items: center; justify-content: center; border-right: 1px solid #e5c992; background: #fff9e9; }
+    .high-board-divider-line { grid-column: 2/-1; display: flex; align-items: center; padding-left: 12px; color: #a27020; font-size: 10px; font-weight: 650; }
+    .high-board-toggle { height: 25px; padding: 0 8px; border-color: #e0b55f; border-radius: 6px; background: #fff7df; color: #8b5d15; font-size: 10px; font-weight: 750; }
+    .high-board-toggle:hover { border-color: #c58d2b; background: #ffefbd; }
     .board-cell { min-height: 106px; overflow: hidden; padding: 10px 11px 12px; border-right: 1px solid var(--line); background: #fff; vertical-align: top; }
     .board-cell.has-content { background: linear-gradient(180deg,#fff 0%,#fcfdff 100%); }
     .board-cell.cell-match { background: #fffaf0; box-shadow: inset 0 0 0 2px #f0c36b; }
     .board-cell.selected-cell { background: #fff8e8; box-shadow: inset 0 0 0 2px #e4a62e; }
     .board-cell.cell-dim .stock-chip { opacity: .36; }
+    .board-turnover { display: flex; align-items: center; gap: 5px; width: max-content; max-width: 100%; margin: 0 0 7px; padding: 3px 7px; border: 1px solid #d8e2f1; border-radius: 5px; background: #f5f8fd; color: #617491; font-size: 10px; line-height: 1.25; white-space: nowrap; }
+    .board-turnover strong { color: #304d78; font-size: 11px; font-variant-numeric: tabular-nums; }
+    .board-turnover.incomplete { border-color: #fed7aa; background: #fff7ed; color: #9a5b1a; }
+    .board-turnover.incomplete strong { color: #9a4d0b; }
     .cell-empty { display: flex; align-items: flex-start; justify-content: center; min-height: 80px; padding-top: 23px; color: #d6deea; font-size: 18px; }
     .content-line { margin: 0 0 7px; line-height: 1.7; font-size: 12px; }
     .theme-line { margin: 1px 0 4px; color: #5d79a1; font-size: 11px; font-weight: 700; }
     .stock-chip { display: inline-flex; align-items: baseline; gap: 4px; margin: 0 4px 4px 0; padding: 3px 6px; border: 1px solid #d6e1f4; border-radius: 5px; background: #f7faff; color: #344f79; cursor: pointer; line-height: 1.2; white-space: nowrap; transition: .15s ease; }
     .stock-chip.bid-seal { border-color: #fecdd3; background: #fff1f2; color: #9f1239; }
     .stock-chip.old-dragon { border-color: #dfc57a; background: #fff8df; color: #76520b; font-weight: 700; box-shadow: inset 0 0 0 1px rgba(181,138,32,.05); }
-    .stock-chip.bid-seal.old-dragon { background: linear-gradient(90deg,#fff1f2 0 6px,#fff8df 6px); border-color: #dfc57a; color: #76520b; }
+    .stock-chip.bid-seal.old-dragon { background: linear-gradient(90deg,#fff1f2 0 50%,#fff8df 50% 100%); border-color: #dfc57a; color: #76520b; }
     .stock-chip.three-board-pool { border-color: #60a5fa; background: #eff6ff; color: #1d4ed8; font-weight: 700; box-shadow: 0 0 0 1px rgba(37,99,235,.10); }
-    .stock-chip.bid-seal.three-board-pool { background: linear-gradient(90deg,#fff1f2 0 6px,#eff6ff 6px); }
-    .stock-chip.three-board-pool.old-dragon { background: linear-gradient(90deg,#eff6ff 0 6px,#fff8df 6px); border-color: #cfae4d; color: #76520b; }
-    .stock-chip.bid-seal.three-board-pool.old-dragon { background: linear-gradient(90deg,#fff1f2 0 5px,#eff6ff 5px 10px,#fff8df 10px); }
+    .stock-chip.bid-seal.three-board-pool { background: linear-gradient(90deg,#fff1f2 0 50%,#eff6ff 50% 100%); }
+    .stock-chip.three-board-pool.old-dragon { background: linear-gradient(90deg,#fff8df 0 50%,#eff6ff 50% 100%); border-color: #cfae4d; color: #76520b; }
+    .stock-chip.bid-seal.three-board-pool.old-dragon { background: linear-gradient(90deg,#fff1f2 0 33.333%,#fff8df 33.333% 66.666%,#eff6ff 66.666% 100%); }
     .stock-chip:hover, .stock-chip.match { border-color: #8eafea; background: var(--accent-soft); color: #2458bd; }
     .stock-chip.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; box-shadow: 0 0 0 2px rgba(220,152,36,.18); font-weight: 700; opacity: 1 !important; }
     .stock-chip.selected em { color: #9b6b1a; }
+    .stock-chip.bid-seal.old-dragon:not(.selected):is(:hover,.match) { background: linear-gradient(90deg,#ffe4e6 0 50%,#fff1c2 50% 100%); }
+    .stock-chip.bid-seal.three-board-pool:not(.selected):is(:hover,.match) { background: linear-gradient(90deg,#ffe4e6 0 50%,#dbeafe 50% 100%); }
+    .stock-chip.old-dragon.three-board-pool:not(.selected):is(:hover,.match) { background: linear-gradient(90deg,#fff1c2 0 50%,#dbeafe 50% 100%); }
+    .stock-chip.bid-seal.old-dragon.three-board-pool:not(.selected):is(:hover,.match) { background: linear-gradient(90deg,#ffe4e6 0 33.333%,#fff1c2 33.333% 66.666%,#dbeafe 66.666% 100%); }
     .stock-grid { display: flex; align-items: flex-start; gap: 10px; width: max-content; }
     .stock-group { display: grid; grid-template-columns: repeat(3, max-content); grid-auto-rows: min-content; align-content: start; gap: 4px 6px; }
     .stock-grid .stock-chip { margin: 0; }
     .stock-chip em { color: #8b9bb3; font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; font-style: normal; }
     .stock-chip .auction-pct { margin-left: 2px; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .stock-chip .first-limit-time { margin-left: 2px; color: #b4533f; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stock-chip .bid-seal-amount { margin-left: 2px; padding: 1px 3px; border-radius: 3px; background: rgba(190,24,93,.08); color: #be185d; font-size: 9px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .auction-pct.positive { color: #d95c45; }
     .auction-pct.negative { color: #2b9c73; }
     .auction-pct.flat { color: #8b9bb3; }
@@ -100,7 +117,8 @@
     .stock-chip.promotion-failure:hover, .stock-chip.promotion-failure.match { border-color: #4ade80; background: #dcfce7; color: #14532d; }
     .stock-chip.promotion-failure.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; }
     .stock-chip.promotion-failure .promotion-metric { color: #16825d; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .stock-chip.promotion-failure.old-dragon { border-color: #cfae4d; background: linear-gradient(90deg,#ecfdf5 0 6px,#fff8df 6px); color: #76520b; }
+    .stock-chip.promotion-failure .promotion-broken { display: inline-flex; align-items: center; justify-content: center; min-width: 15px; height: 15px; padding: 0 3px; border: 1px solid #fb923c; border-radius: 4px; background: #fff7ed; color: #c2410c; font-size: 8px; font-weight: 800; line-height: 1; }
+    .stock-chip.promotion-failure.old-dragon { border-color: #cfae4d; background: linear-gradient(90deg,#ecfdf5 0 50%,#fff8df 50% 100%); color: #76520b; }
     .no-data { padding: 50px; color: var(--muted); text-align: center; font-size: 13px; }
     .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(31,43,61,.24); backdrop-filter: blur(3px); }
     .modal-backdrop.open { display: flex; }
@@ -114,6 +132,13 @@
     .history-item time { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
     .history-item strong { font-size: 14px; }
     .history-item.recent { border-color: #b9d4fb; background: #f2f7ff; }
+    .history-collapse { margin-top: 14px; border: 1px solid var(--line); border-radius: 9px; background: #fbfcff; }
+    .history-collapse > summary { display: flex; align-items: center; gap: 7px; padding: 10px 12px; color: var(--text); cursor: pointer; font-size: 13px; font-weight: 700; list-style: none; user-select: none; }
+    .history-collapse > summary::-webkit-details-marker { display: none; }
+    .history-collapse > summary::before { content: '▸'; color: #6b7f9e; transition: transform .15s ease; }
+    .history-collapse[open] > summary::before { transform: rotate(90deg); }
+    .history-count { color: var(--muted); font-size: 11px; font-weight: 400; }
+    .history-collapse .history { padding: 0 10px 10px; }
     .search-history-modal { width: min(560px,100%); }
     .search-stock-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(170px,1fr)); gap: 8px; }
     .search-stock-choice, .history-jump { height: auto; min-height: 48px; padding: 8px 10px; text-align: left; }
@@ -127,15 +152,80 @@
     .history-jump time { color: #506887; font-size: 11px; }
     .history-jump strong { color: var(--up); font-size: 13px; }
     .search-empty { padding: 25px 8px; color: var(--muted); text-align: center; font-size: 12px; }
+    .discussion-modal { width: min(760px,100%); }
+    .discussion-tabs { display: flex; gap: 5px; margin: -3px 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+    .discussion-tab { height: 29px; padding: 0 11px; border-radius: 999px; color: var(--muted); font-size: 11px; }
+    .discussion-tab.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .discussion-body { min-height: 160px; white-space: pre-wrap; color: var(--text); font-size: 13px; line-height: 1.8; }
+    .discussion-section + .discussion-section { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .discussion-source-title { margin-bottom: 7px; font-size: 14px; font-weight: 700; }
+    .discussion-source-link { display: inline-block; margin-bottom: 9px; color: var(--accent); font-size: 11px; }
+    .utility-loading, .utility-empty, .utility-error { padding: 35px 8px; color: var(--muted); text-align: center; }
+    .utility-error { color: #b42318; }
+    .stats-modal { width: min(900px,100%); }
+    .stats-meta { margin: -4px 0 10px; color: var(--muted); font-size: 11px; }
+    .stats-body { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .stats-card { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: #fbfcff; }
+    .stats-card.wide { grid-column: 1/-1; }
+    .stats-card h3 { margin: 0 0 9px; font-size: 13px; }
+    .stats-card h3 small { margin-left: 5px; color: var(--muted); font-size: 10px; font-weight: 400; }
+    .stats-tags, .stats-selection-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .stats-tag, .stats-selection-stock { height: auto; min-height: 27px; padding: 4px 8px; border-radius: 999px; background: #f7faff; color: #49658e; font-size: 11px; }
+    .stats-tag.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .stats-tag b { margin-left: 5px; color: var(--accent); }
+    .stats-selection { display: none; border-color: #b9d4fb; background: #f7faff; }
+    .stats-selection.show { display: block; }
+    .stats-selection-title { margin-bottom: 8px; font-size: 12px; font-weight: 700; }
+    .stats-selection-stock { border-radius: 6px; font-weight: 650; }
+    .stats-selection-stock small { margin-left: 4px; color: var(--muted); font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .stats-list { display: grid; gap: 5px; }
+    .stats-row { display: grid; grid-template-columns: 22px minmax(80px,.7fr) minmax(0,1.3fr) 48px; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 10px; }
+    .stats-rank { color: var(--muted); text-align: center; }.stats-stock { overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }.stats-evidence { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }.stats-score { color: var(--accent); font-weight: 700; text-align: right; }
     .detail-summary { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 7px; margin-bottom: 14px; }
     .summary-item { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcff; }
     .summary-item small { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
     .summary-item strong { font-size: 13px; font-weight: 650; }
     .detail-section { margin-top: 14px; }
     .detail-section h3 { margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .detail-kline-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+    .detail-section .detail-kline-head h3 { margin: 0; padding: 0; border: 0; }
+    .detail-kline-refresh { height: 27px; padding: 0 9px; border-radius: 6px; color: #49658e; font-size: 11px; }
+    .detail-kline-box { position: relative; width: 100%; height: 360px; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fafcff; }
+    .detail-kline-box > div:not(.detail-kline-state) { width: 100%; height: 100%; }
+    .detail-kline-state { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--muted); font-size: 12px; text-align: center; }
+    .detail-media-title-date { margin-left: 5px; color: var(--muted); font-size: 11px; font-weight: 400; }
+    .detail-media-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .detail-media-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fafcff; }
+    .detail-media-card h4 { margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--line); color: #49658e; font-size: 12px; }
+    .detail-media-card a { display: flex; align-items: center; justify-content: center; min-height: 190px; padding: 5px; background: #fff; cursor: zoom-in; }
+    .detail-media-card img { display: block; width: 100%; max-height: 330px; object-fit: contain; }
+    .detail-media-empty { display: flex; align-items: center; justify-content: center; min-height: 190px; padding: 20px; color: var(--muted); font-size: 12px; text-align: center; }
     .limit-reason-detail { padding: 9px 11px; border: 1px solid #fed7aa; border-radius: 8px; background: #fff7ed; color: #7c2d12; font-size: 12px; line-height: 1.65; }
-    .old-dragon-detail { margin: -5px 0 14px; padding: 9px 11px; border: 1px solid #dfc57a; border-radius: 8px; background: #fff8df; color: #76520b; font-size: 12px; line-height: 1.65; }
+    .model-detail { padding: 9px 11px; border: 1px solid #c4b5fd; border-radius: 8px; background: #faf5ff; color: #4c1d95; font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .model-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+    .detail-section .model-head h3 { margin: 0; padding: 0; border: 0; }
+    .model-edit-btn { padding: 3px 8px; border: 1px solid #c4b5fd; border-radius: 5px; background: #fff; color: #6d28d9; font-size: 10px; cursor: pointer; }
+    .model-edit-btn:hover { border-color: #a78bfa; background: #ede9fe; }
+    .model-editor[hidden] { display: none; }
+    .model-editor { margin-top: 8px; padding: 9px; border: 1px solid #c4b5fd; border-radius: 8px; background: #faf5ff; }
+    .model-editor textarea { display: block; width: 100%; min-height: 96px; padding: 8px 9px; border: 1px solid #c4b5fd; border-radius: 6px; background: #fff; color: var(--text); font: inherit; font-size: 12px; line-height: 1.65; resize: vertical; outline: none; }
+    .model-editor textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 2px #ede9fe; }
+    .model-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 7px; }
+    .model-actions button { padding: 4px 9px; border: 1px solid #c4b5fd; border-radius: 5px; background: #fff; color: #6d28d9; font-size: 10px; cursor: pointer; }
+    .model-actions .model-save { border-color: #7c3aed; background: #7c3aed; color: #fff; }
+    .model-status { min-height: 14px; margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .old-dragon-control { display: flex; align-items: center; gap: 8px; margin: -5px 0 14px; padding: 9px 11px; border: 1px solid #dfc57a; border-radius: 8px; background: #fff8df; color: #76520b; }
+    .old-dragon-detail { flex: 1; min-width: 0; color: #76520b; font-size: 12px; line-height: 1.65; }
+    .old-dragon-detail.inactive { color: #8a7d5d; }
     .old-dragon-detail strong { color: #9a6b08; }
+    .old-dragon-status { color: #8a7d5d; font-size: 10px; white-space: nowrap; }
+    .old-dragon-toggle { height: 27px; padding: 0 9px; border-color: #d3ad42; border-radius: 6px; background: #fff; color: #8a630d; font-size: 10px; white-space: nowrap; }
+    .old-dragon-toggle.active { background: #d7ad3a; color: #fff; }
+    .old-dragon-toggle:disabled { opacity: .55; cursor: wait; }
+    .pool-control { display: flex; align-items: center; gap: 8px; margin: -5px 0 14px; padding: 8px 10px; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; color: #1d4ed8; font-size: 11px; }
+    .pool-control strong { font-weight: 700; }.pool-control small { margin-left: auto; color: var(--muted); }
+    .pool-toggle { padding: 3px 8px; border: 1px solid #60a5fa; border-radius: 5px; background: #fff; color: #1d4ed8; font-size: 10px; cursor: pointer; }
+    .pool-toggle.active { background: #2563eb; color: #fff; }.pool-toggle:disabled { opacity: .55; cursor: wait; }
     .concept-pills { display: flex; flex-wrap: wrap; gap: 5px; }
     .concept-pill { padding: 3px 7px; border: 1px solid #d7e2f4; border-radius: 5px; background: #f7faff; color: #49658e; font-size: 11px; }
     .concept-explanation { margin-top: 8px; padding: 8px 10px; border-left: 3px solid #c8d7f2; background: #fafcff; color: #59677c; font-size: 12px; line-height: 1.65; }
@@ -160,6 +250,9 @@
     }
     @media (max-width: 720px) {
       .shareholder-columns { grid-template-columns: 1fr; }
+      .detail-kline-box { height: 310px; }
+      .detail-media-grid { grid-template-columns: 1fr; }
+      .stats-body { grid-template-columns: 1fr; }.stats-card.wide { grid-column: auto; }
       body { padding: 12px; }
       .control-panel { align-items: flex-start; gap: 6px 10px; }
       .topbar { width: 100%; align-items: center; flex-direction: row; gap: 8px; }
@@ -239,12 +332,48 @@
         <button class="close" id="modalClose" aria-label="关闭">×</button>
       </div>
       <div class="detail-summary" id="detailSummary"></div>
-      <div class="old-dragon-detail" id="detailOldDragon" hidden></div>
+      <div class="old-dragon-control"><div class="old-dragon-detail" id="detailOldDragon"></div><small class="old-dragon-status" id="detailOldDragonStatus"></small><button type="button" class="old-dragon-toggle" id="detailOldDragonToggle">加入老龙</button></div>
+      <div class="pool-control"><strong>三板组标记</strong><small id="detailPoolStatus"></small><button type="button" class="pool-toggle" id="detailPoolToggle">加入三板组</button></div>
       <section class="detail-section"><h3 id="detailLimitReasonTitle">当日涨停原因</h3><div class="limit-reason-detail" id="detailLimitReason">正在加载…</div></section>
+      <section class="detail-section">
+        <div class="model-head"><h3>模型制作</h3><button type="button" class="model-edit-btn" id="detailModelEdit">编辑</button></div>
+        <div class="model-detail" id="detailModel">暂未填写</div>
+        <div class="model-editor" id="detailModelEditor" hidden>
+          <textarea id="detailModelInput" maxlength="5000" placeholder="在这里填写该股票的模型制作内容…"></textarea>
+          <div class="model-actions"><button type="button" id="detailModelCancel">取消</button><button type="button" class="model-save" id="detailModelSave">保存</button></div>
+          <div class="model-status" id="detailModelStatus" role="status" aria-live="polite"></div>
+        </div>
+      </section>
       <section class="detail-section"><h3>题材概念</h3><div id="detailConcepts"></div></section>
       <section class="detail-section"><h3>股东与股本信息</h3><div id="detailShareholders"></div></section>
-      <section class="detail-section"><h3>历史涨停</h3></section>
-      <div class="history" id="history"></div>
+      <details class="history-collapse" id="historyCollapse">
+        <summary>历史涨停 <span class="history-count" id="historyCount"></span></summary>
+        <div class="history" id="history"></div>
+      </details>
+      <section class="detail-section">
+        <div class="detail-kline-head"><h3>日 K 线</h3><button type="button" class="detail-kline-refresh" id="detailKlineRefresh">↻ 刷新</button></div>
+        <div class="detail-kline-box" id="detailKline"><div class="detail-kline-state">双击股票后加载日 K 线</div></div>
+      </section>
+      <section class="detail-section">
+        <h3>分时图与买一量 <span class="detail-media-title-date" id="detailMediaDate"></span></h3>
+        <div class="detail-media-grid" id="detailMediaGrid"><div class="detail-media-empty">双击股票后加载对应日期图片</div></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="discussionBackdrop">
+    <div class="modal discussion-modal" role="dialog" aria-modal="true" aria-labelledby="discussionTitle">
+      <div class="modal-head"><div><h2 id="discussionTitle">主帖</h2><div class="code" id="discussionSubtitle"></div></div><button class="close" id="discussionClose" aria-label="关闭">×</button></div>
+      <div class="discussion-tabs" role="tablist" aria-label="帖子作者"><button type="button" class="discussion-tab active" data-discussion-author="yanbian">延边刺客</button><button type="button" class="discussion-tab" data-discussion-author="shunshi">顺shi而为</button></div>
+      <div class="discussion-body" id="discussionBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="statsBackdrop">
+    <div class="modal stats-modal" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+      <div class="modal-head"><div><h2 id="statsTitle">当日涨停统计</h2><div class="code" id="statsSubtitle"></div></div><button class="close" id="statsClose" aria-label="关闭">×</button></div>
+      <div class="stats-meta" id="statsMeta"></div>
+      <div class="stats-body" id="statsBody"></div>
     </div>
   </div>
 
@@ -264,19 +393,28 @@
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="old_dragon_pool.js?v=20260826-1"></script>
   <script src="zt_auction_change_data.js"></script>
+  <script src="zt_turnover_amount_data.js?v=20260827-1"></script>
   <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
   <script>
     (() => {
       'use strict';
       const LABEL_WIDTH = 112, CELL_WIDTH = 290, WINDOW_OVERSCAN = 5, SCROLL_IDLE_MS = 90;
+      const STOCK_DETAIL_API = 'http://localhost:8765/stock-details';
+      const THREE_BOARD_POOL_API = 'http://localhost:8765/three-board-pool';
+      const OLD_DRAGON_POOL_API = 'http://localhost:8765/old-dragon-pool';
       const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
       const LIMIT_TIME_DATA = typeof ZTD !== 'undefined' && ZTD ? ZTD : {};
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
+      const TURNOVER_DATA = window.ZT_TURNOVER_AMOUNT_DATA || { dates: {} };
       const PROMOTION_FAILURE_DATA = window.ZT_PROMOTION_FAILURE_DATA || { dates: {} };
       const BID_DATA = typeof BID !== 'undefined' && BID ? BID : {};
       const BID_CODES_BY_DATE = new Map(Object.entries(BID_DATA).map(([date, rows]) => [
         date,
         new Set((Array.isArray(rows) ? rows : []).map(item => String(item && item.c || '').trim()).filter(Boolean))
+      ]));
+      const BID_ROWS_BY_DATE = new Map(Object.entries(BID_DATA).map(([date, rows]) => [
+        date,
+        new Map((Array.isArray(rows) ? rows : []).map(item => [String(item && item.c || '').trim(), item]).filter(item => item[0]))
       ]));
       const THREE_BOARD_POOL_DATA = window.THREE_BOARD_POOL_DATA || { stocks: [] };
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
@@ -285,16 +423,308 @@
       const els = {
         controlPanel: document.querySelector('.control-panel'), mobilePanelToggle: document.getElementById('mobilePanelToggle'), viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
-        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailOldDragon: document.getElementById('detailOldDragon'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), history: document.getElementById('history'), modalClose: document.getElementById('modalClose'),
+        modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailOldDragon: document.getElementById('detailOldDragon'), detailOldDragonToggle: document.getElementById('detailOldDragonToggle'), detailOldDragonStatus: document.getElementById('detailOldDragonStatus'), detailPoolToggle: document.getElementById('detailPoolToggle'), detailPoolStatus: document.getElementById('detailPoolStatus'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailModel: document.getElementById('detailModel'), detailModelEdit: document.getElementById('detailModelEdit'), detailModelEditor: document.getElementById('detailModelEditor'), detailModelInput: document.getElementById('detailModelInput'), detailModelSave: document.getElementById('detailModelSave'), detailModelCancel: document.getElementById('detailModelCancel'), detailModelStatus: document.getElementById('detailModelStatus'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), historyCollapse: document.getElementById('historyCollapse'), historyCount: document.getElementById('historyCount'), history: document.getElementById('history'), detailKline: document.getElementById('detailKline'), detailKlineRefresh: document.getElementById('detailKlineRefresh'), detailMediaDate: document.getElementById('detailMediaDate'), detailMediaGrid: document.getElementById('detailMediaGrid'), modalClose: document.getElementById('modalClose'),
+        discussionModal: document.getElementById('discussionBackdrop'), discussionTitle: document.getElementById('discussionTitle'), discussionSubtitle: document.getElementById('discussionSubtitle'), discussionBody: document.getElementById('discussionBody'), discussionClose: document.getElementById('discussionClose'), statsModal: document.getElementById('statsBackdrop'), statsTitle: document.getElementById('statsTitle'), statsSubtitle: document.getElementById('statsSubtitle'), statsMeta: document.getElementById('statsMeta'), statsBody: document.getElementById('statsBody'), statsClose: document.getElementById('statsClose'),
         searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
       };
       const state = {
         records: [], dates: [], recordByDate: new Map(), dateIndex: new Map(), stockHistory: new Map(),
         maxBoard: 1, windowSize: 30, windowStart: 0, windowEnd: 0,
         columnWidths: [], columnOffsets: [0], totalDateWidth: 0,
-        query: '', selectedCode: '', detailCode: '', detailDate: '', scrollTimer: 0, searchTimer: 0, zoom: 1
+        query: '', selectedCode: '', detailCode: '', detailDate: '', scrollTimer: 0, searchTimer: 0, zoom: 1, highBoardsCollapsed: true
       };
-      let detailDataPromise = null, limitReasonDataPromise = null;
+      let detailDataPromise = null, limitReasonDataPromise = null, detailKlineToken = 0, tradingViewLibPromise = null, detailMediaToken = 0, detailMediaMapsPromise = null;
+
+      function loadTradingViewLib() {
+        if (window.TradingView) return Promise.resolve();
+        if (!tradingViewLibPromise) {
+          tradingViewLibPromise = new Promise((resolve, reject) => {
+            const existing = document.querySelector('script[data-multi-day-tradingview]');
+            if (existing) {
+              existing.addEventListener('load', resolve, { once: true });
+              existing.addEventListener('error', () => reject(new Error('K 线脚本加载失败')), { once: true });
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/tv.js';
+            script.dataset.multiDayTradingview = '1';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('K 线脚本加载失败'));
+            document.head.appendChild(script);
+          }).catch(error => { tradingViewLibPromise = null; throw error; });
+        }
+        return tradingViewLibPromise;
+      }
+      function detailKlineSymbol(code) {
+        const value = String(code || '').trim();
+        const market = value.startsWith('6') || value.startsWith('68') ? 'SSE:' : value.startsWith('4') || value.startsWith('8') || value.startsWith('92') ? 'BSE:' : 'SZSE:';
+        return market + value;
+      }
+      function resetDetailKline(message = '双击股票后加载日 K 线') {
+        detailKlineToken += 1;
+        els.detailKline.innerHTML = `<div class="detail-kline-state">${escapeHtml(message)}</div>`;
+      }
+      function renderDetailKline(name, code) {
+        const value = String(code || '').trim();
+        const token = ++detailKlineToken;
+        if (!/^\d{6}$/.test(value)) {
+          els.detailKline.innerHTML = '<div class="detail-kline-state">该股票缺少有效代码，无法加载 K 线</div>';
+          return;
+        }
+        els.detailKline.innerHTML = `<div class="detail-kline-state">${escapeHtml(name || value)} K 线加载中…</div>`;
+        requestAnimationFrame(() => {
+          loadTradingViewLib().then(() => {
+            if (token !== detailKlineToken || state.detailCode !== value || !els.modal.classList.contains('open')) return;
+            const chartId = `multi-day-detail-tv-${token}`;
+            els.detailKline.innerHTML = `<div id="${chartId}"></div>`;
+            try {
+              new TradingView.widget({ container_id: chartId, autosize: true, symbol: detailKlineSymbol(value), interval: 'D', timezone: 'Asia/Shanghai', theme: 'light', style: '1', locale: 'zh_CN', allow_symbol_change: false, hide_side_toolbar: false, studies: [] });
+            } catch (_) {
+              if (token === detailKlineToken) els.detailKline.innerHTML = '<div class="detail-kline-state">K 线初始化失败</div>';
+            }
+          }).catch(() => {
+            if (token === detailKlineToken) els.detailKline.innerHTML = '<div class="detail-kline-state">K 线加载失败，请检查网络后重试</div>';
+          });
+        });
+      }
+      function loadDetailMediaScript(src, key) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.dataset.detailMediaMap = key;
+          script.onload = resolve;
+          script.onerror = () => { script.remove(); reject(new Error(`${key} 数据加载失败`)); };
+          document.head.appendChild(script);
+        });
+      }
+      function loadDetailMediaMaps() {
+        if (typeof FM !== 'undefined' && typeof HD !== 'undefined') return Promise.resolve();
+        if (!detailMediaMapsPromise) {
+          const jobs = [];
+          if (typeof FM === 'undefined') jobs.push(loadDetailMediaScript('fenshi_map.js?v=20260826-1', 'fenshi'));
+          if (typeof HD === 'undefined') jobs.push(loadDetailMediaScript('hengdan_map.js?v=20260826-1', 'hengdan'));
+          detailMediaMapsPromise = Promise.all(jobs).then(() => undefined).catch(error => { detailMediaMapsPromise = null; throw error; });
+        }
+        return detailMediaMapsPromise;
+      }
+      function detailMediaCard(title, src, name) {
+        const card = document.createElement('div');
+        card.className = 'detail-media-card';
+        const heading = document.createElement('h4');
+        heading.textContent = title;
+        card.appendChild(heading);
+        if (!src) {
+          const empty = document.createElement('div');
+          empty.className = 'detail-media-empty';
+          empty.textContent = `该日期暂无${title}`;
+          card.appendChild(empty);
+          return card;
+        }
+        const link = document.createElement('a');
+        link.href = src;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = '点击查看原图';
+        const image = document.createElement('img');
+        image.src = src;
+        image.alt = `${name} ${title}`;
+        image.loading = 'eager';
+        image.decoding = 'async';
+        image.onerror = () => {
+          const empty = document.createElement('div');
+          empty.className = 'detail-media-empty';
+          empty.textContent = `${title}图片加载失败`;
+          link.replaceWith(empty);
+        };
+        link.appendChild(image);
+        card.appendChild(link);
+        return card;
+      }
+      function resetDetailMedia(message = '双击股票后加载对应日期图片') {
+        detailMediaToken += 1;
+        els.detailMediaDate.textContent = '';
+        els.detailMediaGrid.innerHTML = `<div class="detail-media-empty">${escapeHtml(message)}</div>`;
+      }
+      function renderDetailMedia(name, code, date) {
+        const value = String(code || '').trim();
+        const day = String(date || '').trim();
+        const token = ++detailMediaToken;
+        els.detailMediaDate.textContent = day;
+        if (!/^\d{6}$/.test(value) || !/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+          els.detailMediaGrid.innerHTML = '<div class="detail-media-empty">缺少有效的股票代码或交易日期</div>';
+          return;
+        }
+        els.detailMediaGrid.innerHTML = '<div class="detail-media-empty">分时图与买一量加载中…</div>';
+        loadDetailMediaMaps().then(() => {
+          if (token !== detailMediaToken || state.detailCode !== value || state.detailDate !== day || !els.modal.classList.contains('open')) return;
+          const key = `${day}_${value}`;
+          const fenshiSrc = typeof FM !== 'undefined' && FM[key] ? FM[key] : '';
+          const hengdanName = typeof HD !== 'undefined' && HD[key] ? HD[key] : '';
+          const hengdanSrc = hengdanName ? `恒单/${day}/${hengdanName}` : '';
+          els.detailMediaGrid.replaceChildren(
+            detailMediaCard('分时图', fenshiSrc, name || value),
+            detailMediaCard('买一量', hengdanSrc, name || value)
+          );
+        }).catch(() => {
+          if (token === detailMediaToken) els.detailMediaGrid.innerHTML = '<div class="detail-media-empty">图片索引加载失败，请刷新后重试</div>';
+        });
+      }
+      function closeDetailModal() {
+        els.modal.classList.remove('open');
+        state.detailCode = '';
+        state.detailDate = '';
+        resetDetailKline();
+        resetDetailMedia();
+      }
+
+      const discussionState = { date: '', kind: 'posts', author: 'yanbian' };
+      const discussionPromises = { posts: null, replies: null };
+      function discussionLabel(kind) { return kind === 'replies' ? '跟帖' : '主帖'; }
+      function loadDiscussionData(kind) {
+        const globalKey = kind === 'replies' ? 'ZT_REPLIES' : 'ZT_POSTS';
+        if (window[globalKey]) return Promise.resolve();
+        if (!discussionPromises[kind]) {
+          discussionPromises[kind] = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = kind === 'replies' ? 'zt_replies.js?v=20260827-1' : 'zt_posts.js?v=20260827-1';
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`${discussionLabel(kind)}数据加载失败`));
+            document.head.appendChild(script);
+          }).catch(error => { discussionPromises[kind] = null; throw error; });
+        }
+        return discussionPromises[kind];
+      }
+      function renderDiscussion() {
+        const { date, kind, author } = discussionState;
+        const label = discussionLabel(kind);
+        els.discussionTitle.textContent = `${date} ${label}`;
+        els.discussionSubtitle.textContent = author === 'yanbian' ? '延边刺客' : '顺shi而为';
+        els.discussionBody.innerHTML = `<div class="utility-loading">${label}加载中…</div>`;
+        els.discussionModal.querySelectorAll('[data-discussion-author]').forEach(tab => {
+          const active = tab.dataset.discussionAuthor === author;
+          tab.classList.toggle('active', active);
+          tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        els.discussionModal.classList.add('open');
+        loadDiscussionData(kind).then(() => {
+          if (date !== discussionState.date || kind !== discussionState.kind || author !== discussionState.author) return;
+          const source = kind === 'replies' ? window.ZT_REPLIES : window.ZT_POSTS;
+          const items = source && source[author] && source[author][date];
+          if (!Array.isArray(items) || !items.length) {
+            els.discussionBody.innerHTML = `<div class="utility-empty">该日期暂无${author === 'yanbian' ? '延边刺客' : '顺shi而为'}${label}数据</div>`;
+            return;
+          }
+          els.discussionBody.innerHTML = items.map(item => `<section class="discussion-section">${item.title ? `<div class="discussion-source-title">${escapeHtml(item.title)}</div>` : ''}${kind === 'posts' && item.link && item.link !== 'https://www.tgb.cn/a/' ? `<a class="discussion-source-link" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">查看原文 →</a>` : ''}${item.text ? `<div>${escapeHtml(item.text)}</div>` : '<div class="utility-empty">标题已采集，正文暂未采集</div>'}</section>`).join('');
+        }).catch(error => {
+          if (date === discussionState.date && kind === discussionState.kind) els.discussionBody.innerHTML = `<div class="utility-error">${escapeHtml(error.message)}</div>`;
+        });
+      }
+      function showDiscussion(date, kind) {
+        discussionState.date = date;
+        discussionState.kind = kind;
+        discussionState.author = 'yanbian';
+        renderDiscussion();
+      }
+      function closeDiscussion() { els.discussionModal.classList.remove('open'); }
+
+      const STATS_SUFFIXES = [{ name: '股份', initials: 'gf' }, { name: '科技', initials: 'kj' }, { name: '集团', initials: 'jt' }, { name: '控股', initials: 'kg' }, { name: '发展', initials: 'fz' }, { name: '实业', initials: 'sy' }];
+      let statsDetailByCode = null, statsTags = new Map(), statsStocks = new Map(), statsTagSeq = 0, statsDate = '';
+      function stripStatsSuffixes(name, initials) {
+        let cleanName = String(name || ''), cleanInitials = String(initials || ''), changed = true;
+        while (changed) {
+          changed = false;
+          for (const suffix of STATS_SUFFIXES) {
+            if (cleanName.endsWith(suffix.name) && cleanInitials.endsWith(suffix.initials)) {
+              cleanName = cleanName.slice(0, -suffix.name.length);
+              cleanInitials = cleanInitials.slice(0, -suffix.initials.length);
+              changed = true;
+              break;
+            }
+          }
+        }
+        return cleanInitials;
+      }
+      function ensureStatsDetails() {
+        return ensureStockDetailData().then(() => {
+          if (!statsDetailByCode) {
+            statsDetailByCode = new Map();
+            Object.values(SD || {}).forEach(detail => { const code = String(detail && detail.c || '');if (code) statsDetailByCode.set(code, detail); });
+          }
+        });
+      }
+      function collectStatsStocks(date) {
+        const record = state.recordByDate.get(date), seen = new Set(), rows = [];
+        if (!record) return rows;
+        for (const lines of record.sections.values()) for (const line of lines) for (const match of stockMatches(line)) {
+          const name = String(match[1] || '').trim(), code = String(match[2] || '');
+          if (!name || seen.has(code) || /(?:^|\*)ST|退$/i.test(name)) continue;
+          seen.add(code);
+          const initials = stripStatsSuffixes(name, stockInitials(match).replace(/[^a-z]/g, ''));
+          const letters = [...new Set(initials.split(''))].sort(), pairs = [];
+          for (let a = 0; a < letters.length; a++) for (let b = a + 1; b < letters.length; b++) pairs.push(letters[a] + letters[b]);
+          const detail = (typeof SD !== 'undefined' && SD[name]) || (statsDetailByCode && statsDetailByCode.get(code));
+          const region = String(detail && detail.r || '').split(/\s*\/\s*/)[0].trim() || '未知';
+          rows.push({ name, code, initials, letters, pairs, region });
+        }
+        return rows;
+      }
+      function statsFeatureRows(stocks, key) {
+        const map = new Map();
+        stocks.forEach(stock => stock[key].forEach(value => { const row = map.get(value) || { key: value, count: 0, stocks: [] };row.count += 1;row.stocks.push(stock.name);map.set(value, row); }));
+        return [...map.values()].sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+      }
+      function statsIntersectionRows(stocks, features, key, coverageOnly) {
+        const counts = new Map(features.map(row => [row.key, row.count]));
+        return stocks.map(stock => {
+          const evidence = stock[key].filter(value => (counts.get(value) || 0) > 1).sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0) || a.localeCompare(b));
+          const score = coverageOnly ? evidence.length : evidence.reduce((sum, value) => sum + counts.get(value) - 1, 0);
+          return { name: stock.name, score, unit: coverageOnly ? '组' : '次', evidence: evidence.map(value => value.toUpperCase() + (coverageOnly ? '' : `×${counts.get(value)}`)) };
+        }).filter(row => row.score > 0).sort((a, b) => b.score - a.score || b.evidence.length - a.evidence.length || a.name.localeCompare(b.name, 'zh-CN')).slice(0, 20);
+      }
+      function statsTagsHtml(rows, limit, kind) {
+        if (!rows.length) return '<div class="utility-empty">暂无可统计数据</div>';
+        return `<div class="stats-tags">${rows.slice(0, limit).map(row => { const token = `stats-${++statsTagSeq}`;statsTags.set(token, { kind, key: kind === '地域' ? row.key : row.key.toUpperCase(), stocks: row.stocks.slice() });return `<button type="button" class="stats-tag" data-stats-token="${token}" title="${escapeAttr(row.stocks.join('、'))}">${escapeHtml(kind === '地域' ? row.key : row.key.toUpperCase())}<b>${row.count}</b></button>`; }).join('')}</div>`;
+      }
+      function statsRankHtml(rows) {
+        if (!rows.length) return '<div class="utility-empty">当天股票之间没有重复交集</div>';
+        return `<div class="stats-list">${rows.map((row, index) => `<div class="stats-row"><span class="stats-rank">${index + 1}</span><span class="stats-stock">${escapeHtml(row.name)}</span><span class="stats-evidence" title="${escapeAttr(row.evidence.join(' · '))}">${escapeHtml(row.evidence.join(' · '))}</span><span class="stats-score">${row.score}${row.unit}</span></div>`).join('')}</div>`;
+      }
+      function renderStats(date) {
+        if (date !== statsDate || !els.statsModal.classList.contains('open')) return;
+        const stocks = collectStatsStocks(date), regions = new Map();
+        stocks.forEach(stock => { const list = regions.get(stock.region) || [];list.push(stock.name);regions.set(stock.region, list); });
+        const regionRows = [...regions].map(([key, names]) => ({ key, count: names.length, stocks: names })).sort((a, b) => b.count - a.count || a.key.localeCompare(b.key, 'zh-CN'));
+        const singles = statsFeatureRows(stocks, 'letters'), pairs = statsFeatureRows(stocks, 'pairs');
+        statsTags = new Map();statsStocks = new Map(stocks.map(stock => [stock.name, stock]));statsTagSeq = 0;
+        els.statsTitle.textContent = '当日涨停统计';
+        els.statsSubtitle.textContent = date;
+        els.statsMeta.textContent = `涨停 ${stocks.length}只 · 地域 ${regions.size}个 · 已剥离股份、科技等惯常后缀；双字母不区分顺序`;
+        els.statsBody.innerHTML = `<section class="stats-card wide stats-selection" id="statsSelection"><div class="stats-selection-title" id="statsSelectionTitle"></div><div class="stats-selection-list" id="statsSelectionList"></div></section><section class="stats-card wide"><h3>地域涨停数量<small>点击查看股票</small></h3>${statsTagsHtml(regionRows, regionRows.length, '地域')}</section><section class="stats-card"><h3>单字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(singles, 26, '单字母')}</section><section class="stats-card"><h3>双字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(pairs, 30, '双字母')}</section><section class="stats-card"><h3>单字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, singles, 'letters', false))}</section><section class="stats-card"><h3>双字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, pairs, 'pairs', true))}</section>`;
+      }
+      function showStats(date) {
+        statsDate = date;
+        els.statsTitle.textContent = '当日涨停统计';
+        els.statsSubtitle.textContent = date;
+        els.statsMeta.textContent = '';
+        els.statsBody.innerHTML = '<div class="utility-loading">统计数据加载中…</div>';
+        els.statsModal.classList.add('open');
+        ensureStatsDetails().then(() => renderStats(date)).catch(error => { if (date === statsDate) els.statsBody.innerHTML = `<div class="utility-error">${escapeHtml(error.message)}</div>`; });
+      }
+      function showStatsSelection(token, tag) {
+        const data = statsTags.get(token), panel = document.getElementById('statsSelection');
+        if (!data || !panel) return;
+        els.statsBody.querySelectorAll('.stats-tag.active').forEach(item => item.classList.remove('active'));
+        if (tag) tag.classList.add('active');
+        const rows = data.stocks.map(name => statsStocks.get(name) || { name, code: '' });
+        const title = document.getElementById('statsSelectionTitle');
+        const list = document.getElementById('statsSelectionList');
+        title.innerHTML = `${escapeHtml(data.kind)} · ${escapeHtml(data.key)} <small>${rows.length}只股票</small>`;
+        list.innerHTML = rows.map(stock => `<button type="button" class="stats-selection-stock" data-stats-stock="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}${stock.code ? `<small>${escapeHtml(stock.code)}</small>` : ''}</button>`).join('');
+        panel.classList.add('show');
+        els.statsModal.querySelector('.modal').scrollTop = 0;
+      }
+      function closeStats() { els.statsModal.classList.remove('open');statsDate = ''; }
 
       function readMobilePanelCollapsed() {
         try {
@@ -413,13 +843,11 @@
         return Array.isArray(rows) ? rows : [];
       }
       function promotionMetricMarkup(row) {
-        const auction = Number(row && row.auction), opening = Number(row && row.open), amplitude = Number(row && row.amplitude);
+        const auction = Number(row && row.auction), opening = Number(row && row.open);
         const hasAuction = row && row.auction !== null && row.auction !== undefined && Number.isFinite(auction);
         const hasOpen = row && row.open !== null && row.open !== undefined && Number.isFinite(opening);
-        const hasAmplitude = row && row.amplitude !== null && row.amplitude !== undefined && Number.isFinite(amplitude);
         const price = hasAuction ? `竞${auction > 0 ? '+' : ''}${auction.toFixed(2)}%` : (hasOpen ? `开${opening > 0 ? '+' : ''}${opening.toFixed(2)}%` : '');
-        const metrics = [price, hasAmplitude ? `振${amplitude.toFixed(2)}%` : ''].filter(Boolean);
-        return `<span class="promotion-metric">${metrics.length ? metrics.join(' · ') : '无交易数据'}</span>`;
+        return `<span class="promotion-metric">${price || '无交易数据'}</span>`;
       }
       function renderPromotionFailureChips(date, board) {
         const rows = promotionFailureRows(date, board);
@@ -431,7 +859,8 @@
           const selected = state.selectedCode === code;
           const dragon = oldDragonInfo(code);
           const notes = [source, dragon ? `老龙：${oldDragonText(dragon)}` : ''].filter(Boolean).join(' · ');
-          return `<span class="stock-chip promotion-failure${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(notes)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}</span>`;
+          const title = [notes, row && row.broken === true ? '盘中触及涨停后炸板' : ''].filter(Boolean).join(' · ');
+          return `<span class="stock-chip promotion-failure${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(title)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}${row && row.broken === true ? '<span class="promotion-broken">炸</span>' : ''}</span>`;
         }).join('');
       }
       function renderPromotionFailures(date, board, rows) {
@@ -444,8 +873,49 @@
         const codes = BID_CODES_BY_DATE.get(date);
         return Boolean(codes && codes.has(String(code || '').trim()));
       }
+      function formatBidSealAmount(value) {
+        const amountWan = Number(value);
+        if (!Number.isFinite(amountWan) || amountWan < 0) return '';
+        const trim = value => value.replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+        if (amountWan >= 10000) return `${trim((amountWan / 10000).toFixed(amountWan >= 100000 ? 1 : 2))}亿`;
+        if (amountWan >= 1000) return `${trim(amountWan.toFixed(0))}万`;
+        return `${trim(amountWan.toFixed(amountWan >= 100 ? 0 : 1))}万`;
+      }
+      function bidSealAmountMarkup(date, code) {
+        const rows = BID_ROWS_BY_DATE.get(date), row = rows && rows.get(String(code || '').trim());
+        const label = row && formatBidSealAmount(row.a);
+        return label ? `<span class="bid-seal-amount" title="09:25竞价封单金额">封${escapeHtml(label)}</span>` : '';
+      }
       function isThreeBoardPoolStock(code) {
         return THREE_BOARD_POOL_CODES.has(String(code || '').trim());
+      }
+      function renderPoolControl() {
+        const active = isThreeBoardPoolStock(state.detailCode);
+        els.detailPoolToggle.classList.toggle('active', active);
+        els.detailPoolToggle.dataset.active = active ? '1' : '0';
+        els.detailPoolToggle.textContent = active ? '移出三板组' : '加入三板组';
+        els.detailPoolStatus.textContent = active ? '已标记' : '';
+      }
+      function toggleThreeBoardPool() {
+        const code = String(state.detailCode || '').trim();
+        const stock = state.stockHistory.get(code);
+        const found = currentStockDetail();
+        const name = found && found.name || stock && stock.name || '';
+        if (!code || !name) { els.detailPoolStatus.textContent = '缺少股票名称或代码'; return; }
+        const active = els.detailPoolToggle.dataset.active !== '1';
+        els.detailPoolToggle.disabled = true;els.detailPoolToggle.textContent = '保存中';els.detailPoolStatus.textContent = '正在写入 JS…';
+        fetch(THREE_BOARD_POOL_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, code, active }) })
+          .then(response => response.json())
+          .then(result => {
+            if (!result || !result.ok) throw new Error(result && result.error || '服务未确认保存');
+            const rows = Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : (THREE_BOARD_POOL_DATA.stocks = []);
+            for (let index = rows.length - 1; index >= 0; index--) if (String(rows[index] && rows[index].c || '') === code) rows.splice(index, 1);
+            if (active) rows.push({ n: name, c: code });
+            THREE_BOARD_POOL_CODES.clear();rows.forEach(row => { const value = String(row && row.c || '').trim();if (value) THREE_BOARD_POOL_CODES.add(value); });
+            renderPoolControl();renderWindow(true);els.detailPoolStatus.textContent = '已保存 ✓';
+          })
+          .catch(error => { els.detailPoolStatus.textContent = '保存失败：请确认笔记服务已启动';console.error('三板组标记保存失败', error); })
+          .finally(() => { const message = els.detailPoolStatus.textContent;els.detailPoolToggle.disabled = false;renderPoolControl();if (/^(?:已保存|保存失败)/.test(message)) els.detailPoolStatus.textContent = message; });
       }
       function oldDragonInfo(code) {
         return OLD_DRAGON_STOCKS[String(code || '').trim()] || null;
@@ -454,20 +924,78 @@
         if (!info) return '';
         const parts = [];
         if (info.s) parts.push(`${info.s.n}连板，记录日 ${info.s.d}${info.s.src ? `（${info.s.src}）` : ''}`);
+        else if (info.manual) parts.push(`手工加入${info.manualAt ? `（${info.manualAt}）` : ''}`);
         else parts.push('未记录五连板，因严重异动入池');
         if (Array.isArray(info.d10) && info.d10.length) parts.push(`10日100% ${info.d10.join('、')}`);
         if (Array.isArray(info.d30) && info.d30.length) parts.push(`30日200% ${info.d30.join('、')}`);
         return parts.join(' · ');
       }
+      function renderOldDragonControl() {
+        const info = oldDragonInfo(state.detailCode);
+        const active = Boolean(info);
+        els.detailOldDragon.classList.toggle('inactive', !active);
+        els.detailOldDragon.innerHTML = active ? `<strong>老龙：</strong>${escapeHtml(oldDragonText(info))}` : '当前未标记为老龙';
+        els.detailOldDragonToggle.classList.toggle('active', active);
+        els.detailOldDragonToggle.dataset.active = active ? '1' : '0';
+        els.detailOldDragonToggle.textContent = active ? '移出老龙' : '加入老龙';
+        if (!els.detailOldDragonToggle.disabled) els.detailOldDragonStatus.textContent = '';
+      }
+      function toggleOldDragon() {
+        const code = state.detailCode;
+        const stock = state.stockHistory.get(code);
+        const name = stock && stock.name || code;
+        if (!code || !name) { els.detailOldDragonStatus.textContent = '缺少股票名称或代码'; return; }
+        const active = els.detailOldDragonToggle.dataset.active !== '1';
+        els.detailOldDragonToggle.disabled = true;
+        els.detailOldDragonToggle.textContent = '保存中';
+        els.detailOldDragonStatus.textContent = '正在写入 JS…';
+        fetch(OLD_DRAGON_POOL_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, code, active }) })
+          .then(response => response.json())
+          .then(result => {
+            if (!result || !result.ok) throw new Error(result && result.error || '服务未确认保存');
+            if (active) {
+              OLD_DRAGON_STOCKS[code] = { n: name, b: code.startsWith('30') ? '创业板' : '主板', s: null, d10: [], d30: [], manual: true, manualAt: new Date().toISOString().slice(0, 10) };
+              if (OLD_DRAGON_DATA.manualExcluded) delete OLD_DRAGON_DATA.manualExcluded[code];
+            } else {
+              delete OLD_DRAGON_STOCKS[code];
+              const excluded = OLD_DRAGON_DATA.manualExcluded || (OLD_DRAGON_DATA.manualExcluded = {});
+              excluded[code] = { n: name, at: new Date().toISOString().slice(0, 10) };
+            }
+            renderOldDragonControl();
+            renderWindow(true);
+            els.detailOldDragonStatus.textContent = '已保存 ✓';
+          })
+          .catch(error => { els.detailOldDragonStatus.textContent = '保存失败：请确认笔记服务已启动';console.error('老龙标记保存失败', error); })
+          .finally(() => {
+            const message = els.detailOldDragonStatus.textContent;
+            els.detailOldDragonToggle.disabled = false;
+            renderOldDragonControl();
+            if (/^(?:已保存|保存失败)/.test(message)) els.detailOldDragonStatus.textContent = message;
+          });
+      }
       function columnWidth(record) {
-        let groups = 1;
+        let groups = 1, stockSlotWidth = 190;
         if (record) {
           for (const [board, count] of record.stockCounts) {
-            if (board >= 2) groups = Math.max(groups, Math.ceil(count / 30));
+            if (board < 2) continue;
+            groups = Math.max(groups, Math.ceil(count / 30));
+            const lines = record.sections.get(board) || [];
+            for (const line of lines) for (const match of stockMatches(line)) {
+              const nameWidth = [...String(match[1] || '')].reduce((sum, char) => sum + (/^[\x00-\xff]$/.test(char) ? 7 : 13), 0);
+              const day = AUCTION_DATA.dates && AUCTION_DATA.dates[record.date];
+              const hasAuction = Number.isFinite(Number(day && day.values && day.values[match[2]]));
+              const bidRows = BID_ROWS_BY_DATE.get(record.date), bidRow = bidRows && bidRows.get(match[2]);
+              const bidLabel = bidRow ? formatBidSealAmount(bidRow.a) : '';
+              const timeRow = LIMIT_TIME_DATA[record.date] && LIMIT_TIME_DATA[record.date][match[2]];
+              const hasLimitTime = /^\d{2}:\d{2}(?::\d{2})?$/.test(String(timeRow && timeRow.ft || '').trim());
+              // 名称、代码、内边距与各指标间距，再按实际存在的首封时间、竞价涨幅和封单标签增量估算。
+              const estimated = nameWidth + 70 + (hasLimitTime ? 58 : 0) + (hasAuction ? 65 : 0) + (bidLabel ? Math.max(45, bidLabel.length * 9 + 20) : 0);
+              stockSlotWidth = Math.max(stockSlotWidth, estimated);
+            }
           }
         }
-        // 二板及以上按每组 3 列、每列最多 10 行排列；190px 可容纳名称、代码和竞价涨幅。
-        return Math.max(CELL_WIDTH, groups * 3 * 190 + 28);
+        // 二板及以上按每组 3 列、每列最多 10 行；按当日最长按钮动态留宽，避免封单标签越界。
+        return Math.max(CELL_WIDTH, groups * 3 * (Math.ceil(stockSlotWidth) + 6) + 28);
       }
       function buildLayoutIndex() {
         state.columnWidths = state.records.map(columnWidth);
@@ -487,7 +1015,7 @@
       function renderHeader(dates, start) {
         els.header.innerHTML = '<div class="corner">连板层级 / 日期（近 → 远）</div><div class="virtual-spacer" aria-hidden="true"></div>' + dates.map((date, localIndex) => {
           const index = start + localIndex;
-          return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small></div>`;
+          return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small><div class="date-actions"><button type="button" class="date-action" data-date-action="stats" data-date="${escapeAttr(date)}">统计</button><button type="button" class="date-action" data-date-action="posts" data-date="${escapeAttr(date)}">主帖</button><button type="button" class="date-action" data-date-action="replies" data-date="${escapeAttr(date)}">跟帖</button></div></div>`;
         }).join('') + '<div class="virtual-spacer" aria-hidden="true"></div>';
       }
       function stockMatches(line) {
@@ -527,7 +1055,7 @@
         const poolStock = isThreeBoardPoolStock(match[2]);
         const dragon = oldDragonInfo(match[2]);
         const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
+        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${bidSealAmountMarkup(date, match[2])}${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
       }
       function renderLine(line, compact, date, lines = [line], lineIndex = 0) {
         const matches = stockMatches(line);
@@ -554,11 +1082,36 @@
             const poolStock = isThreeBoardPoolStock(stock.code);
             const dragon = oldDragonInfo(stock.code);
             const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${auctionPctMarkup(date, stock.code)}</span>`;
+            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${bidSealAmountMarkup(date, stock.code)}${firstLimitTimeMarkup(date, stock.code)}${auctionPctMarkup(date, stock.code)}</span>`;
           }).join('');
           groups.push(`<div class="stock-group">${group}</div>`);
         }
         return `${themes.join('')}<div class="stock-grid">${groups.join('')}</div>`;
+      }
+      function formatTurnoverAmount(value) {
+        const amount = Number(value);
+        if (!Number.isFinite(amount) || amount < 0) return '—';
+        if (amount >= 1e8) return `${(amount / 1e8).toFixed(amount >= 1e10 ? 1 : 2).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1')}亿`;
+        if (amount >= 1e4) return `${(amount / 1e4).toFixed(amount >= 1e6 ? 1 : 2).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1')}万`;
+        return `${Math.round(amount).toLocaleString('zh-CN')}元`;
+      }
+      function renderBoardTurnover(lines, date) {
+        const codes = [...new Set(lines.flatMap(line => stockMatches(line).map(match => match[2])))];
+        if (!codes.length) return '';
+        const day = TURNOVER_DATA.dates && TURNOVER_DATA.dates[date];
+        if (!day || !day.values) return '';
+        let total = 0, found = 0;
+        codes.forEach(code => {
+          const amount = Number(day.values[code]);
+          if (!Number.isFinite(amount) || amount < 0) return;
+          total += amount;
+          found += 1;
+        });
+        const incomplete = found < codes.length;
+        const source = day.sourceDate || date;
+        const title = `${source} 成交额合计 · 已覆盖 ${found}/${codes.length} 只`;
+        const coverage = incomplete ? `<span>${found}/${codes.length}</span>` : '';
+        return `<div class="board-turnover${incomplete ? ' incomplete' : ''}" title="${escapeAttr(title)}"><span>成交额</span><strong>${found ? formatTurnoverAmount(total) : '暂无'}</strong>${coverage}</div>`;
       }
       function renderCell(record, board, date) {
         const lines = record && record.sections.get(board) || [];
@@ -574,12 +1127,17 @@
         const dim = state.query && !hasMatch;
         const selected = state.selectedCode && (lines.some(line => line.includes(state.selectedCode)) || failures.some(row => row.c === state.selectedCode));
         const successContent = !lines.length ? '' : (board === 1 ? lines.map((line, index) => renderLine(line, true, date, lines, index)).join('') : renderLimitedContent(lines, date));
-        const content = successContent + renderPromotionFailures(date, board, failures);
+        const content = renderBoardTurnover(lines, date) + successContent + renderPromotionFailures(date, board, failures);
         return `<div class="board-cell has-content${hasMatch ? ' cell-match' : ''}${dim ? ' cell-dim' : ''}${selected ? ' selected-cell' : ''}" data-date="${date}" data-board="${board}" data-text="${escapeAttr(text)}">${content}</div>`;
       }
       function renderRows(dates) {
         const rows = [];
         for (let board = state.maxBoard; board >= 1; board--) {
+          if (board >= 7 && state.highBoardsCollapsed) continue;
+          if (board === 6 && state.maxBoard >= 7) {
+            const hiddenCount = Math.max(0, state.maxBoard - 6);
+            rows.push(`<div class="high-board-divider"><div class="high-board-divider-label"><button type="button" class="high-board-toggle" aria-expanded="${state.highBoardsCollapsed ? 'false' : 'true'}">${state.highBoardsCollapsed ? `展开7板+ (${hiddenCount})` : '折叠7板+'}</button></div><div class="high-board-divider-line">7板及以上高标区</div></div>`);
+          }
           const high = board >= 3 ? ' high' : '';
           rows.push(`<div class="board-row"><div class="board-label${high}">${board === 1 ? '首板' : `${board}板`}</div><div class="virtual-spacer" aria-hidden="true"></div>${dates.map(date => renderCell(state.recordByDate.get(date), board, date)).join('')}<div class="virtual-spacer" aria-hidden="true"></div></div>`);
         }
@@ -589,7 +1147,7 @@
         const selectedName = state.selectedCode ? (state.stockHistory.get(state.selectedCode)?.name || state.selectedCode) : '';
         const matchCount = state.query ? [...state.stockHistory.values()].filter(stock => stockMatchesQuery(stock)).length : 0;
         const shown = Math.max(0, state.windowEnd - state.windowStart);
-        els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板 · 缩放 ${Math.round(state.zoom * 100)}%${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
+        els.status.textContent = `${state.records.length} 个交易日 · 当前渲染 ${shown} 天 · 最高 ${state.maxBoard} 板${state.maxBoard >= 7 && state.highBoardsCollapsed ? ' · 7板+已折叠' : ''} · 缩放 ${Math.round(state.zoom * 100)}%${state.query ? ` · 匹配 ${matchCount} 只` : ''}${selectedName ? ` · 已选 ${selectedName}` : ''}`;
         const first = state.dates[state.windowStart] || '';
         const last = state.dates[Math.max(state.windowStart, state.windowEnd - 1)] || '';
         els.hint.textContent = first && last ? `当前窗口 ${first} 至 ${last}；全部 ${state.dates.length} 个交易日均可直接滚动或按日期定位。` : '暂无涨停数据。';
@@ -772,6 +1330,7 @@
         const d = found && found.data;
         if (!d) {
           els.detailSummary.innerHTML = '<div class="empty-detail">暂无股票详情数据</div>';
+          els.detailModel.textContent = '暂未填写';
           els.detailConcepts.innerHTML = '<div class="empty-detail">暂无题材概念数据</div>';
           els.detailShareholders.innerHTML = '<div class="empty-detail">暂无股东和股本数据</div>';
           return;
@@ -785,6 +1344,7 @@
           ['流通股本', formatShares(d.h && d.h.cs) || '暂无']
         ];
         els.detailSummary.innerHTML = summary.map(item => `<div class="summary-item"><small>${escapeHtml(item[0])}</small><strong>${escapeHtml(item[1])}</strong></div>`).join('');
+        els.detailModel.textContent = String(d.model || '').trim() || '暂未填写';
         const tags = String(d.t || '').split(',').map(item => item.trim()).filter(Boolean);
         const explanations = Array.isArray(d.e) ? d.e : [];
         const tagHtml = tags.length ? `<div class="concept-pills">${tags.map(tag => `<span class="concept-pill">${escapeHtml(tag)}</span>`).join('')}</div>` : '<div class="empty-detail">暂无概念标签</div>';
@@ -810,6 +1370,56 @@
         };
         shareholders += `<div class="shareholder-columns">${holderColumn('十大股东', top10, ratioTotal(top10), '')}${holderColumn('十大流通股东', floatTop10, Number.isFinite(Number(h.floatTop10TotalRatio)) ? Number(h.floatTop10TotalRatio) : ratioTotal(floatTop10), h.floatTop10ReportPeriod || '')}</div>`;
         els.detailShareholders.innerHTML = shareholders;
+      }
+      function currentStockDetail() {
+        const stock = state.stockHistory.get(state.detailCode);
+        return findStockDetail(state.detailCode, stock && stock.name || '');
+      }
+      function setModelEditor(open) {
+        if (!els.detailModelEditor || !els.detailModelInput) return;
+        if (open) {
+          const found = currentStockDetail();
+          if (!found || !found.data) {
+            els.detailModelStatus.textContent = '股票详情尚未加载，请稍后再试';
+            return;
+          }
+          els.detailModelInput.value = String(found.data.model || '');
+          els.detailModelStatus.textContent = '';
+          els.detailModelEditor.hidden = false;
+          els.detailModelEdit.textContent = '收起';
+          setTimeout(() => els.detailModelInput.focus(), 0);
+        } else {
+          els.detailModelEditor.hidden = true;
+          els.detailModelEdit.textContent = '编辑';
+        }
+      }
+      function saveModelData() {
+        const found = currentStockDetail();
+        if (!found || !found.data) {
+          els.detailModelStatus.textContent = '缺少股票详情，无法保存';
+          return;
+        }
+        const model = String(els.detailModelInput.value || '').trim();
+        els.detailModelSave.disabled = true;
+        els.detailModelSave.textContent = '保存中';
+        els.detailModelStatus.textContent = '正在写入 stock_detail_map.js…';
+        fetch(STOCK_DETAIL_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: found.name, model }) })
+          .then(response => response.json())
+          .then(result => {
+            if (!result || !result.ok) throw new Error(result && result.error || '服务未确认保存');
+            if (model) found.data.model = model; else delete found.data.model;
+            els.detailModel.textContent = model || '暂未填写';
+            els.detailModelStatus.textContent = '已保存 ✓';
+            setModelEditor(false);
+          })
+          .catch(error => {
+            els.detailModelStatus.textContent = '保存失败：请确认笔记服务已启动';
+            console.error('模型制作保存失败', error);
+          })
+          .finally(() => {
+            els.detailModelSave.disabled = false;
+            els.detailModelSave.textContent = '保存';
+          });
       }
       function jumpToDate(value) {
         const query = String(value || '').trim();
@@ -838,21 +1448,35 @@
         els.modalCode.textContent = `${code}${reasonDate ? ` · ${reasonDate}` : ''}`;
         selectStock(code);
         els.detailSummary.innerHTML = '<div class="empty-detail">正在加载股票详情…</div>';
-        const dragon = oldDragonInfo(code);
-        els.detailOldDragon.hidden = !dragon;
-        els.detailOldDragon.innerHTML = dragon ? `<strong>老龙：</strong>${escapeHtml(oldDragonText(dragon))}` : '';
+        renderOldDragonControl();
+        renderPoolControl();
+        setModelEditor(false);
+        els.detailModel.textContent = '正在加载…';
         els.detailConcepts.innerHTML = '';
         els.detailShareholders.innerHTML = '';
+        els.historyCollapse.open = false;
+        els.historyCount.textContent = `（${stock.days.length}次）`;
         els.history.innerHTML = stock.days.map(item => `<div class="history-item ${item.date === reasonDate ? 'recent' : ''}"><time>${item.date}</time><strong>${item.board}板</strong></div>`).join('');
         els.modal.classList.add('open');
+        renderDetailKline(titleName, code);
+        renderDetailMedia(titleName, code, reasonDate);
         ensureLimitReasonData(reasonDate, code);
         ensureStockDetailData().then(() => renderStockDetail(titleName, code)).catch(error => {
           els.detailSummary.innerHTML = `<div class="empty-detail">${escapeHtml(error.message || '股票详情数据加载失败')}</div>`;
+          els.detailModel.textContent = '暂未填写';
           els.detailConcepts.innerHTML = '<div class="empty-detail">请检查 stock_detail_map.js 是否与网页位于同一目录。</div>';
           els.detailShareholders.innerHTML = '';
         });
       }
       els.body.addEventListener('click', event => {
+        const highBoardToggle = event.target.closest('.high-board-toggle');
+        if (highBoardToggle) {
+          state.highBoardsCollapsed = !state.highBoardsCollapsed;
+          try { localStorage.setItem('zt-multi-day-high-boards-collapsed', state.highBoardsCollapsed ? '1' : '0'); } catch (_) {}
+          renderRows(state.dates.slice(state.windowStart, state.windowEnd));
+          updateStatus();
+          return;
+        }
         const chip = event.target.closest('.stock-chip');
         if (!chip || !els.body.contains(chip)) return;
         event.stopPropagation();
@@ -872,6 +1496,16 @@
         event.stopPropagation();
         const cell = chip.closest('.board-cell');
         showHistory(chip.dataset.code, chip.dataset.name, cell && cell.dataset.date || '');
+      });
+      els.header.addEventListener('click', event => {
+        const button = event.target.closest('[data-date-action]');
+        if (!button || !els.header.contains(button)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const date = button.dataset.date, action = button.dataset.dateAction;
+        if (!date) return;
+        if (action === 'stats') showStats(date);
+        else if (action === 'posts' || action === 'replies') showDiscussion(date, action);
       });
       els.viewport.addEventListener('scroll', scheduleVirtualWindow, { passive: true });
       els.viewport.addEventListener('wheel', event => { if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) { event.preventDefault(); els.viewport.scrollLeft += event.deltaY; } }, { passive: false });
@@ -916,8 +1550,36 @@
       els.reloadBtn.addEventListener('click', loadData);
       els.mobilePanelToggle.addEventListener('click', toggleMobilePanel);
       window.addEventListener('resize', syncMobilePanel, { passive: true });
-      els.modalClose.addEventListener('click', () => els.modal.classList.remove('open'));
-      els.modal.addEventListener('click', event => { if (event.target === els.modal) els.modal.classList.remove('open'); });
+      els.detailModelEdit.addEventListener('click', () => setModelEditor(els.detailModelEditor.hidden));
+      els.detailModelCancel.addEventListener('click', () => setModelEditor(false));
+      els.detailModelSave.addEventListener('click', saveModelData);
+      els.detailPoolToggle.addEventListener('click', toggleThreeBoardPool);
+      els.detailOldDragonToggle.addEventListener('click', toggleOldDragon);
+      els.detailKlineRefresh.addEventListener('click', () => {
+        if (!state.detailCode) return;
+        const stock = state.stockHistory.get(state.detailCode);
+        renderDetailKline(stock && stock.name || state.detailCode, state.detailCode);
+      });
+      els.modalClose.addEventListener('click', closeDetailModal);
+      els.modal.addEventListener('click', event => { if (event.target === els.modal) closeDetailModal(); });
+      els.discussionClose.addEventListener('click', closeDiscussion);
+      els.discussionModal.addEventListener('click', event => { if (event.target === els.discussionModal) closeDiscussion(); });
+      els.discussionModal.querySelectorAll('[data-discussion-author]').forEach(tab => tab.addEventListener('click', () => {
+        discussionState.author = tab.dataset.discussionAuthor;
+        renderDiscussion();
+      }));
+      els.statsClose.addEventListener('click', closeStats);
+      els.statsModal.addEventListener('click', event => { if (event.target === els.statsModal) closeStats(); });
+      els.statsBody.addEventListener('click', event => {
+        const tag = event.target.closest('[data-stats-token]');
+        if (tag) { showStatsSelection(tag.dataset.statsToken, tag);return; }
+        const button = event.target.closest('[data-stats-stock]');
+        if (!button) return;
+        const stock = statsStocks.get(button.dataset.statsStock), date = statsDate;
+        if (!stock) return;
+        closeStats();
+        showHistory(stock.code, stock.name, date);
+      });
       els.searchHistoryClose.addEventListener('click', () => els.searchHistoryModal.classList.remove('open'));
       els.searchHistoryModal.addEventListener('click', event => { if (event.target === els.searchHistoryModal) els.searchHistoryModal.classList.remove('open'); });
       document.addEventListener('keydown', event => {
@@ -927,10 +1589,16 @@
           if (event.key === '0') { event.preventDefault(); applyZoom(1); return; }
         }
         if (event.key !== 'Escape') return;
-        els.modal.classList.remove('open');
+        closeDetailModal();
+        closeDiscussion();
+        closeStats();
         els.searchHistoryModal.classList.remove('open');
       });
       state.zoom = readStoredZoom();
+      try {
+        const savedHighBoards = localStorage.getItem('zt-multi-day-high-boards-collapsed');
+        state.highBoardsCollapsed = savedHighBoards === null ? true : savedHighBoards === '1';
+      } catch (_) { state.highBoardsCollapsed = true; }
       syncMobilePanel();
       loadData();
     })();
