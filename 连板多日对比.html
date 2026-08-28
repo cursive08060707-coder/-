@@ -114,10 +114,11 @@
     .promotion-failures[open] > summary::before { transform: rotate(90deg); }
     .promotion-failure-list { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 5px 6px; }
     .stock-chip.promotion-failure { border-color: #86efac; background: #ecfdf5; color: #166534; }
+    .stock-chip.promotion-failure.is-broken { border-color: #fb923c; background: #fff7ed; color: #9a3412; }
     .stock-chip.promotion-failure:hover, .stock-chip.promotion-failure.match { border-color: #4ade80; background: #dcfce7; color: #14532d; }
     .stock-chip.promotion-failure.selected { border-color: #dc9824; background: #ffe4a3; color: #7b4c00; }
     .stock-chip.promotion-failure .promotion-metric { color: #16825d; font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .stock-chip.promotion-failure .promotion-broken { display: inline-flex; align-items: center; justify-content: center; min-width: 15px; height: 15px; padding: 0 3px; border: 1px solid #fb923c; border-radius: 4px; background: #fff7ed; color: #c2410c; font-size: 8px; font-weight: 800; line-height: 1; }
+    .stock-chip.promotion-failure .promotion-broken { display: inline-flex; align-items: center; justify-content: center; height: 15px; padding: 0 4px; border: 1px solid #ea580c; border-radius: 4px; background: #ffedd5; color: #c2410c; font-size: 8px; font-weight: 800; line-height: 1; }
     .stock-chip.promotion-failure.old-dragon { border-color: #cfae4d; background: linear-gradient(90deg,#ecfdf5 0 50%,#fff8df 50% 100%); color: #76520b; }
     .no-data { padding: 50px; color: var(--muted); text-align: center; font-size: 13px; }
     .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(31,43,61,.24); backdrop-filter: blur(3px); }
@@ -178,6 +179,14 @@
     .stats-selection-title { margin-bottom: 8px; font-size: 12px; font-weight: 700; }
     .stats-selection-stock { border-radius: 6px; font-weight: 650; }
     .stats-selection-stock small { margin-left: 4px; color: var(--muted); font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .summary-modal { width: min(760px, 94vw); }
+    .summary-modal .modal-head { align-items: flex-start; }
+    .summary-editor { display: block; width: 100%; min-height: 360px; box-sizing: border-box; padding: 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: 13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; resize: vertical; outline: none; }
+    .summary-editor:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+    .summary-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+    .summary-status { color: var(--muted); font-size: 11px; }
+    .summary-save { padding: 6px 14px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
+    .summary-save:disabled { opacity: .55; cursor: wait; }
     .stats-list { display: grid; gap: 5px; }
     .stats-row { display: grid; grid-template-columns: 22px minmax(80px,.7fr) minmax(0,1.3fr) 48px; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 10px; }
     .stats-rank { color: var(--muted); text-align: center; }.stats-stock { overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }.stats-evidence { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }.stats-score { color: var(--accent); font-weight: 700; text-align: right; }
@@ -387,6 +396,14 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="summaryBackdrop">
+    <div class="modal summary-modal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle">
+      <div class="modal-head"><div><h2 id="summaryTitle">当日总结</h2><div class="code" id="summarySubtitle"></div></div><button class="close" id="summaryClose" aria-label="关闭总结">×</button></div>
+      <textarea class="summary-editor" id="summaryInput" maxlength="20000" placeholder="记录市场节点、题材强弱、明日计划…"></textarea>
+      <div class="summary-actions"><span class="summary-status" id="summaryStatus" role="status" aria-live="polite"></span><button class="summary-save" id="summarySave" type="button">保存总结</button></div>
+    </div>
+  </div>
+
   <script src="zt_data.js"></script>
   <script src="zt_time_detail.js"></script>
   <script src="bid_seal_data.js"></script>
@@ -395,6 +412,7 @@
   <script src="zt_auction_change_data.js"></script>
   <script src="zt_turnover_amount_data.js?v=20260827-1"></script>
   <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
+  <script src="notes_data.js"></script>
   <script>
     (() => {
       'use strict';
@@ -425,7 +443,8 @@
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
         modal: document.getElementById('modalBackdrop'), modalTitle: document.getElementById('modalTitle'), modalCode: document.getElementById('modalCode'), detailSummary: document.getElementById('detailSummary'), detailOldDragon: document.getElementById('detailOldDragon'), detailOldDragonToggle: document.getElementById('detailOldDragonToggle'), detailOldDragonStatus: document.getElementById('detailOldDragonStatus'), detailPoolToggle: document.getElementById('detailPoolToggle'), detailPoolStatus: document.getElementById('detailPoolStatus'), detailLimitReasonTitle: document.getElementById('detailLimitReasonTitle'), detailLimitReason: document.getElementById('detailLimitReason'), detailModel: document.getElementById('detailModel'), detailModelEdit: document.getElementById('detailModelEdit'), detailModelEditor: document.getElementById('detailModelEditor'), detailModelInput: document.getElementById('detailModelInput'), detailModelSave: document.getElementById('detailModelSave'), detailModelCancel: document.getElementById('detailModelCancel'), detailModelStatus: document.getElementById('detailModelStatus'), detailConcepts: document.getElementById('detailConcepts'), detailShareholders: document.getElementById('detailShareholders'), historyCollapse: document.getElementById('historyCollapse'), historyCount: document.getElementById('historyCount'), history: document.getElementById('history'), detailKline: document.getElementById('detailKline'), detailKlineRefresh: document.getElementById('detailKlineRefresh'), detailMediaDate: document.getElementById('detailMediaDate'), detailMediaGrid: document.getElementById('detailMediaGrid'), modalClose: document.getElementById('modalClose'),
         discussionModal: document.getElementById('discussionBackdrop'), discussionTitle: document.getElementById('discussionTitle'), discussionSubtitle: document.getElementById('discussionSubtitle'), discussionBody: document.getElementById('discussionBody'), discussionClose: document.getElementById('discussionClose'), statsModal: document.getElementById('statsBackdrop'), statsTitle: document.getElementById('statsTitle'), statsSubtitle: document.getElementById('statsSubtitle'), statsMeta: document.getElementById('statsMeta'), statsBody: document.getElementById('statsBody'), statsClose: document.getElementById('statsClose'),
-        searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose')
+        searchHistoryModal: document.getElementById('searchHistoryBackdrop'), searchHistoryTitle: document.getElementById('searchHistoryTitle'), searchHistorySubtitle: document.getElementById('searchHistorySubtitle'), searchHistoryBody: document.getElementById('searchHistoryBody'), searchHistoryClose: document.getElementById('searchHistoryClose'),
+        summaryModal: document.getElementById('summaryBackdrop'), summaryTitle: document.getElementById('summaryTitle'), summarySubtitle: document.getElementById('summarySubtitle'), summaryClose: document.getElementById('summaryClose'), summaryInput: document.getElementById('summaryInput'), summarySave: document.getElementById('summarySave'), summaryStatus: document.getElementById('summaryStatus')
       };
       const state = {
         records: [], dates: [], recordByDate: new Map(), dateIndex: new Map(), stockHistory: new Map(),
@@ -665,7 +684,9 @@
           for (let a = 0; a < letters.length; a++) for (let b = a + 1; b < letters.length; b++) pairs.push(letters[a] + letters[b]);
           const detail = (typeof SD !== 'undefined' && SD[name]) || (statsDetailByCode && statsDetailByCode.get(code));
           const region = String(detail && detail.r || '').split(/\s*\/\s*/)[0].trim() || '未知';
-          rows.push({ name, code, initials, letters, pairs, region });
+          const timeRow = LIMIT_TIME_DATA[date] && LIMIT_TIME_DATA[date][code];
+          const firstLimitTime = /^\d{2}:\d{2}(?::\d{2})?$/.test(String(timeRow && timeRow.ft || '').trim()) ? String(timeRow.ft).slice(0, 5) : '';
+          rows.push({ name, code, initials, letters, pairs, region, firstLimitTime });
         }
         return rows;
       }
@@ -716,15 +737,64 @@
         if (!data || !panel) return;
         els.statsBody.querySelectorAll('.stats-tag.active').forEach(item => item.classList.remove('active'));
         if (tag) tag.classList.add('active');
-        const rows = data.stocks.map(name => statsStocks.get(name) || { name, code: '' });
+        const rows = data.stocks.map(name => statsStocks.get(name) || { name, code: '', firstLimitTime: '' }).sort((a, b) => {
+          const aTime = a.firstLimitTime || '99:99', bTime = b.firstLimitTime || '99:99';
+          return aTime.localeCompare(bTime) || a.name.localeCompare(b.name, 'zh-CN');
+        });
         const title = document.getElementById('statsSelectionTitle');
         const list = document.getElementById('statsSelectionList');
         title.innerHTML = `${escapeHtml(data.kind)} · ${escapeHtml(data.key)} <small>${rows.length}只股票</small>`;
-        list.innerHTML = rows.map(stock => `<button type="button" class="stats-selection-stock" data-stats-stock="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}${stock.code ? `<small>${escapeHtml(stock.code)}</small>` : ''}</button>`).join('');
+        list.innerHTML = rows.map(stock => `<button type="button" class="stats-selection-stock" data-stats-stock="${escapeAttr(stock.name)}">${escapeHtml(stock.name)}${stock.code ? `<small>${escapeHtml(stock.code)}${stock.firstLimitTime ? ` · 首${escapeHtml(stock.firstLimitTime)}` : ''}</small>` : ''}</button>`).join('');
         panel.classList.add('show');
         els.statsModal.querySelector('.modal').scrollTop = 0;
       }
       function closeStats() { els.statsModal.classList.remove('open');statsDate = ''; }
+
+      const SUMMARY_TEMPLATE = '# 有没有节点\n## 高标角度\n## 指数角度\n\n# 有没有题材\n## 有没有一家独大的题材\n## 哪些题材没有预期\n\n# 有没有指引\n## 尾盘微盘涨速\n\n# 有没有恒单\n\n# 明日计划\n';
+      let summaryData = null, summaryDate = '';
+      function loadSummaryData() {
+        const fallback = window.NOTES_DATA && typeof window.NOTES_DATA === 'object' ? window.NOTES_DATA : {};
+        if (location.protocol === 'file:') return Promise.resolve(fallback);
+        return fetch('http://localhost:8765').then(response => response.ok ? response.json() : fallback).catch(() => fallback).then(remote => {
+          if (remote && typeof remote === 'object' && Object.keys(remote).length) return remote;
+          return fetch(`notes.json?v=${Date.now()}`).then(response => response.ok ? response.json() : fallback).catch(() => fallback);
+        });
+      }
+      function showSummary(date) {
+        summaryDate = String(date || '');
+        if (!summaryDate) return;
+        const targetDate = summaryDate;
+        els.summaryTitle.textContent = '当日总结';
+        els.summarySubtitle.textContent = `${summaryDate} · 每日独立保存`;
+        els.summaryStatus.textContent = '正在读取总结…';
+        els.summaryInput.value = '';
+        els.summaryModal.classList.add('open');
+        loadSummaryData().then(data => {
+          if (summaryDate !== targetDate) return;
+          summaryData = data && typeof data === 'object' ? data : {};
+          els.summaryInput.value = String(summaryData[targetDate] || SUMMARY_TEMPLATE);
+          els.summaryStatus.textContent = '可直接编辑；保存后与该日期笔记同步。';
+          els.summaryInput.focus();
+        });
+      }
+      function closeSummary() { els.summaryModal.classList.remove('open'); }
+      function saveSummary() {
+        const data = summaryData && typeof summaryData === 'object' ? summaryData : {};
+        if (!summaryDate) return;
+        data[summaryDate] = els.summaryInput.value.trim();
+        els.summarySave.disabled = true;
+        els.summarySave.textContent = '保存中…';
+        els.summaryStatus.textContent = '正在写入总结…';
+        fetch('http://localhost:8765', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+          .then(response => response.json())
+          .then(result => {
+            if (!result || !result.ok) throw new Error(result && result.error || '服务未确认保存');
+            window.NOTES_DATA = data;
+            els.summaryStatus.textContent = '已保存 ✓';
+          })
+          .catch(() => { els.summaryStatus.textContent = '保存失败：请确认笔记服务已启动。'; })
+          .finally(() => { els.summarySave.disabled = false; els.summarySave.textContent = '保存总结'; });
+      }
 
       function readMobilePanelCollapsed() {
         try {
@@ -860,14 +930,16 @@
           const dragon = oldDragonInfo(code);
           const notes = [source, dragon ? `老龙：${oldDragonText(dragon)}` : ''].filter(Boolean).join(' · ');
           const title = [notes, row && row.broken === true ? '盘中触及涨停后炸板' : ''].filter(Boolean).join(' · ');
-          return `<span class="stock-chip promotion-failure${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(title)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}${row && row.broken === true ? '<span class="promotion-broken">炸</span>' : ''}</span>`;
+          const broken = row && row.broken === true;
+          return `<span class="stock-chip promotion-failure${broken ? ' is-broken' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(title)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}${broken ? '<span class="promotion-broken">炸板</span>' : ''}</span>`;
         }).join('');
       }
       function renderPromotionFailures(date, board, rows) {
         if (!rows.length) return '';
         const day = PROMOTION_FAILURE_DATA.dates && PROMOTION_FAILURE_DATA.dates[date];
         const source = day && day.previousDate ? `来自 ${day.previousDate} 的上一梯队` : '上一交易日晋级失败';
-        return `<details class="promotion-failures" data-date="${escapeAttr(date)}" data-board="${board}"><summary title="${escapeAttr(source)}">晋级失败 ${rows.length}</summary><div class="promotion-failure-list"></div></details>`;
+        const brokenCount = rows.filter(row => row && row.broken === true).length;
+        return `<details class="promotion-failures" data-date="${escapeAttr(date)}" data-board="${board}"><summary title="${escapeAttr(source)}">晋级失败 ${rows.length}${brokenCount ? ` · 炸板 ${brokenCount}` : ''}</summary><div class="promotion-failure-list"></div></details>`;
       }
       function isBidSealStock(date, code) {
         const codes = BID_CODES_BY_DATE.get(date);
@@ -1015,7 +1087,7 @@
       function renderHeader(dates, start) {
         els.header.innerHTML = '<div class="corner">连板层级 / 日期（近 → 远）</div><div class="virtual-spacer" aria-hidden="true"></div>' + dates.map((date, localIndex) => {
           const index = start + localIndex;
-          return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small><div class="date-actions"><button type="button" class="date-action" data-date-action="stats" data-date="${escapeAttr(date)}">统计</button><button type="button" class="date-action" data-date-action="posts" data-date="${escapeAttr(date)}">主帖</button><button type="button" class="date-action" data-date-action="replies" data-date="${escapeAttr(date)}">跟帖</button></div></div>`;
+          return `<div class="date-head"><strong>${dateLabel(date)}</strong><small>${index === 0 ? '最近' : `周${weekday(date)}`}</small><div class="date-actions"><button type="button" class="date-action" data-date-action="stats" data-date="${escapeAttr(date)}">统计</button><button type="button" class="date-action" data-date-action="posts" data-date="${escapeAttr(date)}">主帖</button><button type="button" class="date-action" data-date-action="replies" data-date="${escapeAttr(date)}">跟帖</button><button type="button" class="date-action" data-date-action="summary" data-date="${escapeAttr(date)}">总结</button></div></div>`;
         }).join('') + '<div class="virtual-spacer" aria-hidden="true"></div>';
       }
       function stockMatches(line) {
@@ -1506,6 +1578,7 @@
         if (!date) return;
         if (action === 'stats') showStats(date);
         else if (action === 'posts' || action === 'replies') showDiscussion(date, action);
+        else if (action === 'summary') showSummary(date);
       });
       els.viewport.addEventListener('scroll', scheduleVirtualWindow, { passive: true });
       els.viewport.addEventListener('wheel', event => { if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) { event.preventDefault(); els.viewport.scrollLeft += event.deltaY; } }, { passive: false });
@@ -1582,6 +1655,9 @@
       });
       els.searchHistoryClose.addEventListener('click', () => els.searchHistoryModal.classList.remove('open'));
       els.searchHistoryModal.addEventListener('click', event => { if (event.target === els.searchHistoryModal) els.searchHistoryModal.classList.remove('open'); });
+      els.summaryClose.addEventListener('click', closeSummary);
+      els.summarySave.addEventListener('click', saveSummary);
+      els.summaryModal.addEventListener('click', event => { if (event.target === els.summaryModal) closeSummary(); });
       document.addEventListener('keydown', event => {
         if ((event.metaKey || event.ctrlKey) && !event.altKey) {
           if (event.key === '+' || event.key === '=') { event.preventDefault(); applyZoom((state.zoom || 1) + 0.1); return; }
@@ -1593,6 +1669,7 @@
         closeDiscussion();
         closeStats();
         els.searchHistoryModal.classList.remove('open');
+        closeSummary();
       });
       state.zoom = readStoredZoom();
       try {
