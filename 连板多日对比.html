@@ -179,6 +179,16 @@
     .stats-selection-title { margin-bottom: 8px; font-size: 12px; font-weight: 700; }
     .stats-selection-stock { border-radius: 6px; font-weight: 650; }
     .stats-selection-stock small { margin-left: 4px; color: var(--muted); font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .stats-lock-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 6px; max-height: 360px; overflow: auto; }
+    .stats-lock-stock { display: grid; grid-template-columns: minmax(0,1fr) 88px 70px; align-items: center; gap: 7px; height: auto; min-height: 46px; padding: 5px 7px; border-radius: 6px; background: #fbfcff; color: var(--text); font-size: 11px; text-align: left; }
+    .stats-lock-stock span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stats-lock-stock b { flex: 0 0 auto; color: #15803d; font: 700 10px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .stats-lock-spark { position: relative; display: block; width: 88px; height: 34px; color: #94a3b8; }
+    .stats-lock-spark svg { display: block; width: 88px; height: 26px; overflow: visible; }
+    .stats-lock-spark em { position: absolute; right: 0; bottom: -1px; color: #b45309; font: 700 8px ui-monospace,SFMono-Regular,Menlo,monospace; font-style: normal; }
+    .stats-lock-spark em.hot { color: #dc2626; }
+    .stats-lock-value { display: grid; justify-items: end; gap: 2px; }
+    .stats-lock-value small { color: var(--muted); font-size: 8px; }
     .summary-modal { width: min(760px, 94vw); }
     .summary-modal .modal-head { align-items: flex-start; }
     .summary-editor { display: block; width: 100%; min-height: 360px; box-sizing: border-box; padding: 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); font: 13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; resize: vertical; outline: none; }
@@ -411,6 +421,7 @@
   <script src="old_dragon_pool.js?v=20260826-1"></script>
   <script src="zt_auction_change_data.js"></script>
   <script src="zt_turnover_amount_data.js?v=20260827-1"></script>
+  <script src="zt_post_seal_avg_amount_data.js?v=20260830-1"></script>
   <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
   <script src="notes_data.js"></script>
   <script>
@@ -424,6 +435,7 @@
       const LIMIT_TIME_DATA = typeof ZTD !== 'undefined' && ZTD ? ZTD : {};
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
       const TURNOVER_DATA = window.ZT_TURNOVER_AMOUNT_DATA || { dates: {} };
+      const POST_SEAL_AVG_DATA = window.ZT_POST_SEAL_AVG_AMOUNT_DATA || { dates: {} };
       const PROMOTION_FAILURE_DATA = window.ZT_PROMOTION_FAILURE_DATA || { dates: {} };
       const BID_DATA = typeof BID !== 'undefined' && BID ? BID : {};
       const BID_CODES_BY_DATE = new Map(Object.entries(BID_DATA).map(([date, rows]) => [
@@ -711,6 +723,48 @@
         if (!rows.length) return '<div class="utility-empty">当天股票之间没有重复交集</div>';
         return `<div class="stats-list">${rows.map((row, index) => `<div class="stats-row"><span class="stats-rank">${index + 1}</span><span class="stats-stock">${escapeHtml(row.name)}</span><span class="stats-evidence" title="${escapeAttr(row.evidence.join(' · '))}">${escapeHtml(row.evidence.join(' · '))}</span><span class="stats-score">${row.score}${row.unit}</span></div>`).join('')}</div>`;
       }
+      function formatPostSealAverage(value) {
+        const amount = Number(value);
+        if (!Number.isFinite(amount) || amount < 0) return '—';
+        if (amount >= 1e8) return `${(amount / 1e8).toFixed(amount >= 1e9 ? 1 : 2).replace(/\.0+$/, '')}亿/分`;
+        if (amount >= 1e4) return `${(amount / 1e4).toFixed(amount >= 1e6 ? 1 : 2).replace(/\.0+$/, '')}万/分`;
+        return `${Math.round(amount)}元/分`;
+      }
+      const postSealCurveCache = new Map();
+      function loadPostSealCurves(date) {
+        if (postSealCurveCache.has(date)) return Promise.resolve(postSealCurveCache.get(date));
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `post_seal_curves/${date}.js?v=${encodeURIComponent(POST_SEAL_AVG_DATA.updatedAt || '1')}`;
+          script.onload = () => { const data = window.ZT_POST_SEAL_CURVE_DATA; if (!data || data.date !== date) { reject(new Error('曲线数据无效'));return; }postSealCurveCache.set(date, data);resolve(data); };
+          script.onerror = () => reject(new Error('曲线数据未采集'));
+          document.head.appendChild(script);
+        });
+      }
+      function postSealSparkHtml(row) {
+        const amounts = Array.isArray(row && row.amounts) ? row.amounts.map(Number) : [];
+        if (amounts.length < 2) return '<small>无剩余分钟</small>';
+        const width = 88, height = 25, max = Math.max(...amounts, 1), x = index => index * width / (amounts.length - 1), y = value => height - Math.max(0, value) * (height - 2) / max - 1;
+        const points = amounts.map((value, index) => `${x(index).toFixed(1)},${y(value).toFixed(1)}`).join(' ');
+        const tailStart = Math.max(0, amounts.length - 16), tailPoints = amounts.slice(tailStart).map((value, index) => `${x(index + tailStart).toFixed(1)},${y(value).toFixed(1)}`).join(' ');
+        const ratio = Number(row.tailRatio), hot = Number.isFinite(ratio) && ratio >= 2, warm = Number.isFinite(ratio) && ratio >= 1.2;
+        const tailColor = hot ? '#dc2626' : warm ? '#d97706' : '#64748b';
+        const label = warm ? `<em class="${hot ? 'hot' : ''}">尾盘×${ratio.toFixed(1)}</em>` : '';
+        return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="${height - 1}" x2="${width}" y2="${height - 1}" stroke="#dbe3ee"/><polyline points="${points}" fill="none" stroke="#16a34a" stroke-width="1.25" vector-effect="non-scaling-stroke"/><polyline points="${tailPoints}" fill="none" stroke="${tailColor}" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>${label}`;
+      }
+      function renderPostSealCurves(date) {
+        loadPostSealCurves(date).then(data => {
+          if (date !== statsDate || !els.statsModal.classList.contains('open')) return;
+          els.statsBody.querySelectorAll('[data-stats-curve]').forEach(node => { const row = data.values && data.values[node.dataset.statsCurve];node.innerHTML = postSealSparkHtml(row); });
+        }).catch(() => {});
+      }
+      function postSealLockHtml(stocks, date) {
+        const day = POST_SEAL_AVG_DATA.dates && POST_SEAL_AVG_DATA.dates[date];
+        const values = day && day.values || {};
+        const rows = stocks.map(stock => ({ stock, data: values[stock.code] })).filter(row => row.data && Number.isFinite(Number(row.data.avg))).sort((a, b) => Number(a.data.avg) - Number(b.data.avg) || a.stock.name.localeCompare(b.stock.name, 'zh-CN'));
+        if (!rows.length) return '<div class="utility-empty">该日期尚未采集封板后成交额</div>';
+        return `<div class="stats-lock-list">${rows.map(row => `<button type="button" class="stats-lock-stock" data-stats-stock="${escapeAttr(row.stock.name)}" title="最终封板 ${escapeAttr(row.data.lt || '—')} · 封板后成交额 ${escapeAttr(formatTurnoverAmount(row.data.amount))} · ${escapeAttr(row.data.minutes)}分钟"><span>${escapeHtml(row.stock.name)} <small>${escapeHtml(row.stock.code)}</small></span><span class="stats-lock-spark" data-stats-curve="${escapeAttr(row.stock.code)}"><small>加载曲线…</small></span><span class="stats-lock-value"><b>${escapeHtml(formatPostSealAverage(row.data.avg))}</b><small>封板后均额</small></span></button>`).join('')}</div>`;
+      }
       function renderStats(date) {
         if (date !== statsDate || !els.statsModal.classList.contains('open')) return;
         const stocks = collectStatsStocks(date), regions = new Map();
@@ -721,7 +775,8 @@
         els.statsTitle.textContent = '当日涨停统计';
         els.statsSubtitle.textContent = date;
         els.statsMeta.textContent = `涨停 ${stocks.length}只 · 地域 ${regions.size}个 · 已剥离股份、科技等惯常后缀；双字母不区分顺序`;
-        els.statsBody.innerHTML = `<section class="stats-card wide stats-selection" id="statsSelection"><div class="stats-selection-title" id="statsSelectionTitle"></div><div class="stats-selection-list" id="statsSelectionList"></div></section><section class="stats-card wide"><h3>地域涨停数量<small>点击查看股票</small></h3>${statsTagsHtml(regionRows, regionRows.length, '地域')}</section><section class="stats-card"><h3>单字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(singles, 26, '单字母')}</section><section class="stats-card"><h3>双字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(pairs, 30, '双字母')}</section><section class="stats-card"><h3>单字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, singles, 'letters', false))}</section><section class="stats-card"><h3>双字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, pairs, 'pairs', true))}</section>`;
+        els.statsBody.innerHTML = `<section class="stats-card wide stats-selection" id="statsSelection"><div class="stats-selection-title" id="statsSelectionTitle"></div><div class="stats-selection-list" id="statsSelectionList"></div></section><section class="stats-card wide"><h3>最终封板后每分钟平均成交额<small>从低到高 · 曲线末段为尾盘15分钟</small></h3>${postSealLockHtml(stocks, date)}</section><section class="stats-card wide"><h3>地域涨停数量<small>点击查看股票</small></h3>${statsTagsHtml(regionRows, regionRows.length, '地域')}</section><section class="stats-card"><h3>单字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(singles, 26, '单字母')}</section><section class="stats-card"><h3>双字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(pairs, 30, '双字母')}</section><section class="stats-card"><h3>单字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, singles, 'letters', false))}</section><section class="stats-card"><h3>双字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, pairs, 'pairs', true))}</section>`;
+        renderPostSealCurves(date);
       }
       function showStats(date) {
         statsDate = date;
