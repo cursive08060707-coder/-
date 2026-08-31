@@ -423,6 +423,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 #stats-modal .stats-selection-stock{display:inline-flex;align-items:center;gap:5px;height:auto;padding:5px 8px;border:1px solid var(--accent-border);border-radius:6px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:11px;font-weight:650;cursor:pointer}
 #stats-modal .stats-selection-stock:hover{background:#e3edff;border-color:var(--accent);box-shadow:0 1px 2px rgba(37,99,235,.10)}
 #stats-modal .stats-selection-stock small{font:9px var(--font-mono);font-weight:400;color:var(--muted)}
+#stats-modal .stats-lock-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px;max-height:360px;overflow:auto}
+#stats-modal .stats-lock-stock{display:grid;grid-template-columns:minmax(0,1fr) 88px 70px;align-items:center;gap:7px;min-height:46px;padding:5px 7px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);color:var(--fg);font:inherit;font-size:11px;cursor:pointer;text-align:left}
+#stats-modal .stats-lock-stock:hover{border-color:var(--accent-border);background:var(--accent-soft)}
+#stats-modal .stats-lock-stock span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#stats-modal .stats-lock-stock small{margin-left:4px;color:var(--muted2);font:9px var(--font-mono)}
+#stats-modal .stats-lock-stock b{flex:0 0 auto;color:#15803d;font:700 10px var(--font-mono)}
+#stats-modal .stats-lock-spark{position:relative;display:block;width:88px;height:34px;color:var(--muted2)}
+#stats-modal .stats-lock-spark svg{display:block;width:88px;height:26px;overflow:visible}
+#stats-modal .stats-lock-spark em{position:absolute;right:0;bottom:-1px;color:#b45309;font:700 8px var(--font-mono);font-style:normal}
+#stats-modal .stats-lock-spark em.hot{color:#dc2626}
+#stats-modal .stats-lock-value{display:grid;justify-items:end;gap:2px}
+#stats-modal .stats-lock-value small{color:var(--muted2);font-size:8px}
 #stats-modal .stats-list{display:grid;gap:6px}
 #stats-modal .stats-row{display:grid;grid-template-columns:24px minmax(90px,.7fr) minmax(0,1.3fr) 58px;gap:7px;align-items:center;padding:6px 7px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);font-size:11px}
 #stats-modal .stats-rank{font:10px var(--font-mono);text-align:center;color:var(--muted2)}
@@ -607,6 +619,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus
 <script src="fenshi_map.js?v=20260730-1747"></script>
 <script src="zt_time_map.js?v=20260805-2"></script>
 <script src="zt_time_detail.js?v=20260805-2"></script>
+<script src="zt_post_seal_avg_amount_data.js?v=20260830-1"></script>
 <script src="bid_seal_data.js?v=20260804-1"></script>
 <script src="zt_seal_rate_data.js?v=20260819-2"></script>
 <script src="zt_promotion_failure_data.js?v=20260823-1"></script>
@@ -2470,6 +2483,50 @@ function statsRankHtml(rows){
     return '<div class="stats-row"><span class="stats-rank">'+(index+1)+'</span><span class="stats-stock">'+esc(row.name)+'</span><span class="stats-evidence" title="'+esc(row.evidence.join(' · '))+'">'+esc(row.evidence.join(' · '))+'</span><span class="stats-score">'+row.score+(row.unit||'次')+'</span></div>';
   }).join('')+'</div>';
 }
+function formatStatsPostSealAverage(value){
+  var amount=Number(value);if(!Number.isFinite(amount)||amount<0)return '—';
+  if(amount>=1e8)return (amount/1e8).toFixed(amount>=1e9?1:2).replace(/\.0+$/,'')+'亿/分';
+  if(amount>=1e4)return (amount/1e4).toFixed(amount>=1e6?1:2).replace(/\.0+$/,'')+'万/分';
+  return Math.round(amount)+'元/分';
+}
+function formatStatsPostSealAmount(value){
+  var amount=Number(value);if(!Number.isFinite(amount)||amount<0)return '—';
+  if(amount>=1e8)return (amount/1e8).toFixed(amount>=1e9?1:2).replace(/\.0+$/,'')+'亿';
+  if(amount>=1e4)return (amount/1e4).toFixed(amount>=1e6?1:2).replace(/\.0+$/,'')+'万';
+  return Math.round(amount)+'元';
+}
+var _postSealCurveCache=new Map();
+function loadStatsPostSealCurves(date){
+  if(_postSealCurveCache.has(date))return Promise.resolve(_postSealCurveCache.get(date));
+  return new Promise(function(resolve,reject){
+    var source=window.ZT_POST_SEAL_AVG_AMOUNT_DATA||{},script=document.createElement('script');script.src='post_seal_curves/'+date+'.js?v='+encodeURIComponent(source.updatedAt||'1');
+    script.onload=function(){var data=window.ZT_POST_SEAL_CURVE_DATA;if(!data||data.date!==date){reject(new Error('曲线数据无效'));return;}_postSealCurveCache.set(date,data);resolve(data);};
+    script.onerror=function(){reject(new Error('曲线数据未采集'));};document.head.appendChild(script);
+  });
+}
+function statsPostSealSparkHtml(row){
+  var amounts=row&&Array.isArray(row.amounts)?row.amounts.map(Number):[];if(amounts.length<2)return '<small>无剩余分钟</small>';
+  var width=88,height=25,max=Math.max.apply(Math,amounts.concat([1])),x=function(i){return i*width/(amounts.length-1);},y=function(v){return height-Math.max(0,v)*(height-2)/max-1;};
+  var points=amounts.map(function(v,i){return x(i).toFixed(1)+','+y(v).toFixed(1);}).join(' '),tailStart=Math.max(0,amounts.length-16);
+  var tailPoints=amounts.slice(tailStart).map(function(v,i){return x(i+tailStart).toFixed(1)+','+y(v).toFixed(1);}).join(' '),ratio=Number(row.tailRatio),hot=Number.isFinite(ratio)&&ratio>=2,warm=Number.isFinite(ratio)&&ratio>=1.2;
+  var tailColor=hot?'#dc2626':warm?'#d97706':'#64748b',label=warm?'<em class="'+(hot?'hot':'')+'">尾盘×'+ratio.toFixed(1)+'</em>':'';
+  return '<svg viewBox="0 0 '+width+' '+height+'" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="'+(height-1)+'" x2="'+width+'" y2="'+(height-1)+'" stroke="#dbe3ee"/><polyline points="'+points+'" fill="none" stroke="#16a34a" stroke-width="1.25" vector-effect="non-scaling-stroke"/><polyline points="'+tailPoints+'" fill="none" stroke="'+tailColor+'" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>'+label;
+}
+function renderStatsPostSealCurves(date){
+  loadStatsPostSealCurves(date).then(function(data){
+    var modal=document.getElementById('stats-modal');if(!modal.classList.contains('show'))return;
+    modal.querySelectorAll('[data-stats-curve]').forEach(function(node){var row=data.values&&data.values[node.getAttribute('data-stats-curve')];node.innerHTML=statsPostSealSparkHtml(row);});
+  }).catch(function(){});
+}
+function statsPostSealLockHtml(stocks,date){
+  var source=window.ZT_POST_SEAL_AVG_AMOUNT_DATA||{dates:{}},day=source.dates&&source.dates[date],values=day&&day.values||{};
+  var rows=stocks.map(function(stock){return {stock:stock,data:values[stock.code]};}).filter(function(row){return row.data&&Number.isFinite(Number(row.data.avg));}).sort(function(a,b){return Number(a.data.avg)-Number(b.data.avg)||a.stock.name.localeCompare(b.stock.name,'zh-CN');});
+  if(!rows.length)return '<div class="stats-empty">该日期尚未采集封板后成交额</div>';
+  return '<div class="stats-lock-list">'+rows.map(function(row){
+    var title='最终封板 '+(row.data.lt||'—')+' · 封板后成交额 '+formatStatsPostSealAmount(row.data.amount)+' · '+row.data.minutes+'分钟';
+    return '<button type="button" class="stats-lock-stock" data-stats-stock="'+esc(row.stock.name)+'" title="'+esc(title)+'"><span>'+esc(row.stock.name)+'<small>'+esc(row.stock.code)+'</small></span><span class="stats-lock-spark" data-stats-curve="'+esc(row.stock.code)+'"><small>加载曲线…</small></span><span class="stats-lock-value"><b>'+esc(formatStatsPostSealAverage(row.data.avg))+'</b><small>封板后均额</small></span></button>';
+  }).join('')+'</div>';
+}
 function showStats(index){
   if(!Number.isInteger(index)||!P[index])return;
   var stocks=collectStatsStocks(index),regions=new Map();
@@ -2482,11 +2539,13 @@ function showStats(index){
   document.getElementById('stats-meta').textContent='涨停 '+stocks.length+'只 · 地域 '+regions.size+'个 · 已剥离股份、科技等惯常后缀；同股字母去重，双字母不区分顺序';
   document.getElementById('stats-body').innerHTML=
     '<section class="stats-card stats-card-wide stats-selection" id="stats-selection" aria-live="polite"><div class="stats-selection-head" id="stats-selection-title"></div><div class="stats-selection-list" id="stats-selection-list"></div></section>'+ 
+    '<section class="stats-card stats-card-wide"><h3>最终封板后每分钟平均成交额<small>从低到高 · 曲线末段为尾盘15分钟</small></h3>'+statsPostSealLockHtml(stocks,P[index].d)+'</section>'+ 
     '<section class="stats-card stats-card-wide"><h3>地域涨停数量<small>点击查看股票</small></h3>'+statsTagsHtml(regionRows,regionRows.length,false,'地域')+'</section>'+ 
     '<section class="stats-card"><h3>单字母出现频率<small>点击查看股票</small></h3>'+statsTagsHtml(singles,26,false,'单字母')+'</section>'+ 
     '<section class="stats-card"><h3>双字母出现频率<small>点击查看股票</small></h3>'+statsTagsHtml(pairs,30,true,'双字母')+'</section>'+ 
     '<section class="stats-card"><h3>单字母交集最大股票<small>与其他股票重叠次数</small></h3>'+statsRankHtml(singleRanks)+'</section>'+ 
     '<section class="stats-card"><h3>双字母交集最大股票<small>按重复字母对覆盖数量</small></h3>'+statsRankHtml(pairRanks)+'</section>';
+  renderStatsPostSealCurves(P[index].d);
   var modal=document.getElementById('stats-modal');modal.classList.add('show');modal.setAttribute('aria-hidden','false');
   setTimeout(function(){var close=modal.querySelector('.stats-x');if(close)close.focus();},0);
 }
@@ -2494,7 +2553,7 @@ function closeStats(){var modal=document.getElementById('stats-modal');modal.cla
 document.getElementById('stats-modal').addEventListener('click',function(e){
   if(e.target===this){closeStats();return;}
   var tag=e.target.closest('.stats-tag[data-stats-token]');if(tag){showStatsSelection(tag.getAttribute('data-stats-token'),tag);return;}
-  var stock=e.target.closest('.stats-selection-stock');if(stock){var rect=stock.getBoundingClientRect(),name=stock.getAttribute('data-stats-stock');closeStats();if(name)showSp(name,e,rect);}
+  var stock=e.target.closest('[data-stats-stock]');if(stock){var rect=stock.getBoundingClientRect(),name=stock.getAttribute('data-stats-stock');closeStats();if(name)showSp(name,e,rect);}
 });
 </script>
 
