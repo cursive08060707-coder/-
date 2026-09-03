@@ -71,6 +71,26 @@ background-repeat:no-repeat;background-position:10px center}
 .bl{margin-bottom:20px}
 .blh{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px;padding:4px 12px 4px 10px;border-radius:var(--radius);background:var(--accent-soft);border:1px solid var(--accent-border)}
 .blh-rate{font-size:10px;font-weight:650;color:#b42318;line-height:1;padding:4px 7px;border:1px solid #fecaca;border-radius:999px;background:#fff1f2;white-space:nowrap;letter-spacing:0}
+.first-board-history{margin:-6px 0 20px;border:1px solid #fed7aa;border-radius:var(--radius-lg);background:#fffaf5;overflow:hidden}
+.first-board-history>summary{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;list-style:none;font-size:12px;font-weight:700;color:#9a3412;user-select:none}
+.first-board-history>summary::-webkit-details-marker{display:none}
+.first-board-history>summary::before{content:'▸';font-size:12px;transition:transform var(--tr)}
+.first-board-history[open]>summary::before{transform:rotate(90deg)}
+.first-board-history-count{margin-left:auto;font-size:10px;font-weight:600;color:#c2410c;background:#ffedd5;border:1px solid #fed7aa;border-radius:999px;padding:2px 7px;white-space:nowrap}
+.first-board-history-list{max-height:360px;overflow:auto;border-top:1px solid #ffedd5;background:var(--surface)}
+.first-board-history-row{display:grid;grid-template-columns:92px 48px minmax(0,1fr);align-items:start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border2);font-size:11px;line-height:1.55}
+.first-board-history-row:last-child{border-bottom:0}
+.first-board-history-date{appearance:none;border:0;background:none;padding:0;color:#9a3412;font:600 11px var(--font-mono);cursor:pointer;text-align:left}
+.first-board-history-date:hover{text-decoration:underline;color:#c2410c}
+.first-board-history-num{color:var(--rise);font-weight:700;white-space:nowrap}
+.first-board-history-names{color:var(--fg);word-break:break-all}
+.history-stock-name{position:relative;display:inline-block;cursor:help;text-decoration:underline dotted #cbd5e1;text-underline-offset:3px}
+.history-stock-name:hover{color:#c2410c;text-decoration-color:#fb923c;z-index:20}
+.history-stock-name::after{content:attr(data-board-tip);position:absolute;left:50%;top:calc(100% + 5px);transform:translateX(-50%) translateY(-2px);z-index:30;padding:5px 8px;border-radius:5px;background:#27272a;color:#fff;font-size:10px;font-weight:500;line-height:1.3;white-space:nowrap;box-shadow:var(--shadow-sm);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease,transform .12s ease}
+.history-stock-name::before{content:'';position:absolute;left:50%;top:calc(100% + 1px);transform:translateX(-50%);z-index:31;border:4px solid transparent;border-bottom-color:#27272a;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease}
+.history-stock-name:hover::after,.history-stock-name:hover::before{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.history-stock-name:hover::before{transform:translateX(-50%)}
+.first-board-history-empty{padding:10px 12px;border-top:1px solid #ffedd5;color:var(--muted);font-size:11px;background:var(--surface)}
 .sl{margin-bottom:14px}
 .sh{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:0.02em;display:flex;align-items:center;gap:6px}
 .sh::before{content:'';width:3px;height:12px;background:var(--accent2);border-radius:2px;opacity:0.5}
@@ -658,7 +678,7 @@ function loadReplies(cb){
 }
 </script>
 <script>
-console.log('✅ 涨停板归类 v2026-07-28-1820 loaded | fenshi-sidebar=on | zt-time-sort=on | init=show(0)');
+console.log('✅ 涨停板归类 v2026-09-03-all-board-history loaded | board-history=all | init=show(0)');
 
 // === 主显示逻辑 ===
 let ai=-1,st='',fst='',sr=new Set(),fd=[],hi=-1;
@@ -671,6 +691,7 @@ let _daySearchText=P.map(function(p){return normalizeSearchText(p.t);});
 let _dayFuzzyTokens=null;
 const _dateIndex=new Map(P.map(function(p,i){return[p.d,i];}));
 const _dayStocksCache=new Map();
+const _limitBoardStocksCache=new Map();
 let _renderedDateIndices=[],_renderedSearchMode=false;
 stEl.textContent=P.length+'天';
 
@@ -1101,9 +1122,79 @@ function promotionFailureHtml(date,board){
   return out+'</div></details>';
 }
 
+// 比较每日全部涨停梯队，并保留当日所在板数。代码优先，避免曾用名/同名误匹配。
+const _boardNumberMap={首板:1,二板:2,三板:3,四板:4,五板:5,六板:6,七板:7,八板:8,九板:9,十板:10,十一板:11,十二板:12};
+function limitBoardStocks(dayIndex){
+  if(_limitBoardStocksCache.has(dayIndex))return _limitBoardStocksCache.get(dayIndex);
+  const stocks=new Map(),lines=_dayLines[dayIndex]||[];let currentBoard='';
+  for(let raw of lines){
+    const line=String(raw||'').trim();if(!line)continue;
+    const board=line.match(/^(首板|二板|三板|四板|五板|六板|七板|八板|九板|十板|十一板|十二板)$/);
+    if(board){currentBoard=board[1];continue;}
+    if(!currentBoard)continue;
+    // 首板中的题材标题没有括号代码，不应误当成股票。
+    if(currentBoard==='首板'&&line.length<=20&&!/[，,、]/.test(line)&&!/（[^）]+）\s*\d{6}/.test(line))continue;
+    line.split(/[,，、]+/).forEach(function(token){
+      token=token.trim();if(!token)return;
+      let name=stockNameFromCategoryToken(token);if(name.length<2||!isSN(name))return;
+      const codeMatch=token.match(/（[^）]*）\s*(\d{6})/)||token.match(/\([^)]*\)\s*(\d{6})/);
+      const detail=findStockDetail(name),code=codeMatch?codeMatch[1]:(detail&&detail.c?String(detail.c).trim():'');
+      const key=code?'c:'+code:'n:'+normalizeSearchText(name).replace(/\s+/g,'');
+      stocks.set(key,{name:name,code:code,board:currentBoard,boardNumber:_boardNumberMap[currentBoard]||0});
+    });
+  }
+  _limitBoardStocksCache.set(dayIndex,stocks);return stocks;
+}
+
+// 同一轮连板的自然晋级不算“历史重复”。
+// 例如：今日三板对昨日二板、前日首板，都会被排除。
+function isSameLimitStreak(stockKey,currentIndex,historicalIndex){
+  if(historicalIndex<=currentIndex)return false;
+  const current=limitBoardStocks(currentIndex).get(stockKey),historical=limitBoardStocks(historicalIndex).get(stockKey);
+  if(!current||!historical||!current.boardNumber||!historical.boardNumber)return false;
+  const distance=historicalIndex-currentIndex;
+  if(current.boardNumber-historical.boardNumber!==distance)return false;
+  let expected=historical.boardNumber;
+  for(let k=historicalIndex-1;k>=currentIndex;k--){
+    expected+=1;
+    const stock=limitBoardStocks(k).get(stockKey);
+    if(!stock||stock.boardNumber!==expected)return false;
+  }
+  return true;
+}
+
+function limitBoardHistoryMatches(dayIndex){
+  const current=limitBoardStocks(dayIndex),currentDate=P[dayIndex].d,matches=[];
+  if(current.size<2)return {currentCount:current.size,matches:matches};
+  for(let j=0;j<P.length;j++){
+    if(j===dayIndex||P[j].d>=currentDate)continue;
+    const historical=limitBoardStocks(j),overlap=[];
+    current.forEach(function(stock,key){
+      const oldStock=historical.get(key);
+      if(oldStock&&!isSameLimitStreak(key,dayIndex,j))overlap.push({name:stock.name,currentBoard:stock.board,historicalBoard:oldStock.board});
+    });
+    if(overlap.length>=2)matches.push({index:j,date:P[j].d,count:overlap.length,stocks:overlap});
+  }
+  matches.sort(function(a,b){return b.count-a.count||b.date.localeCompare(a.date);});
+  return {currentCount:current.size,matches:matches};
+}
+
+function limitBoardHistoryHtml(dayIndex){
+  const result=limitBoardHistoryMatches(dayIndex),matches=result.matches;
+  let out='<details class="first-board-history" open><summary><span>全梯队历史同批</span><span class="first-board-history-count">当日涨停 '+result.currentCount+'只 · 命中 '+matches.length+'天</span></summary>';
+  if(!matches.length)return out+'<div class="first-board-history-empty">历史上暂无至少 2 只当日涨停股同日涨停。</div></details>';
+  out+='<div class="first-board-history-list">';
+  matches.forEach(function(match){
+    const names=match.stocks.map(function(stock){return '<span class="history-stock-name" data-board-tip="当日：'+esc(stock.currentBoard)+' · 历史当天：'+esc(stock.historicalBoard)+'">'+esc(stock.name)+'</span>';}).join('、');
+    out+='<div class="first-board-history-row"><button type="button" class="first-board-history-date" data-history-index="'+match.index+'" title="跳转到 '+esc(match.date)+'">'+esc(match.date)+'</button><span class="first-board-history-num">'+match.count+'只</span><span class="first-board-history-names">'+names+'</span></div>';
+  });
+  return out+'</div></details>';
+}
+
 function show(i){
   ai=i;const p=P[i];const lines=_dayLines[i];
   let h='<div class="bh"><span class="bh-date">'+p.d+'</span><span class="bh-week">周'+wk[new Date(p.d).getDay()]+'</span><button type="button" class="bh-btn stats-trigger" data-index="'+i+'">📈 统计</button><button type="button" class="bh-btn auction-trigger" data-date="'+p.d+'">💰 竞价一字板</button><button type="button" class="bh-btn post-trigger" data-date="'+p.d+'">📝 主帖</button><button type="button" class="bh-btn reply-trigger" data-date="'+p.d+'">💬 跟帖</button><button type="button" class="bh-btn nm-trigger" data-date="'+p.d+'">📝 笔记</button><button type="button" class="bh-btn sum-trigger">📊 总结</button></div>';
+  h+=limitBoardHistoryHtml(i);
   let cb='',cs='',sb=[],bo=false;const seenBoards=new Set();
   const bidRows=typeof BID!=='undefined'&&Array.isArray(BID[p.d])?BID[p.d]:[];
   const bidCodes=new Set(bidRows.map(function(item){return String(item&&item.c||'').trim();}).filter(Boolean));
@@ -2354,6 +2445,8 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('#sp')&&!e.target.closest('.sk')&&!e.target.closest('.mb')&&!e.target.closest('.tl-container')&&!e.target.closest('#img-preview')&&!e.target.closest('#stats-modal')&&!e.target.closest('#bid-modal'))closeSp();
 });
 document.getElementById('ct').addEventListener('click',function(e){
+  var historyBtn=e.target.closest('.first-board-history-date');
+  if(historyBtn){var historyIndex=Number(historyBtn.getAttribute('data-history-index'));if(Number.isInteger(historyIndex)&&P[historyIndex])show(historyIndex);return;}
   var statsBtn=e.target.closest('.stats-trigger');
   if(statsBtn){showStats(Number(statsBtn.getAttribute('data-index')));return;}
   var auctionBtn=e.target.closest('.auction-trigger');
