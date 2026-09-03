@@ -202,6 +202,25 @@
     .stats-list { display: grid; gap: 5px; }
     .stats-row { display: grid; grid-template-columns: 22px minmax(80px,.7fr) minmax(0,1.3fr) 48px; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 10px; }
     .stats-rank { color: var(--muted); text-align: center; }.stats-stock { overflow: hidden; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }.stats-evidence { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }.stats-score { color: var(--accent); font-weight: 700; text-align: right; }
+    .stats-history-list { display: grid; gap: 6px; max-height: 360px; overflow: auto; }
+    .stats-history-collapse { border: 1px solid var(--line); border-radius: 7px; background: #fff; overflow: hidden; }
+    .stats-history-collapse > summary { display: flex; align-items: center; gap: 7px; padding: 9px 10px; color: #49658e; cursor: pointer; font-size: 11px; font-weight: 700; list-style: none; user-select: none; }
+    .stats-history-collapse > summary::-webkit-details-marker { display: none; }
+    .stats-history-collapse > summary::before { content: '▸'; color: #6b7f9e; transition: transform .15s ease; }
+    .stats-history-collapse[open] > summary::before { transform: rotate(90deg); }
+    .stats-history-collapse > summary small { margin-left: auto; color: var(--muted); font-size: 10px; font-weight: 500; }
+    .stats-history-collapse .stats-history-list { padding: 0 8px 8px; border-top: 1px solid var(--line); }
+    .stats-history-row { display: grid; grid-template-columns: 90px 42px minmax(0,1fr); gap: 7px; align-items: start; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 11px; line-height: 1.55; }
+    .stats-history-date { height: auto; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: #49658e; font: 650 11px ui-monospace,SFMono-Regular,Menlo,monospace; text-align: left; }
+    .stats-history-date:hover { color: var(--accent); text-decoration: underline; }
+    .stats-history-num { color: var(--up); font-weight: 700; white-space: nowrap; }
+    .stats-history-names { min-width: 0; color: var(--text); word-break: break-all; }
+    .stats-history-stock { position: relative; display: inline-block; cursor: help; text-decoration: underline dotted #cbd5e1; text-underline-offset: 3px; }
+    .stats-history-stock:hover { z-index: 20; color: #b45309; text-decoration-color: #f0b65f; }
+    .stats-history-stock::after { content: attr(data-board-tip); position: absolute; left: 50%; top: calc(100% + 5px); z-index: 30; padding: 5px 8px; border-radius: 5px; background: #27364d; color: #fff; font-size: 10px; font-weight: 500; line-height: 1.3; white-space: nowrap; box-shadow: 0 3px 10px rgba(31,43,61,.2); pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(-2px); transition: opacity .12s ease, transform .12s ease; }
+    .stats-history-stock::before { content: ''; position: absolute; left: 50%; top: calc(100% + 1px); z-index: 31; border: 4px solid transparent; border-bottom-color: #27364d; pointer-events: none; opacity: 0; visibility: hidden; transform: translateX(-50%); transition: opacity .12s ease; }
+    .stats-history-stock:hover::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    .stats-history-stock:hover::before { opacity: 1; visibility: visible; }
     .detail-summary { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 7px; margin-bottom: 14px; }
     .summary-item { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfcff; }
     .summary-item small { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
@@ -434,7 +453,7 @@
       const STOCK_DETAIL_API = 'http://localhost:8765/stock-details';
       const THREE_BOARD_POOL_API = 'http://localhost:8765/three-board-pool';
       const OLD_DRAGON_POOL_API = 'http://localhost:8765/old-dragon-pool';
-      const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10 };
+      const BOARD_TEXT = { '首板': 1, '一板': 1, '二板': 2, '三板': 3, '四板': 4, '五板': 5, '六板': 6, '七板': 7, '八板': 8, '九板': 9, '十板': 10, '十一板': 11, '十二板': 12 };
       const LIMIT_TIME_DATA = typeof ZTD !== 'undefined' && ZTD ? ZTD : {};
       const AUCTION_DATA = window.ZT_AUCTION_CHANGE_DATA || { dates: {} };
       const TURNOVER_DATA = window.ZT_TURNOVER_AMOUNT_DATA || { dates: {} };
@@ -665,7 +684,7 @@
       function closeDiscussion() { els.discussionModal.classList.remove('open'); }
 
       const STATS_SUFFIXES = [{ name: '股份', initials: 'gf' }, { name: '科技', initials: 'kj' }, { name: '集团', initials: 'jt' }, { name: '控股', initials: 'kg' }, { name: '发展', initials: 'fz' }, { name: '实业', initials: 'sy' }];
-      let statsDetailByCode = null, statsTags = new Map(), statsStocks = new Map(), statsTagSeq = 0, statsDate = '';
+      let statsDetailByCode = null, statsTags = new Map(), statsStocks = new Map(), statsTagSeq = 0, statsDate = '', historyCohortCache = new Map();
       function stripStatsSuffixes(name, initials) {
         let cleanName = String(name || ''), cleanInitials = String(initials || ''), changed = true;
         while (changed) {
@@ -706,6 +725,53 @@
           rows.push({ name, code, initials, letters, pairs, region, firstLimitTime });
         }
         return rows;
+      }
+      // 每日首板至最高板全部比较，并保留当日所在的连板数。
+      function collectHistoryCohortStocks(date) {
+        if (historyCohortCache.has(date)) return historyCohortCache.get(date);
+        const record = state.recordByDate.get(date), stocks = new Map();
+        if (record) for (const [board, lines] of record.sections) for (const line of lines) for (const match of stockMatches(line)) {
+          const name = String(match[1] || '').trim(), code = String(match[2] || '').trim();
+          if (name && code) stocks.set(code, { name, code, board });
+        }
+        historyCohortCache.set(date, stocks);
+        return stocks;
+      }
+      // 同一轮连板的自然晋级不算历史重复：今三板对昨二板/前日首板都排除。
+      function isSameCohortStreak(code, currentIndex, historicalIndex) {
+        if (historicalIndex <= currentIndex) return false;
+        const currentDate = state.dates[currentIndex], historicalDate = state.dates[historicalIndex];
+        const current = collectHistoryCohortStocks(currentDate).get(code), historical = collectHistoryCohortStocks(historicalDate).get(code);
+        if (!current || !historical || current.board - historical.board !== historicalIndex - currentIndex) return false;
+        let expected = historical.board;
+        for (let index = historicalIndex - 1; index >= currentIndex; index--) {
+          expected += 1;
+          const stock = collectHistoryCohortStocks(state.dates[index]).get(code);
+          if (!stock || stock.board !== expected) return false;
+        }
+        return true;
+      }
+      function historyCohortMatches(date) {
+        const currentIndex = state.dateIndex.get(date), current = collectHistoryCohortStocks(date), matches = [];
+        if (!Number.isInteger(currentIndex) || current.size < 2) return { count: current.size, matches };
+        for (let index = currentIndex + 1; index < state.dates.length; index++) {
+          const historicalDate = state.dates[index], historical = collectHistoryCohortStocks(historicalDate), stocks = [];
+          current.forEach((stock, code) => {
+            const oldStock = historical.get(code);
+            if (oldStock && !isSameCohortStreak(code, currentIndex, index)) stocks.push({ name: stock.name, currentBoard: stock.board, historicalBoard: oldStock.board });
+          });
+          if (stocks.length >= 2) matches.push({ date: historicalDate, count: stocks.length, stocks });
+        }
+        matches.sort((a, b) => b.count - a.count || b.date.localeCompare(a.date));
+        return { count: current.size, matches };
+      }
+      function historyCohortHtml(date, result = historyCohortMatches(date)) {
+        const matches = result.matches;
+        if (!matches.length) return '<div class="utility-empty">暂无至少 2 只涨停股的历史同批记录。</div>';
+        return `<details class="stats-history-collapse"><summary>展开历史同批记录<small>${matches.length}天</small></summary><div class="stats-history-list">${matches.map(match => {
+          const names = match.stocks.map(stock => `<span class="stats-history-stock" data-board-tip="当日：${escapeAttr(stock.currentBoard)}板 · 历史当天：${escapeAttr(stock.historicalBoard)}板">${escapeHtml(stock.name)}</span>`).join('、');
+          return `<div class="stats-history-row"><button type="button" class="stats-history-date" data-stats-history-date="${escapeAttr(match.date)}" title="定位到 ${escapeAttr(match.date)}">${escapeHtml(match.date)}</button><span class="stats-history-num">${match.count}只</span><span class="stats-history-names">${names}</span></div>`;
+        }).join('')}</div></details>`;
       }
       function statsFeatureRows(stocks, key) {
         const map = new Map();
@@ -776,11 +842,14 @@
         stocks.forEach(stock => { const list = regions.get(stock.region) || [];list.push(stock.name);regions.set(stock.region, list); });
         const regionRows = [...regions].map(([key, names]) => ({ key, count: names.length, stocks: names })).sort((a, b) => b.count - a.count || a.key.localeCompare(b.key, 'zh-CN'));
         const singles = statsFeatureRows(stocks, 'letters'), pairs = statsFeatureRows(stocks, 'pairs');
+        const cohortResult = historyCohortMatches(date);
         statsTags = new Map();statsStocks = new Map(stocks.map(stock => [stock.name, stock]));statsTagSeq = 0;
         els.statsTitle.textContent = '当日涨停统计';
         els.statsSubtitle.textContent = date;
         els.statsMeta.textContent = `涨停 ${stocks.length}只 · 地域 ${regions.size}个 · 已剥离股份、科技等惯常后缀；双字母不区分顺序`;
         els.statsBody.innerHTML = `<section class="stats-card wide stats-selection" id="statsSelection"><div class="stats-selection-title" id="statsSelectionTitle"></div><div class="stats-selection-list" id="statsSelectionList"></div></section><section class="stats-card wide"><h3>最终封板后每分钟平均成交额<small>从低到高 · 曲线末段为尾盘15分钟</small></h3>${postSealLockHtml(stocks, date)}</section><section class="stats-card wide"><h3>地域涨停数量<small>点击查看股票</small></h3>${statsTagsHtml(regionRows, regionRows.length, '地域')}</section><section class="stats-card"><h3>单字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(singles, 26, '单字母')}</section><section class="stats-card"><h3>双字母出现频率<small>点击查看股票</small></h3>${statsTagsHtml(pairs, 30, '双字母')}</section><section class="stats-card"><h3>单字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, singles, 'letters', false))}</section><section class="stats-card"><h3>双字母交集最大股票</h3>${statsRankHtml(statsIntersectionRows(stocks, pairs, 'pairs', true))}</section>`;
+        const selectionCard = document.getElementById('statsSelection');
+        selectionCard.insertAdjacentHTML('afterend', `<section class="stats-card wide"><h3>全梯队历史同批<small>当日涨停 ${cohortResult.count}只 · 命中 ${cohortResult.matches.length}天 · 自然连板晋级已排除 · 点击日期定位</small></h3>${historyCohortHtml(date, cohortResult)}</section>`);
         renderPostSealCurves(date);
       }
       function showStats(date) {
@@ -932,6 +1001,7 @@
       }
       function loadData() {
         const list = (typeof P !== 'undefined' && Array.isArray(P)) ? P : [];
+        historyCohortCache.clear();
         state.records = list.map(parseRecord).filter(record => record.date).sort((a, b) => b.date.localeCompare(a.date));
         state.dates = state.records.map(record => record.date);
         state.recordByDate = new Map(state.records.map(record => [record.date, record]));
@@ -1707,6 +1777,8 @@
       els.statsClose.addEventListener('click', closeStats);
       els.statsModal.addEventListener('click', event => { if (event.target === els.statsModal) closeStats(); });
       els.statsBody.addEventListener('click', event => {
+        const historyDate = event.target.closest('[data-stats-history-date]');
+        if (historyDate) { closeStats();jumpToDate(historyDate.dataset.statsHistoryDate);return; }
         const tag = event.target.closest('[data-stats-token]');
         if (tag) { showStatsSelection(tag.dataset.statsToken, tag);return; }
         const button = event.target.closest('[data-stats-stock]');
