@@ -101,6 +101,8 @@
     .stock-group { display: grid; grid-template-columns: repeat(3, max-content); grid-auto-rows: min-content; align-content: start; gap: 4px 6px; }
     .stock-grid .stock-chip { margin: 0; }
     .stock-chip em { color: #8b9bb3; font: 9px ui-monospace,SFMono-Regular,Menlo,monospace; font-style: normal; }
+    .stock-chip .stock-region { display: inline-flex; align-items: center; height: 15px; margin-left: 1px; padding: 0 4px; border: 1px solid rgba(100,116,139,.16); border-radius: 3px; background: rgba(241,245,249,.82); color: #64748b; font-size: 9px; font-weight: 650; line-height: 13px; }
+    .stock-chip.selected .stock-region { border-color: rgba(155,107,26,.22); background: rgba(255,255,255,.42); color: #855a14; }
     .stock-chip .auction-pct { margin-left: 2px; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .stock-chip .first-limit-time { margin-left: 2px; color: #b4533f; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .stock-chip .bid-seal-amount { margin-left: 2px; padding: 1px 3px; border-radius: 3px; background: rgba(190,24,93,.08); color: #be185d; font-size: 9px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -419,6 +421,7 @@
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
   <script src="old_dragon_pool.js?v=20260826-1"></script>
+  <script src="stock_region_map.js?v=20260903-1"></script>
   <script src="zt_auction_change_data.js"></script>
   <script src="zt_turnover_amount_data.js?v=20260827-1"></script>
   <script src="zt_post_seal_avg_amount_data.js?v=20260830-1"></script>
@@ -450,6 +453,8 @@
       const THREE_BOARD_POOL_CODES = new Set((Array.isArray(THREE_BOARD_POOL_DATA.stocks) ? THREE_BOARD_POOL_DATA.stocks : []).map(item => String(item && item.c || '').trim()).filter(Boolean));
       const OLD_DRAGON_DATA = window.OLD_DRAGON_DATA || { stocks: {} };
       const OLD_DRAGON_STOCKS = OLD_DRAGON_DATA.stocks && typeof OLD_DRAGON_DATA.stocks === 'object' ? OLD_DRAGON_DATA.stocks : {};
+      const STOCK_REGION_DATA = window.STOCK_REGION_DATA && window.STOCK_REGION_DATA.regions || {};
+      const STOCK_REGION_NAMES = window.STOCK_REGION_DATA && window.STOCK_REGION_DATA.names || {};
       const els = {
         controlPanel: document.querySelector('.control-panel'), mobilePanelToggle: document.getElementById('mobilePanelToggle'), viewport: document.getElementById('viewport'), matrix: document.getElementById('matrix'), header: document.getElementById('matrixHeader'), body: document.getElementById('matrixBody'),
         status: document.getElementById('status'), hint: document.getElementById('hint'), search: document.getElementById('search'), searchBtn: document.getElementById('searchBtn'), dateSearch: document.getElementById('dateSearch'), dateSearchBtn: document.getElementById('dateSearchBtn'), initialDays: document.getElementById('initialDays'), zoomOut: document.getElementById('zoomOut'), zoomSelect: document.getElementById('zoomSelect'), zoomIn: document.getElementById('zoomIn'), todayBtn: document.getElementById('todayBtn'), clearSelection: document.getElementById('clearSelection'), reloadBtn: document.getElementById('reloadBtn'),
@@ -946,6 +951,8 @@
       function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
       function dateLabel(date) { return String(date || '').replace(/-/g, '/'); }
       function weekday(date) { return ['日','一','二','三','四','五','六'][new Date(`${date}T00:00:00`).getDay()]; }
+      function stockRegion(code, name = '') { return String(STOCK_REGION_DATA[String(code || '').trim()] || STOCK_REGION_NAMES[String(name || '').trim()] || '').trim(); }
+      function stockRegionMarkup(code, name) { const region = stockRegion(code, name);return region ? `<span class="stock-region" title="注册地：${escapeAttr(region)}">${escapeHtml(region)}</span>` : ''; }
       function auctionPctMarkup(date, code) {
         const day = AUCTION_DATA.dates && AUCTION_DATA.dates[date];
         const value = day && day.values ? Number(day.values[code]) : NaN;
@@ -986,7 +993,7 @@
           const notes = [source, dragon ? `老龙：${oldDragonText(dragon)}` : ''].filter(Boolean).join(' · ');
           const title = [notes, row && row.broken === true ? '盘中触及涨停后炸板' : ''].filter(Boolean).join(' · ');
           const broken = row && row.broken === true;
-          return `<span class="stock-chip promotion-failure${broken ? ' is-broken' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(title)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${promotionMetricMarkup(row)}${broken ? '<span class="promotion-broken">炸板</span>' : ''}</span>`;
+          return `<span class="stock-chip promotion-failure${broken ? ' is-broken' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(code)}" data-name="${escapeAttr(name)}" title="${escapeAttr(title)}">${escapeHtml(name)}<em>${escapeHtml(code)}</em>${stockRegionMarkup(code, name)}${promotionMetricMarkup(row)}${broken ? '<span class="promotion-broken">炸板</span>' : ''}</span>`;
         }).join('');
       }
       function renderPromotionFailures(date, board, rows) {
@@ -1116,7 +1123,8 @@
               const timeRow = LIMIT_TIME_DATA[record.date] && LIMIT_TIME_DATA[record.date][match[2]];
               const hasLimitTime = /^\d{2}:\d{2}(?::\d{2})?$/.test(String(timeRow && timeRow.ft || '').trim());
               // 名称、代码、内边距与各指标间距，再按实际存在的首封时间、竞价涨幅和封单标签增量估算。
-              const estimated = nameWidth + 70 + (hasLimitTime ? 58 : 0) + (hasAuction ? 65 : 0) + (bidLabel ? Math.max(45, bidLabel.length * 9 + 20) : 0);
+              const region = stockRegion(match[2], match[1]);
+              const estimated = nameWidth + 70 + (region ? Math.max(38, [...region].length * 10 + 12) : 0) + (hasLimitTime ? 58 : 0) + (hasAuction ? 65 : 0) + (bidLabel ? Math.max(45, bidLabel.length * 9 + 20) : 0);
               stockSlotWidth = Math.max(stockSlotWidth, estimated);
             }
           }
@@ -1182,7 +1190,7 @@
         const poolStock = isThreeBoardPoolStock(match[2]);
         const dragon = oldDragonInfo(match[2]);
         const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${bidSealAmountMarkup(date, match[2])}${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
+        return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(match[2])}" data-name="${escapeAttr(match[1])}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(match[1])}<em>${escapeHtml(match[2])}</em>${stockRegionMarkup(match[2], match[1])}${bidSealAmountMarkup(date, match[2])}${firstLimitTimeMarkup(date, match[2])}${auctionPctMarkup(date, match[2])}</span>`;
       }
       function renderLine(line, compact, date, lines = [line], lineIndex = 0) {
         const matches = stockMatches(line);
@@ -1209,7 +1217,7 @@
             const poolStock = isThreeBoardPoolStock(stock.code);
             const dragon = oldDragonInfo(stock.code);
             const notes = [dragon ? `老龙：${oldDragonText(dragon)}` : '', poolStock ? '三板组股票池' : '', bidSeal ? '09:25 竞价一字板' : ''].filter(Boolean).join(' · ');
-            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${bidSealAmountMarkup(date, stock.code)}${firstLimitTimeMarkup(date, stock.code)}${auctionPctMarkup(date, stock.code)}</span>`;
+            return `<span class="stock-chip${bidSeal ? ' bid-seal' : ''}${poolStock ? ' three-board-pool' : ''}${dragon ? ' old-dragon' : ''}${hit ? ' match' : ''}${selected ? ' selected' : ''}" data-code="${escapeAttr(stock.code)}" data-name="${escapeAttr(stock.name)}"${notes ? ` title="${escapeAttr(notes)}"` : ''}>${escapeHtml(stock.name)}<em>${escapeHtml(stock.code)}</em>${stockRegionMarkup(stock.code, stock.name)}${bidSealAmountMarkup(date, stock.code)}${firstLimitTimeMarkup(date, stock.code)}${auctionPctMarkup(date, stock.code)}</span>`;
           }).join('');
           groups.push(`<div class="stock-group">${group}</div>`);
         }
