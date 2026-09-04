@@ -210,6 +210,17 @@
     .stats-history-collapse[open] > summary::before { transform: rotate(90deg); }
     .stats-history-collapse > summary small { margin-left: auto; color: var(--muted); font-size: 10px; font-weight: 500; }
     .stats-history-collapse .stats-history-list { padding: 0 8px 8px; border-top: 1px solid var(--line); }
+    .stats-history-index { margin-bottom: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: #f8faff; }
+    .stats-history-index-title { margin-bottom: 6px; color: var(--muted); font-size: 10px; font-weight: 650; }
+    .stats-history-index-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .stats-history-index-button { height: auto; min-height: 26px; padding: 4px 7px; border-color: #d7e2f4; border-radius: 999px; background: #fff; color: #49658e; font-size: 10px; }
+    .stats-history-index-button b { margin-left: 4px; color: var(--up); font: 700 9px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .stats-history-index-button.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .stats-history-index-button.zero { color: #9aa5b5; opacity: .72; }
+    .stats-history-row[hidden] { display: none; }
+    .stats-history-stock.focus { color: #b45309; font-weight: 750; text-decoration-color: #f0b65f; }
+    .stats-history-filter-empty { display: none; padding: 22px 8px; color: var(--muted); font-size: 11px; text-align: center; }
+    .stats-history-filter-empty.show { display: block; }
     .stats-history-row { display: grid; grid-template-columns: 90px 42px minmax(0,1fr); gap: 7px; align-items: start; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 11px; line-height: 1.55; }
     .stats-history-date { height: auto; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: #49658e; font: 650 11px ui-monospace,SFMono-Regular,Menlo,monospace; text-align: left; }
     .stats-history-date:hover { color: var(--accent); text-decoration: underline; }
@@ -439,7 +450,7 @@
   <script src="zt_time_detail.js"></script>
   <script src="bid_seal_data.js"></script>
   <script src="three_board_pool.js?v=20260818-2"></script>
-  <script src="old_dragon_pool.js?v=20260826-1"></script>
+  <script src="old_dragon_pool.js?v=20260904-ipo1"></script>
   <script src="stock_region_map.js?v=20260903-1"></script>
   <script src="zt_auction_change_data.js"></script>
   <script src="zt_turnover_amount_data.js?v=20260827-1"></script>
@@ -758,7 +769,7 @@
           const historicalDate = state.dates[index], historical = collectHistoryCohortStocks(historicalDate), stocks = [];
           current.forEach((stock, code) => {
             const oldStock = historical.get(code);
-            if (oldStock && !isSameCohortStreak(code, currentIndex, index)) stocks.push({ name: stock.name, currentBoard: stock.board, historicalBoard: oldStock.board });
+            if (oldStock && !isSameCohortStreak(code, currentIndex, index)) stocks.push({ name: stock.name, code, currentBoard: stock.board, historicalBoard: oldStock.board });
           });
           if (stocks.length >= 2) matches.push({ date: historicalDate, count: stocks.length, stocks });
         }
@@ -766,12 +777,20 @@
         return { count: current.size, matches };
       }
       function historyCohortHtml(date, result = historyCohortMatches(date)) {
-        const matches = result.matches;
-        if (!matches.length) return '<div class="utility-empty">暂无至少 2 只涨停股的历史同批记录。</div>';
-        return `<details class="stats-history-collapse"><summary>展开历史同批记录<small>${matches.length}天</small></summary><div class="stats-history-list">${matches.map(match => {
-          const names = match.stocks.map(stock => `<span class="stats-history-stock" data-board-tip="当日：${escapeAttr(stock.currentBoard)}板 · 历史当天：${escapeAttr(stock.historicalBoard)}板">${escapeHtml(stock.name)}</span>`).join('、');
-          return `<div class="stats-history-row"><button type="button" class="stats-history-date" data-stats-history-date="${escapeAttr(match.date)}" title="定位到 ${escapeAttr(match.date)}">${escapeHtml(match.date)}</button><span class="stats-history-num">${match.count}只</span><span class="stats-history-names">${names}</span></div>`;
-        }).join('')}</div></details>`;
+        const matches = result.matches, current = [...collectHistoryCohortStocks(date).values()].sort((a, b) => b.board - a.board || a.name.localeCompare(b.name, 'zh-CN'));
+        const counts = new Map(current.map(stock => [stock.code, 0]));
+        matches.forEach(match => match.stocks.forEach(stock => counts.set(stock.code, (counts.get(stock.code) || 0) + 1)));
+        const indexHtml = `<div class="stats-history-index"><div class="stats-history-index-title">当日涨停股索引 · 点击查看包含该股的历史批次</div><div class="stats-history-index-list"><button type="button" class="stats-history-index-button active" data-stats-history-stock="">全部<b>${matches.length}天</b></button>${current.map(stock => {
+          const count = counts.get(stock.code) || 0;
+          return `<button type="button" class="stats-history-index-button${count ? '' : ' zero'}" data-stats-history-stock="${escapeAttr(stock.code)}" title="当日 ${escapeAttr(stock.board)}板">${escapeHtml(stock.name)}<b>${count}天</b></button>`;
+        }).join('')}</div></div>`;
+        if (!matches.length) return indexHtml + '<div class="utility-empty">暂无至少 2 只涨停股的历史同批记录。</div>';
+        const rows = matches.map(match => {
+          const codes = match.stocks.map(stock => stock.code).join(',');
+          const names = match.stocks.map(stock => `<span class="stats-history-stock" data-history-stock-code="${escapeAttr(stock.code)}" data-board-tip="当日：${escapeAttr(stock.currentBoard)}板 · 历史当天：${escapeAttr(stock.historicalBoard)}板">${escapeHtml(stock.name)}</span>`).join('、');
+          return `<div class="stats-history-row" data-history-codes="${escapeAttr(codes)}"><button type="button" class="stats-history-date" data-stats-history-date="${escapeAttr(match.date)}" title="定位到 ${escapeAttr(match.date)}">${escapeHtml(match.date)}</button><span class="stats-history-num">${match.count}只</span><span class="stats-history-names">${names}</span></div>`;
+        }).join('');
+        return `${indexHtml}<details class="stats-history-collapse"><summary><span data-history-summary-label>展开历史同批记录</span><small data-history-summary-count>${matches.length}天</small></summary><div class="stats-history-list">${rows}<div class="stats-history-filter-empty">该股暂无符合条件的历史同批记录</div></div></details>`;
       }
       function statsFeatureRows(stocks, key) {
         const map = new Map();
@@ -1777,6 +1796,25 @@
       els.statsClose.addEventListener('click', closeStats);
       els.statsModal.addEventListener('click', event => { if (event.target === els.statsModal) closeStats(); });
       els.statsBody.addEventListener('click', event => {
+        const historyStock = event.target.closest('[data-stats-history-stock]');
+        if (historyStock) {
+          const section = historyStock.closest('.stats-card'), details = section && section.querySelector('.stats-history-collapse');
+          if (!details) return;
+          const code = historyStock.dataset.statsHistoryStock || '', name = historyStock.childNodes[0] && historyStock.childNodes[0].textContent || '';
+          section.querySelectorAll('[data-stats-history-stock]').forEach(button => button.classList.toggle('active', button === historyStock));
+          let visible = 0;
+          details.querySelectorAll('.stats-history-row').forEach(row => {
+            const codes = String(row.dataset.historyCodes || '').split(',').filter(Boolean), show = !code || codes.includes(code);
+            row.hidden = !show;if (show) visible += 1;
+          });
+          details.querySelectorAll('[data-history-stock-code]').forEach(stock => stock.classList.toggle('focus', Boolean(code) && stock.dataset.historyStockCode === code));
+          const label = details.querySelector('[data-history-summary-label]'), count = details.querySelector('[data-history-summary-count]'), empty = details.querySelector('.stats-history-filter-empty');
+          if (label) label.textContent = code ? `${name} 的历史同批` : '展开历史同批记录';
+          if (count) count.textContent = `${visible}天`;
+          if (empty) empty.classList.toggle('show', visible === 0);
+          details.open = true;
+          return;
+        }
         const historyDate = event.target.closest('[data-stats-history-date]');
         if (historyDate) { closeStats();jumpToDate(historyDate.dataset.statsHistoryDate);return; }
         const tag = event.target.closest('[data-stats-token]');
